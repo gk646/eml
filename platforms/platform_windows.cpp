@@ -1,0 +1,67 @@
+#include <eml/platform.h>
+
+#include <cstdarg>
+#include <cstdio>
+#include <cstdlib>
+
+#ifdef _MSC_VER
+#include <intrin.h>
+#else
+#include <x86intrin.h>
+#endif
+
+namespace eml
+{
+
+void PlatformInit()
+{
+    printf( "Platform [%s] initialized", PlatformName() );
+}
+
+void PlatformDestroy()
+{
+    printf( "Platform [%s] destroyed", PlatformName() );
+}
+
+void PlatformAssert( char const *expr, const char *msg, char const *file, unsigned line )
+{
+    fprintf( stderr, "Assert failed: %s | Message: %s\nAt: %s:%d\n", expr, msg, file, line );
+    abort();
+}
+
+void PlatformPrint( const char *format, ... )
+{
+    va_list args;
+    va_start( args, format );
+    vprintf( format, args );
+    va_end( args );
+}
+
+void PlatformLog( const char *format, ... )
+{
+    va_list args;
+    va_start( args, format );
+    vprintf( format, args );
+    va_end( args );
+}
+
+uint32_t PlatformClockCount()
+{
+    return __rdtsc();
+}
+
+void *PlatformAlloc( uint32_t size )
+{
+    return malloc( size );
+}
+void PlatformFree( void *ptr )
+{
+    free( ptr );
+}
+
+const char *PlatformName()
+{
+    return "Windows";
+}
+
+} // namespace eml

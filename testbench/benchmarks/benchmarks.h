@@ -1,0 +1,6 @@
+#ifndef EML_BENCHMARKS_BENCHMARKS_H
+#define EML_BENCHMARKS_BENCHMARKS_H
+
+inline void RunBenchmarks() {}
+
+#endif //EML_BENCHMARKS_BENCHMARKS_H
