@@ -13,6 +13,8 @@ include(CompilerOptions)
 # Custom target to run the test executable and generate a coverage report
 add_custom_target(run_coverage
 
+
+        COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_BINARY_DIR}testbench/CMakeFiles/eml-testbench.dir/main.cpp.gcda
         # Step 2: Run the test executable to generate fresh .gcda files
         COMMAND ${TARGET_NAME}
 
@@ -24,11 +26,9 @@ add_custom_target(run_coverage
         --html-details
         --output="${CMAKE_BINARY_DIR}/coverage_report.html"
         --sort=uncovered-percent
-        --branches
-        --exclude-unreachable-branches
-        --verbose
-
+        --txt-metric branch
 
         COMMENT "Running ${TARGET_NAME} and generating coverage report with gcovr"
+
         DEPENDS ${TARGET_NAME}
 )

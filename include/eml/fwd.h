@@ -5,9 +5,8 @@
 
 namespace eml
 {
-    struct NeuralNetwork;
-    struct Layer;
+struct NeuralNetwork;
+struct Layer;
 } // namespace eml
 
-
-#endif //EML_FWD_HPP
+#endif // EML_FWD_HPP

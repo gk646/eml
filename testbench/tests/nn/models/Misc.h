@@ -1,22 +1,16 @@
 #ifndef EML_TESTS_MODELS_HANDMADE_H
 #define EML_TESTS_MODELS_HANDMADE_H
 
-
 using namespace eml;
 
-
-inline void test_models_handmade()
+inline void TestModelsCustom()
 {
-
-
 }
 
-
-void TestMisc()
+void TestNNCustom()
 
 {
-    test_models_handmade();
+    TestModelsCustom();
+}
 
-    }
-
-#endif //EML_TESTS_MODELS_HANDMADE_H
+#endif // EML_TESTS_MODELS_HANDMADE_H

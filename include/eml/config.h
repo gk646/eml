@@ -6,21 +6,21 @@
 // Quantized datatypes
 namespace eml
 {
-    using qint8_t = int8_t;
-    using qint16_t = int16_t;
-    using qint32_t = int32_t;
+using qint8_t = int8_t;
+using qint16_t = int16_t;
+using qint32_t = int32_t;
 } // namespace eml
 
-#if !defined(NDEBUG)
+#if !defined( NDEBUG )
 #define EML_DEBUG
 #endif
 
 #ifndef EML_DEBUG
-#define EML_ASSERT(expr, msg) ((void)0)
+#define EML_ASSERT( expr, msg ) ( (void)0 )
 #else
-#define EML_ASSERT(expr, msg) ((expr) ? (void)0 : PlatformAssert(#expr, msg, __FILE__, __LINE__))
+#define EML_ASSERT( expr, msg ) ( ( expr ) ? (void)0 : PlatformAssert( #expr, msg, __FILE__, __LINE__ ) )
 #endif
 
-#define EML_LOG_INFO(msg) PlatformLog("[INFO]: %s:%d\n\t%s", __FILE__, __LINE__, msg)
+#define EML_LOG_INFO( msg ) PlatformLog( "[INFO]: %s:%d\n\t%s", __FILE__, __LINE__, msg )
 
-#endif //EML_CONFIG_H
+#endif // EML_CONFIG_H

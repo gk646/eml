@@ -21,3 +21,6 @@ Style Guide:
     - necessary due to templates
     - But still in header source fashion /implementation is at the bottom
     - Simpler to build on any platform
+
+
+## Running tests

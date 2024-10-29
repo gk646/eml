@@ -6,22 +6,28 @@
 // Math
 #include "math/TensorOps.h"
 
+// Layers
+#include "nn/layers/Linear.h"
+#include "nn/models/LogicGates.h"
+
+
 // Models
 #include "nn/models/Misc.h"
-#include "nn/models/LogicGates.h"
+
 
 inline void RunTests()
 {
     // Math
-    test_math_tensor_ops();
+    TestTensorOps();
+
+    // Layers
+    TestNNLayersLinear();
 
     // Models
-    test_models_handmade();
-
+    TestNNCustom();
     TestLogicGates();
 
-    // Stats
-    ecml_print_test_stats();
+    PrintTestStats();
 }
 
 #endif //EML_TEST_TESTS_H
