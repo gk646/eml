@@ -11,9 +11,7 @@ set(TARGET_NAME eml-testbench)
 include(CompilerOptions)
 
 # Custom target to run the test executable and generate a coverage report
-add_custom_target(run_coverage
-
-
+add_custom_target(coverage
         COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_BINARY_DIR}testbench/CMakeFiles/eml-testbench.dir/main.cpp.gcda
         # Step 2: Run the test executable to generate fresh .gcda files
         COMMAND ${TARGET_NAME}

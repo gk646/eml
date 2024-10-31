@@ -6,6 +6,20 @@
 namespace eml
 {
 
+enum class PaddingMode
+{
+    ZEROS,
+    REFLECT,
+    REPLICATE,
+    CIRCULAR
+};
+
+struct Pair
+{
+    int first;
+    int second;
+};
+
 // Returns a random float between min and max (inclusive)
 inline float GetRandomFloat( float min, float max )
 {

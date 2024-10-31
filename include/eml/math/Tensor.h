@@ -6,6 +6,17 @@
 #include <eml/config.h>
 #include <eml/math/MathUtil.h>
 
+// ----------------------------------------------------------------
+// Tensor
+// ----------------------------------------------------------------
+// ................................................................
+//  4 dimensional tensor
+// ................................................................
+// Misc:
+//
+// ................................................................
+
+
 namespace eml
 {
 template <typename T>
@@ -61,7 +72,7 @@ struct Tensor final
     int32_t capacity = 0; // Allocated size
 
     int32_t size = 0; // Maximum elements
-    int32_t n = 0; // Batch size
+    int32_t n = 0; // Batch
     int32_t c = 0; // Channels
     int32_t h = 0; // Height / Rows
     int32_t w = 0; // Width / Columns
