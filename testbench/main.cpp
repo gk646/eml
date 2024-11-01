@@ -1,5 +1,6 @@
+
 #include "tests/Tests.h"
-#include "benchmarks/benchmarks.h"
+#include "benchmarks/Benchmarks.h"
 
 //-----------------------------------------------
 // Test Bench
@@ -12,6 +13,7 @@
 int main()
 {
     RunTests();
+    // -----------
     RunBenchmarks();
     return 0;
 }

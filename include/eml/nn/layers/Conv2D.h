@@ -44,9 +44,9 @@ struct Conv2D final
 
     // ------------ Info ------------
 
-    int32_t getOutHeight( int32_t inH, Pair kernel, Pair padding, Pair stride );
+    int32_t getOutHeight( int32_t inHeight ) const;
 
-    int32_t getOutWidth( int32_t inW, Pair kernel, Pair padding, Pair stride );
+    int32_t getOutWidth( int32_t inWidth ) const;
 
   private:
     Tensor<T> weights; // Learnable weights of shape (kernelX, kernelY)
@@ -101,34 +101,65 @@ Conv2D<T>::Conv2D( int32_t inC, int32_t outC, Pair kernel )
 template <typename T>
 Tensor<T> Conv2D<T>::forward( Tensor<T>& input )
 {
+    Tensor<T> out{ input.n, outChannels, getOutHeight(), getOutWidth() };
+    out.allocate();
+    forward( input, out );
+    return out;
 }
 
 template <typename T>
 void Conv2D<T>::forward( Tensor<T>& input, Tensor<T>& output )
 {
+
+    int32_t wChOff = 0;
+    // For each specified output channel iterate all inputs
     for( int32_t out = 0; out < output.c; ++out )
     {
+
+        // For each input channel iterate the matrix
         for( int32_t in = 0; in < input.c; ++in )
         {
-            for( int32_t kh = 0; kh < output.c; ++in )
-            {
 
+            int32_t inChOff = 0;
+            // Iterate with the specified stride
+            for( int32_t y = 0; y < input.h; y += stride.first )
+            {
+                for( int32_t x = 0; x < input.w; x += stride.second )
+                {
+
+                    // Kernel operation starts
+                    T kSum = T( 0 );
+                    int32_t kPos = inChOff; // Index of the kernel position
+                    for( int32_t kh = 0; kh < kernel.first; ++kh )
+                    {
+                        for( int32_t kw = 0; kw < kernel.second; ++kw )
+                        {
+                            kSum += input[ kPos + kw ] * weights[0];
+                        }
+                        kPos += kernel.first;
+                    }
+
+                    kSum += biases[ out ];
+                }
+                inChOff += stride.second;
             }
         }
+
+        wChOff += weights.chw;
     }
 }
 
 template <typename T>
-int32_t Conv2D<T>::getOutHeight( int32_t inH, Pair kernel, Pair padding, Pair stride )
+int32_t Conv2D<T>::getOutHeight( const int32_t inHeight ) const
 {
-    const int32_t normal = inH + 2 * padding.first * ( kernel.first - 1 ) - 1;
+    const int32_t normal = inHeight + 2 * padding.first * ( kernel.first - 1 ) - 1;
     return normal / stride.first + 1;
 }
 
 template <typename T>
-int32_t Conv2D<T>::getOutWidth( int32_t inW, Pair kernel, Pair padding, Pair stride )
+int32_t Conv2D<T>::getOutWidth( const int32_t inWidth ) const
 {
-    const int32_t normal = inW + 2 * padding.second * ( kernel.second - 1 ) - 1;
+    const int32_t normal = inWidth + 2 * padding.second * ( kernel.second - 1 ) - 1;
     return normal / stride.second + 1;
 }
 

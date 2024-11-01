@@ -90,7 +90,7 @@ inline int testEquals()
     Tensor<float> C{ 2, 3 };
     C.allocateCustom( c_data, 6 );
 
-    return first && ops::Equals( A, C );
+    return first && ops::Equals( B, C );
 }
 
 inline void TestTensorOps()

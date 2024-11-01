@@ -70,8 +70,9 @@ inline void PrintTestStats()
                         "----------------------------------------\n",
                         TEST_CONTEXT.currentTest, TEST_CONTEXT.passedTest,
                         (int)( (float)TEST_CONTEXT.passedTest / (float)TEST_CONTEXT.currentTest * 100.0F ),
+                        TEST_CONTEXT.failedTest,
                         (int)( (float)TEST_CONTEXT.failedTest / (float)TEST_CONTEXT.currentTest * 100.0F ),
-                        TEST_CONTEXT.failedTest, TEST_CONTEXT.skippedTest, TEST_CONTEXT.unknownTest );
+                        TEST_CONTEXT.skippedTest, TEST_CONTEXT.unknownTest );
 }
 
 #endif // EML_UNIT_TEST_H
