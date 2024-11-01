@@ -49,7 +49,7 @@ namespace eml::actf
 template <typename T>
 void ReLu( Tensor<T>& A )
 {
-    ops::EOp( A, Relu );
+    ops::ElemOp( A, Relu );
 }
 
 template <typename T>
@@ -66,7 +66,7 @@ void LeakyReLu( Tensor<T>& A )
 {
     if constexpr( std::is_same_v<T, float> )
     {
-        ops::EOp( A, LeakyReLu );
+        ops::ElemOp( A, LeakyReLu );
     }
     else
     {

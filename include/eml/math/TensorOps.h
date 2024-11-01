@@ -22,9 +22,25 @@ void Zero( Tensor<T>& A );
 template <typename T>
 void Random( Tensor<T>& A, T min, T max );
 
-// Applies the given operation to every tensor element
+// Sets all values to zero
 template <typename T>
-void EOp( Tensor<T>& A, void ( *op )( T& ) );
+void Fill( Tensor<T>& A, T val );
+
+// Returns the value of the greatest element
+template <typename T>
+T Max( const Tensor<T>& A );
+
+// Returns the value of the smallest element
+template <typename T>
+T Min( const Tensor<T>& A );
+
+// Calls the given operation with every tensor element
+template <typename T>
+void ElemOp( Tensor<T>& A, void ( *op )( T& ) );
+
+// Calls the given operation with every tensor element and it positional parameters
+template <typename T>
+void ElemOpEx( Tensor<T>& A, void ( *op )( int32_t n, int32_t c, int32_t h, int32_t w, T& ) );
 
 } // namespace eml::ops
 
@@ -104,9 +120,44 @@ bool Equals( const Tensor<AT>& A, const Tensor<BT>& B )
 }
 
 template <typename T>
+void Fill( Tensor<T>& A, T val )
+{
+    for( int32_t i = 0; i < A.size; ++i )
+    {
+        A[ i ] = val;
+    }
+}
+
+template <typename T>
+T Max( const Tensor<T>& A )
+{
+    EML_ASSERT( A.size > 0, "Cannot determine max of empty tensor!" );
+    T max = A[ 0 ];
+    for( int32_t i = 1; i < A.size; ++i )
+    {
+        if( A[ i ] > max )
+            max = A[ i ];
+    }
+    return max;
+}
+
+template <typename T>
+T Min( const Tensor<T>& A )
+{
+    EML_ASSERT( A.size > 0, "Cannot determine min of empty tensor!" );
+    T min = A[ 0 ];
+    for( int32_t i = 1; i < A.size; ++i )
+    {
+        if( A[ i ] < min )
+            min = A[ i ];
+    }
+    return min;
+}
+
+template <typename T>
 void Zero( Tensor<T>& A )
 {
-    EOp( A, []( T& t ) { t = 0; } );
+    ElemOp( A, []( T& t ) { t = 0; } );
 }
 
 template <typename T>
@@ -115,7 +166,7 @@ void Random( Tensor<T>& A, T min, T max )
 }
 
 template <typename T>
-void EOp( Tensor<T>& A, void ( *op )( T& ) )
+void ElemOp( Tensor<T>& A, void ( *op )( T& ) )
 {
     for( int32_t i = 0; i < A.size; ++i )
     {

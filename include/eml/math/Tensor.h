@@ -16,7 +16,6 @@
 //
 // ................................................................
 
-
 namespace eml
 {
 template <typename T>
@@ -59,6 +58,9 @@ struct Tensor final
 
     // Sets the data to nullptr and returns the memory
     void* freeCustom();
+
+    // Prints the tensor with PlatformPrint()
+    void print( const char* name = "Tensor" );
 
     // Returns true if the tensor is allocated
     [[nodiscard]] bool isAllocated() const;
@@ -107,6 +109,7 @@ struct Tensor final
 
 namespace eml
 {
+
 template <typename T>
 Tensor<T>::Tensor( const int32_t N, const int32_t C, const int32_t H, const int32_t W )
     : size( N * C * H * W ), n( N ), c( C ), h( H ), w( W ), hw( H * W ), chw( C * H * W )
@@ -184,11 +187,50 @@ template <typename T>
 void* Tensor<T>::freeCustom()
 {
     EML_ASSERT( customAllocated, "Calling freeCustom() on non-custom allocated tensor! Call free()" );
-    EML_ASSERT( capacity > 0, "Calling free() on empty an tensor - likely a mistake" );
+    EML_ASSERT( capacity > 0, "Calling free() on an empty tensor - likely a mistake" );
     const auto* temp = data;
     data = nullptr;
     capacity = 0;
     return temp;
+}
+
+template <typename T>
+void Tensor<T>::print( const char* name )
+{
+
+    const char* format = std::is_floating_point_v<T> ? "%4.1f " : "%d ";
+    int32_t batchIndex = 0;
+    PlatformPrint( "%s:\n", name );
+    for( int32_t batch = 0; batch < n; ++batch )
+    {
+        PlatformPrint( "[" );
+        for( int32_t row = 0; row < h; ++row )
+        {
+            int32_t rowIndex = batchIndex + row * w;
+            for( int32_t channel = 0; channel < c; ++channel )
+            {
+                if( row == 0 )
+                    PlatformPrint( "[" );
+                else
+                    PlatformPrint( "|" );
+                for( int32_t col = 0; col < w; ++col )
+                {
+                    PlatformPrint( format, this->operator[]( rowIndex + col ) );
+                }
+                if( row == h - 1 )
+                    PlatformPrint( "]" );
+                else
+                    PlatformPrint( "|" );
+                rowIndex += hw;
+            }
+            if( row == h - 1 )
+                PlatformPrint( "]\n" );
+            else
+            PlatformPrint( "\n " );
+        }
+        batchIndex += chw;
+    }
+    PlatformPrint( "\n" );
 }
 
 template <typename T>

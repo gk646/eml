@@ -90,6 +90,8 @@ Conv2D<T>::Conv2D( int32_t inC, int32_t outC, Pair kernel, Pair stride, Pair pad
 {
     biases.allocate();
     weights.allocate();
+    ops::Fill(weights, 1.0F);
+    weights.print();
 }
 
 template <typename T>
@@ -98,10 +100,15 @@ Conv2D<T>::Conv2D( int32_t inC, int32_t outC, Pair kernel )
 {
 }
 
+namespace impl
+{
+
+}
+
 template <typename T>
 Tensor<T> Conv2D<T>::forward( Tensor<T>& input )
 {
-    Tensor<T> out{ input.n, outChannels, getOutHeight(), getOutWidth() };
+    Tensor<T> out{ input.n, outChannels, getOutHeight( input.h ), getOutWidth( input.w ) };
     out.allocate();
     forward( input, out );
     return out;
@@ -110,42 +117,43 @@ Tensor<T> Conv2D<T>::forward( Tensor<T>& input )
 template <typename T>
 void Conv2D<T>::forward( Tensor<T>& input, Tensor<T>& output )
 {
-
-    int32_t wChOff = 0;
-    // For each specified output channel iterate all inputs
+    const int kLimitH = input.h - kernel.first + 1; // +1 so we can use < instead of <=
+    const int kLimitW = input.w - kernel.second + 1; // Limit of the kernel
+    int32_t weightOffset = 0;
+    // For each output channel iterate all inputs channels
     for( int32_t out = 0; out < output.c; ++out )
     {
-
-        // For each input channel iterate the matrix
+        int32_t outputOffset = 0;
+        // For each input channel iterate the matrix and apply the kernel - sum the channels up
         for( int32_t in = 0; in < input.c; ++in )
         {
-
-            int32_t inChOff = 0;
-            // Iterate with the specified stride
-            for( int32_t y = 0; y < input.h; y += stride.first )
+            int32_t inputOffset = in * input.hw; // Start new each channel
+            for( int32_t y = 0; y < kLimitH; y += stride.first )
             {
-                for( int32_t x = 0; x < input.w; x += stride.second )
+                for( int32_t x = 0; x <= kLimitW; x += stride.second )
                 {
-
-                    // Kernel operation starts
+                    int32_t weightOffsetKernel = weightOffset; // Cache the current offset
+                    int32_t kernelInputOffset = inputOffset + x;
                     T kSum = T( 0 );
-                    int32_t kPos = inChOff; // Index of the kernel position
+
+                    // Apply the kernel on the input data
                     for( int32_t kh = 0; kh < kernel.first; ++kh )
                     {
                         for( int32_t kw = 0; kw < kernel.second; ++kw )
                         {
-                            kSum += input[ kPos + kw ] * weights[0];
+                            // Accumulate the sum of the element wise product
+                            kSum += input[ kernelInputOffset + kw ] * weights[ weightOffsetKernel++ ];
                         }
-                        kPos += kernel.first;
+                        kernelInputOffset += kernel.second;
                     }
-
-                    kSum += biases[ out ];
+                    kSum += biases[ out ]; // Add the bias for the current output channel
+                    output[ outputOffset ] += kSum;
+                    ++outputOffset;
                 }
-                inChOff += stride.second;
+                inputOffset += input.w;
             }
+            weightOffset += weights.hw; // Jump to next weight matrix channel - also jumps to next batch
         }
-
-        wChOff += weights.chw;
     }
 }
 
