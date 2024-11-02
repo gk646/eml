@@ -8,11 +8,9 @@
 // Conv2D
 // ----------------------------------------------------------------
 // ................................................................
-//  Does not support groups or dilation
+// Does not support groups or dilation
 // ................................................................
-// Misc:
-// TODO missing dilation
-// https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html
+// Doc: https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html
 // ................................................................
 
 namespace eml
@@ -44,11 +42,12 @@ struct Conv2D final
 
     // ------------ Info ------------
 
-    int32_t getOutHeight( int32_t inHeight ) const;
+    [[nodiscard]] int32_t getOutHeight( int32_t inHeight ) const;
 
-    int32_t getOutWidth( int32_t inWidth ) const;
+    [[nodiscard]] int32_t getOutWidth( int32_t inWidth ) const;
 
-  private:
+    // ------------ Access ------------
+
     Tensor<T> weights; // Learnable weights of shape (kernelX, kernelY)
     Tensor<T> biases; // Learnable bias of the layer (out)
     Pair kernel;
@@ -90,8 +89,6 @@ Conv2D<T>::Conv2D( int32_t inC, int32_t outC, Pair kernel, Pair stride, Pair pad
 {
     biases.allocate();
     weights.allocate();
-    ops::Fill(weights, 1.0F);
-    weights.print();
 }
 
 template <typename T>
@@ -117,23 +114,26 @@ Tensor<T> Conv2D<T>::forward( Tensor<T>& input )
 template <typename T>
 void Conv2D<T>::forward( Tensor<T>& input, Tensor<T>& output )
 {
-    const int kLimitH = input.h - kernel.first + 1; // +1 so we can use < instead of <=
-    const int kLimitW = input.w - kernel.second + 1; // Limit of the kernel
+    for( int32_t i = 0; i < outChannels; i++ )
+    {
+        ops::FillDim( output, biases[ i ], 1, i );
+    }
     int32_t weightOffset = 0;
+    int32_t outputOffset = 0;
     // For each output channel iterate all inputs channels
     for( int32_t out = 0; out < output.c; ++out )
     {
-        int32_t outputOffset = 0;
         // For each input channel iterate the matrix and apply the kernel - sum the channels up
         for( int32_t in = 0; in < input.c; ++in )
         {
-            int32_t inputOffset = in * input.hw; // Start new each channel
-            for( int32_t y = 0; y < kLimitH; y += stride.first )
+            int32_t inputOffset = in * input.hw;
+            int32_t outputChannelOffset = outputOffset; // Start new each channel
+            for( int32_t y = 0; y < output.h; ++y )
             {
-                for( int32_t x = 0; x <= kLimitW; x += stride.second )
+                for( int32_t x = 0; x < output.w; ++x )
                 {
                     int32_t weightOffsetKernel = weightOffset; // Cache the current offset
-                    int32_t kernelInputOffset = inputOffset + x;
+                    int32_t kernelInputOffset = inputOffset + x * stride.second;
                     T kSum = T( 0 );
 
                     // Apply the kernel on the input data
@@ -144,31 +144,31 @@ void Conv2D<T>::forward( Tensor<T>& input, Tensor<T>& output )
                             // Accumulate the sum of the element wise product
                             kSum += input[ kernelInputOffset + kw ] * weights[ weightOffsetKernel++ ];
                         }
-                        kernelInputOffset += kernel.second;
+                        kernelInputOffset += input.w;
                     }
-                    kSum += biases[ out ]; // Add the bias for the current output channel
-                    output[ outputOffset ] += kSum;
-                    ++outputOffset;
+                    output[ outputChannelOffset + x ] += kSum;
                 }
+                outputChannelOffset += output.w;
                 inputOffset += input.w;
             }
             weightOffset += weights.hw; // Jump to next weight matrix channel - also jumps to next batch
         }
+        outputOffset += output.hw;
     }
 }
 
 template <typename T>
 int32_t Conv2D<T>::getOutHeight( const int32_t inHeight ) const
 {
-    const int32_t normal = inHeight + 2 * padding.first * ( kernel.first - 1 ) - 1;
-    return normal / stride.first + 1;
+    const int32_t normal = inHeight - kernel.first + ( 2 * padding.first );
+    return ( normal / stride.first ) + 1;
 }
 
 template <typename T>
 int32_t Conv2D<T>::getOutWidth( const int32_t inWidth ) const
 {
-    const int32_t normal = inWidth + 2 * padding.second * ( kernel.second - 1 ) - 1;
-    return normal / stride.second + 1;
+    const int32_t normal = inWidth - kernel.second + ( 2 * padding.second );
+    return ( normal / stride.second ) + 1;
 }
 
 } // namespace eml

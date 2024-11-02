@@ -22,9 +22,14 @@ void Zero( Tensor<T>& A );
 template <typename T>
 void Random( Tensor<T>& A, T min, T max );
 
-// Sets all values to zero
+// Sets all values in the tensor to the given val
 template <typename T>
 void Fill( Tensor<T>& A, T val );
+
+// Fills the given dimension(s) with the given value
+// If left empty is equal to Fill else fills all other dimensions inside
+template <typename T>
+void FillDim( Tensor<T>& A, T val, int32_t n = -1, int32_t c = -1, int32_t h = -1, int32_t w = -1 );
 
 // Returns the value of the greatest element
 template <typename T>
@@ -38,7 +43,7 @@ T Min( const Tensor<T>& A );
 template <typename T>
 void ElemOp( Tensor<T>& A, void ( *op )( T& ) );
 
-// Calls the given operation with every tensor element and it positional parameters
+// Calls the given operation with every tensor element and its positional parameters
 template <typename T>
 void ElemOpEx( Tensor<T>& A, void ( *op )( int32_t n, int32_t c, int32_t h, int32_t w, T& ) );
 
@@ -125,6 +130,38 @@ void Fill( Tensor<T>& A, T val )
     for( int32_t i = 0; i < A.size; ++i )
     {
         A[ i ] = val;
+    }
+}
+
+template <typename T>
+void FillDim( Tensor<T>& A, T val, int32_t n, int32_t c, int32_t h, int32_t w )
+{
+    if( n == -1 && c == -1 && h == -1 ) // Only fill a width
+    {
+        EML_ASSERT( w < A.w, "Given width exceeds vector dimensions" );
+        for( int32_t i = 0; i < w; ++i )
+        {
+            A[ i ] = val;
+        }
+    }
+    else if( n == -1 & c == -1) // Only fill a matrix
+    {
+        int32_t offset = h * A.w;
+        for( int32_t i = 0; i < A.w; ++i )
+        {
+            for( int32_t j = 0; j < A.h; ++j )
+            {
+                A[ offset + i ] = val;
+            }
+        }
+    }
+    else
+    {
+        int32_t offset = n * A.chw + c * A.w + h * A.w;
+        for( int32_t i = 0; i < A.w; ++i )
+        {
+            A[ offset + i ] = val;
+        }
     }
 }
 

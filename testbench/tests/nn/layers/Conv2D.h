@@ -11,14 +11,15 @@ inline void TestNNLayersConv2D()
                       // Channel 3
                       33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48 };
 
-    Tensor<float> A {3,4,4};
-    A.allocateCustom(input,48);
+    Tensor<float> A{ 3, 4, 4 };
+    A.allocateCustom( input, 48 );
     A.print();
     Conv2D<float> layer{ 3, 3, { 2, 2 } };
+    ops::Fill( layer.weights, 1.0F );
+    ops::Fill( layer.biases, 1.0F );
 
-    auto out = layer.forward(A);
+    auto out = layer.forward( A );
     out.print();
-
 }
 
 #endif // EML_TEST_LAYERS_CONV2D_H

@@ -10,10 +10,10 @@
 // Tensor
 // ----------------------------------------------------------------
 // ................................................................
-//  4 dimensional tensor
+// Class implements a 4 dimensional tensor - for data operations see math/TensorOps.h
+// If not specified batch and channel are 1 - as in the tensor has 1 batch and 1 channel per default
 // ................................................................
 // Misc:
-//
 // ................................................................
 
 namespace eml
@@ -197,7 +197,6 @@ void* Tensor<T>::freeCustom()
 template <typename T>
 void Tensor<T>::print( const char* name )
 {
-
     const char* format = std::is_floating_point_v<T> ? "%4.1f " : "%d ";
     int32_t batchIndex = 0;
     PlatformPrint( "%s:\n", name );
@@ -209,24 +208,18 @@ void Tensor<T>::print( const char* name )
             int32_t rowIndex = batchIndex + row * w;
             for( int32_t channel = 0; channel < c; ++channel )
             {
-                if( row == 0 )
-                    PlatformPrint( "[" );
-                else
-                    PlatformPrint( "|" );
+                PlatformPrint( "[" );
                 for( int32_t col = 0; col < w; ++col )
                 {
                     PlatformPrint( format, this->operator[]( rowIndex + col ) );
                 }
-                if( row == h - 1 )
-                    PlatformPrint( "]" );
-                else
-                    PlatformPrint( "|" );
+                PlatformPrint( "]" );
                 rowIndex += hw;
             }
             if( row == h - 1 )
                 PlatformPrint( "]\n" );
             else
-            PlatformPrint( "\n " );
+                PlatformPrint( "\n " );
         }
         batchIndex += chw;
     }
