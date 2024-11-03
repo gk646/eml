@@ -1,6 +1,7 @@
 #ifndef EML_TENSOR_H
 #define EML_TENSOR_H
 
+#include <cstring>
 #include <type_traits>
 
 #include <eml/config.h>
@@ -59,6 +60,12 @@ struct Tensor final
     // Sets the data to nullptr and returns the memory
     void* freeCustom();
 
+    // Returns a new unallocated tensor with the same dims and scale - equal to calling the constructor
+    Tensor<T> copyDims() const;
+
+    // Returns a copy of the tensor using allocate() - equal to copyDims(), allocate() and memcpy()
+    Tensor<T> copyTensor() const;
+
     // Prints the tensor with PlatformPrint()
     void print( const char* name = "Tensor" );
 
@@ -72,8 +79,8 @@ struct Tensor final
 
     T* data = nullptr; // Data pointer
     int32_t capacity = 0; // Allocated size
-
     int32_t size = 0; // Maximum elements
+
     int32_t n = 0; // Batch
     int32_t c = 0; // Channels
     int32_t h = 0; // Height / Rows
@@ -84,8 +91,12 @@ struct Tensor final
 
     // ------------ Metadata ------------
 
-    int32_t scale = 0; // Scale for quantized values
+    int32_t scale = 1; // Scale for quantized values
     bool customAllocated = false;
+
+#ifdef EML_DEBUG
+    ~Tensor();
+#endif
 };
 
 } // namespace eml
@@ -142,6 +153,13 @@ T& Tensor<T>::operator[]( int32_t idx )
 {
     EML_ASSERT( idx < capacity, "Out of bounds access" );
     EML_ASSERT( idx < size, "Out of bounds access" );
+#ifdef EML_DEBUG
+    const int32_t batch = idx / chw;
+    const int32_t channel = ( idx % chw ) / hw;
+    const int32_t row = ( idx % hw ) / w;
+    const int32_t col = ( idx % w );
+    EML_ASSERT( batch < n && channel < c && row < h && col < w, "Out of bounds access" );
+#endif
     return data[ idx ];
 }
 
@@ -150,6 +168,13 @@ T Tensor<T>::operator[]( int32_t idx ) const
 {
     EML_ASSERT( idx < capacity, "Out of bounds access" );
     EML_ASSERT( idx < size, "Out of bounds access" );
+#ifdef EML_DEBUG
+    const int32_t batch = idx / chw;
+    const int32_t channel = ( idx % chw ) / hw;
+    const int32_t row = ( idx % hw ) / w;
+    const int32_t col = ( idx % w );
+    EML_ASSERT( batch < n && channel < c && row < h && col < w, "Out of bounds access" );
+#endif
     return data[ idx ];
 }
 
@@ -195,6 +220,24 @@ void* Tensor<T>::freeCustom()
 }
 
 template <typename T>
+Tensor<T> Tensor<T>::copyDims() const
+{
+    Tensor<T> copy{ n, c, h, w };
+    copy.scale = scale;
+    return copy;
+}
+
+template <typename T>
+Tensor<T> Tensor<T>::copyTensor() const
+{
+    Tensor<T> copy{ n, c, h, w };
+    copy.scale = scale;
+    copy.allocate();
+    memcpy( copy.data, data, size * sizeof( T ) );
+    return copy;
+}
+
+template <typename T>
 void Tensor<T>::print( const char* name )
 {
     const char* format = std::is_floating_point_v<T> ? "%4.1f " : "%d ";
@@ -236,6 +279,14 @@ template <typename T>
 bool Tensor<T>::isAllocatedCustom() const
 {
     return isAllocated() && customAllocated;
+}
+
+template <typename T>
+Tensor<T>::~Tensor()
+{
+#ifndef EML_TEST // Annoying for tests
+    EML_ASSERT( data == nullptr, "Tensor wasnt freed!" );
+#endif
 }
 
 } // namespace eml

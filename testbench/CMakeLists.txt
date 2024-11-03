@@ -6,7 +6,7 @@ target_include_directories(eml-testbench
 )
 
 target_link_libraries(eml-testbench PRIVATE eml)
-
+target_compile_definitions(eml-testbench PRIVATE EML_TEST)
 set(TARGET_NAME eml-testbench)
 include(CompilerOptions)
 

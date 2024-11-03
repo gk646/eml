@@ -76,19 +76,19 @@ inline int testMatmulShape()
 
 inline int testEquals()
 {
-    float a_data[] = { 1, 2, 3, 4, 5, 6 };
+    float aData[] = { 1, 2, 3, 4, 5, 6 };
     Tensor<float> A{ 2, 3 };
-    A.allocateCustom( a_data, 6 );
+    A.allocateCustom( aData, 6 );
 
-    float b_data[] = { 7, 8, 9, 10, 11, 12 };
+    float bData[] = { 7, 8, 9, 10, 11, 12 };
     Tensor<float> B{ 3, 2 };
-    B.allocateCustom( b_data, 6 );
+    B.allocateCustom( bData, 6 );
 
-    bool first = ops::Equals( A, B ) == false;
+    const bool first = ops::Equals( A, B ) == false;
 
-    float c_data[] = { 7, 8, 9, 10, 11, 12 };
-    Tensor<float> C{ 2, 3 };
-    C.allocateCustom( c_data, 6 );
+    float cData[] = { 7, 8, 9, 10, 11, 12 };
+    Tensor<float> C{ 3, 2 };
+    C.allocateCustom( cData, 6 );
 
     return first && ops::Equals( B, C );
 }

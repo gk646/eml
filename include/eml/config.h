@@ -3,6 +3,10 @@
 
 #include <eml/platform.h>
 
+// Controls which word size to memory to
+// Note: this is only used for internal temporary allocations
+#define EML_CONFIG_ALIGNMENT 4
+
 // Quantized datatypes
 namespace eml
 {
@@ -25,7 +29,6 @@ using qint32_t = int32_t;
 #endif
 
 #define EML_LOG_INFO( msg ) PlatformLog( "[INFO]: %s:%d\n\t%s", __FILE__, __LINE__, msg )
-
 
 
 #endif // EML_CONFIG_H

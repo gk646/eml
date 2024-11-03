@@ -37,7 +37,6 @@ void matmulAlloc( volatile int count, volatile int size )
 }
 
 
-
 inline void BenchTensorOps()
 {
     constexpr int size = 128;

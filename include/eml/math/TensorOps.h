@@ -26,10 +26,10 @@ void Random( Tensor<T>& A, T min, T max );
 template <typename T>
 void Fill( Tensor<T>& A, T val );
 
-// Fills the given dimension(s) with the given value
-// If left empty is equal to Fill else fills all other dimensions inside
+// Fills the given dimension(s) with the given value - 0-based indexing
+// Fills all unspecified dimensions with the given offset - if no offset given is equal to Fill()
 template <typename T>
-void FillDim( Tensor<T>& A, T val, int32_t n = -1, int32_t c = -1, int32_t h = -1, int32_t w = -1 );
+void FillDim( Tensor<T>& A, T val, int32_t n = -1, int32_t c = -1, int32_t h = -1 );
 
 // Returns the value of the greatest element
 template <typename T>
@@ -42,10 +42,6 @@ T Min( const Tensor<T>& A );
 // Calls the given operation with every tensor element
 template <typename T>
 void ElemOp( Tensor<T>& A, void ( *op )( T& ) );
-
-// Calls the given operation with every tensor element and its positional parameters
-template <typename T>
-void ElemOpEx( Tensor<T>& A, void ( *op )( int32_t n, int32_t c, int32_t h, int32_t w, T& ) );
 
 } // namespace eml::ops
 
@@ -134,34 +130,48 @@ void Fill( Tensor<T>& A, T val )
 }
 
 template <typename T>
-void FillDim( Tensor<T>& A, T val, int32_t n, int32_t c, int32_t h, int32_t w )
+void FillDim( Tensor<T>& A, T val, int32_t n, int32_t c, int32_t h )
 {
-    if( n == -1 && c == -1 && h == -1 ) // Only fill a width
+    if( n != -1 && c != -1 && h != -1 ) // Fill a single row (width)
     {
-        EML_ASSERT( w < A.w, "Given width exceeds vector dimensions" );
-        for( int32_t i = 0; i < w; ++i )
-        {
-            A[ i ] = val;
-        }
-    }
-    else if( n == -1 & c == -1) // Only fill a matrix
-    {
-        int32_t offset = h * A.w;
-        for( int32_t i = 0; i < A.w; ++i )
-        {
-            for( int32_t j = 0; j < A.h; ++j )
-            {
-                A[ offset + i ] = val;
-            }
-        }
-    }
-    else
-    {
-        int32_t offset = n * A.chw + c * A.w + h * A.w;
+        const int32_t offset = n * A.chw + c * A.hw + h * A.w;
         for( int32_t i = 0; i < A.w; ++i )
         {
             A[ offset + i ] = val;
         }
+    }
+    else if( n != -1 && c != -1 ) // Fill an entire matrix (H x W)
+    {
+        int32_t offset = n * A.chw + c * A.hw;
+        for( int32_t i = 0; i < A.h; ++i )
+        {
+            for( int32_t j = 0; j < A.w; ++j )
+            {
+                A[ offset + j ] = val;
+            }
+            offset += A.w;
+        }
+    }
+    else if( n != -1 ) // Fill an entire batch (C x H x W)
+    {
+        int32_t offset = n * A.chw;
+        for( int32_t i = 0; i < A.c; ++i )
+        {
+            int32_t matrixOff = offset;
+            for( int32_t j = 0; j < A.h; ++j )
+            {
+                for( int32_t k = 0; k < A.w; ++k )
+                {
+                    A[ matrixOff + k ] = val;
+                }
+                matrixOff += A.w;
+            }
+            offset += A.hw;
+        }
+    }
+    else
+    {
+        Fill( A, val );
     }
 }
 
@@ -194,12 +204,22 @@ T Min( const Tensor<T>& A )
 template <typename T>
 void Zero( Tensor<T>& A )
 {
-    ElemOp( A, []( T& t ) { t = 0; } );
+    for( int32_t i = 0; i < A.size; ++i )
+    {
+        A[ i ] = T( 0 );
+    }
 }
 
 template <typename T>
 void Random( Tensor<T>& A, T min, T max )
 {
+    if constexpr( std::is_same_v<T, float> )
+    {
+        for( int32_t i = 0; i < A.size; ++i )
+        {
+            A[ i ] = GetRandomFloat( min, max );
+        }
+    }
 }
 
 template <typename T>

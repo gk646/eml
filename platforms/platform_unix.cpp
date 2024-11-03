@@ -1,1 +1,0 @@
-#include <ecml/ecml_platform.h>

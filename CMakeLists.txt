@@ -20,12 +20,10 @@ set(CMAKE_CXX_STANDARD 17) # most recent C++ standard supported by IAR
 
 # Choose which platform file to compile with
 # Currently supported:
-# - windows (default)
-# - unix
+# - desktop (default)
 # - raspberry_pico
-# - unix
 # - custom (supply your own)
-set(EML_PLATFORM "windows" CACHE STRING "The underlying platform that handles stdout, memory, etc...")
+set(EML_PLATFORM "desktop" CACHE STRING "The underlying platform that handles stdout, memory, etc...")
 
 # Choose which architecture to compile for
 # This conditionally enables intrinsics and other specific code for this architecture
@@ -52,7 +50,7 @@ set(EML_CORES 1 CACHE STRING "The amount of cores to optimize for")
 # Choose to build the test executable
 # Executable can be run on the target platform or on the host
 # If building with GCC or clang builds a coverage report in /testbench/artifacts
-option(EML_TEST "Enable building the tests" OFF)
+option(EML_TEST "Enable building the tests" ON)
 
 # ----------------------------------------------------------------------
 # Build Library

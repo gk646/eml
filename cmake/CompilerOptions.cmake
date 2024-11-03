@@ -28,14 +28,19 @@ if (MSVC)
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     # Verify the architecture
     if ("${EML_ARCH}" STREQUAL "amd64")
-        # Set compile options using generator expressions for different configurations
+
+        # For both release and debug
         target_compile_options(${TARGET_NAME} PRIVATE
-                $<$<CONFIG:Debug>:-Wall -Wextra -Werror -O0 -g>
-                $<$<CONFIG:Release>:-Wall -Wextra -DNDEBUG -Ofast -march=native -flto -fno-exceptions -fno-rtti -ffast-math>
+                -Wall -Wextra -Werror -fno-exceptions -fno-rtti -march=native -flto -ffast-math
+        )
+        target_compile_options(${TARGET_NAME} PRIVATE
+                $<$<CONFIG:Debug>: -O0 -g>
+                $<$<CONFIG:Release>: -DNDEBUG -Ofast>
         )
 
         # Set link options for Release configuration
         target_link_options(${TARGET_NAME} PRIVATE
+                $<$<CONFIG:Debug>:-flto -Wl,-Map=output.map >
                 $<$<CONFIG:Release>:-flto>
         )
 
@@ -43,7 +48,6 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         if (EML_TEST)
             target_compile_options(${TARGET_NAME} PRIVATE
                     -fprofile-arcs -ftest-coverage -fno-inline -fno-optimize-sibling-calls -exclude-unreachable-branches
-
             )
             target_link_options(${TARGET_NAME} PRIVATE
                     -fprofile-arcs -ftest-coverage -fno-inline
