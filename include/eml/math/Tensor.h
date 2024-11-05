@@ -46,7 +46,10 @@ struct Tensor final
 
     // Access via flattened array index
     T& operator[]( int32_t idx );
-    T operator[]( int32_t idx ) const;
+    const T& operator[]( int32_t idx ) const;
+
+    T* data();
+    const T* data() const;
 
     // Allocates memory according to the current size ONLY when data is nullptr - uses PlatformAlloc
     void allocate();
@@ -77,7 +80,7 @@ struct Tensor final
 
     // ------------ Data ------------
 
-    T* data = nullptr; // Data pointer
+    T* ptr = nullptr; // Data pointer
     int32_t capacity = 0; // Allocated size
     int32_t size = 0; // Maximum elements
 
@@ -160,11 +163,11 @@ T& Tensor<T>::operator[]( int32_t idx )
     const int32_t col = ( idx % w );
     EML_ASSERT( batch < n && channel < c && row < h && col < w, "Out of bounds access" );
 #endif
-    return data[ idx ];
+    return ptr[ idx ];
 }
 
 template <typename T>
-T Tensor<T>::operator[]( int32_t idx ) const
+const T& Tensor<T>::operator[]( int32_t idx ) const
 {
     EML_ASSERT( idx < capacity, "Out of bounds access" );
     EML_ASSERT( idx < size, "Out of bounds access" );
@@ -175,7 +178,19 @@ T Tensor<T>::operator[]( int32_t idx ) const
     const int32_t col = ( idx % w );
     EML_ASSERT( batch < n && channel < c && row < h && col < w, "Out of bounds access" );
 #endif
-    return data[ idx ];
+    return ptr[ idx ];
+}
+
+template <typename T>
+T* Tensor<T>::data()
+{
+    return ptr;
+}
+
+template <typename T>
+const T* Tensor<T>::data() const
+{
+    return ptr;
 }
 
 template <typename T>
@@ -183,7 +198,7 @@ void Tensor<T>::allocate()
 {
     EML_ASSERT( capacity == 0, "Calling allocate() on an already allocated tensor" );
     EML_ASSERT( size > 0, "Calling allocate() on an empty tensor - likely a mistake" );
-    data = static_cast<T*>( PlatformAlloc( sizeof( T ) * size ) );
+    ptr = static_cast<T*>( PlatformAlloc( sizeof( T ) * size ) );
     capacity = size;
 }
 
@@ -192,8 +207,8 @@ void Tensor<T>::free()
 {
     EML_ASSERT( !customAllocated, "Calling free() on custom allocated tensor! Call freeCustom()" );
     EML_ASSERT( capacity > 0, "Calling free() on empty an tensor - likely a mistake" );
-    PlatformFree( data );
-    data = nullptr;
+    PlatformFree( ptr );
+    ptr = nullptr;
     capacity = 0;
 }
 
@@ -201,9 +216,9 @@ template <typename T>
 void Tensor<T>::allocateCustom( void* memory, const int count )
 {
     EML_ASSERT( static_cast<T*>( memory ) != nullptr && count > 0, "Calling stackAllocate() with invalid parameters" );
-    EML_ASSERT( data == nullptr, "Cannot initialize an allocated tensor! Call free() or freeCustom() first" );
+    EML_ASSERT( ptr == nullptr, "Cannot initialize an allocated tensor! Call free() or freeCustom() first" );
     EML_ASSERT( count >= size, "Passed memory is too small to hold the tensor data!" );
-    data = static_cast<T*>( memory );
+    ptr = static_cast<T*>( memory );
     capacity = count;
     customAllocated = true;
 }
@@ -213,8 +228,8 @@ void* Tensor<T>::freeCustom()
 {
     EML_ASSERT( customAllocated, "Calling freeCustom() on non-custom allocated tensor! Call free()" );
     EML_ASSERT( capacity > 0, "Calling free() on an empty tensor - likely a mistake" );
-    const auto* temp = data;
-    data = nullptr;
+    const auto* temp = ptr;
+    ptr = nullptr;
     capacity = 0;
     return temp;
 }
@@ -233,7 +248,7 @@ Tensor<T> Tensor<T>::copyTensor() const
     Tensor<T> copy{ n, c, h, w };
     copy.scale = scale;
     copy.allocate();
-    memcpy( copy.data, data, size * sizeof( T ) );
+    memcpy( copy.data, ptr, size * sizeof( T ) );
     return copy;
 }
 
@@ -272,7 +287,7 @@ void Tensor<T>::print( const char* name )
 template <typename T>
 bool Tensor<T>::isAllocated() const
 {
-    return data != nullptr;
+    return ptr != nullptr;
 }
 
 template <typename T>
@@ -281,6 +296,7 @@ bool Tensor<T>::isAllocatedCustom() const
     return isAllocated() && customAllocated;
 }
 
+#ifdef EML_DEBUG
 template <typename T>
 Tensor<T>::~Tensor()
 {
@@ -288,6 +304,7 @@ Tensor<T>::~Tensor()
     EML_ASSERT( data == nullptr, "Tensor wasnt freed!" );
 #endif
 }
+#endif
 
 } // namespace eml
 

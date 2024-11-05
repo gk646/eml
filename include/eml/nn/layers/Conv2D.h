@@ -178,7 +178,7 @@ Tensor<T> Conv2D<T>::forward( const Tensor<T>& input )
 }
 
 template <typename T>
-void Conv2D<T>::forward( const Tensor<T>& input, Tensor<T>& output )
+void Conv2D<T>::forward( const Tensor<T>& input, Tensor<T>& __restrict output )
 {
     // Checks
     EML_ASSERT( output.h == getOutHeight( input.h ) && output.w == getOutWidth( input.w ), "Wrong output dimensions!" );

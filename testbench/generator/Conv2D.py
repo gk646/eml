@@ -72,7 +72,7 @@ while test_count <= 75:
     in_channels, out_channels = channels_cases[test_count % len(channels_cases)]
     kernel_size = kernels[test_count % len(kernels)]
     stride = strides[test_count % len(strides)]
-    padding = paddings[(test_count ) % len(paddings)]
+    padding = paddings[test_count % len(paddings)]
     use_bias = (test_count % 2 == 0)  # Alternate bias between True and False
     padding_mode = padding_modes[test_count % len(padding_modes)]  # Rotate padding modes
 

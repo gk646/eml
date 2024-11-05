@@ -30,24 +30,22 @@ constexpr const char* GetTypeString()
     }
 }
 
-#define EML_BENCHMARK( type, func, iterations, size, ... )                                             \
-    do {                                                                                                \
-        /* Benchmark with time */                                                                       \
-        const auto start = PlatformClock();                                                             \
-        for (int32_t i = 0; i < iterations; ++i) {                                             \
-            func(__VA_ARGS__);                                                                          \
-        }                                                                                               \
-        const auto end = PlatformClock();                                                               \
-        const float elapsed = static_cast<float>(end - start) / 1'000'000.0F;                           \
-        const float totalFLOP = iterations * powf(static_cast<float>(size), 3);                         \
-                                                                                                        \
-        /* Benchmark with cycles */                                                                     \
-        const auto startCycle = PlatformCycleCount();                                                   \
-        func(__VA_ARGS__);                                                                              \
-        const auto endCycle = PlatformCycleCount();                                                     \
-        const auto elapsedCycles = endCycle - startCycle;                                               \
-        PlatformPrint("[Benchmark]:%s_%s\n\tCycles: %d cycles | Giga Ops: %.2f\n",                    \
-                      __FUNCTION__,  GetTypeString<type>(), static_cast<long>(elapsedCycles),(totalFLOP / elapsed) / 1'000'000'000.0F);                  \
-    } while (0)
+#define EML_BENCHMARK( type, func, iterations, size, ... )                                                             \
+    const auto start = PlatformClock();                                                                                \
+    for( int32_t i = 0; i < iterations; ++i )                                                                          \
+    {                                                                                                                  \
+        func( __VA_ARGS__ );                                                                                           \
+    }                                                                                                                  \
+    const auto end = PlatformClock();                                                                                  \
+    const float elapsed = static_cast<float>( end - start ) / 1'000'000.0F;                                            \
+    const float totalFLOP = iterations * powf( static_cast<float>( size ), 3 );                                        \
+                                                                                                                       \
+    const auto startCycle = PlatformCycleCount();                                                                      \
+    func( __VA_ARGS__ );                                                                                               \
+    const auto endCycle = PlatformCycleCount();                                                                        \
+    const auto elapsedCycles = endCycle - startCycle;                                                                  \
+    PlatformPrint( "[Benchmark]:%s_%s\n\t%f mults/cycle | Giga Ops: %.2f\n", __FUNCTION__, GetTypeString<type>(),      \
+                   powf( static_cast<float>( size ), 3 ) / elapsedCycles,                                              \
+                   ( totalFLOP / elapsed ) / 1'000'000'000.0F );
 
 #endif // EML_MICROBENCH_H

@@ -52,6 +52,35 @@ inline int testMatmulSquare2()
     return ops::Equals( C, R );
 }
 
+inline int testMatmulSquare3()
+{
+    float a_data[64] = {};
+    Tensor<float> A{ 8, 8 };
+    A.allocateCustom(a_data, 64);
+    ops::Fill(A,1.0F);
+
+    float b_data[64]{};
+    Tensor<float> B{ 8, 8 };
+    B.allocateCustom(b_data, 64);
+    ops::Fill(B,2.0F);
+
+    float c_data[64] = {};
+    Tensor<float> C{ 8, 8 };
+    C.allocateCustom(c_data, 64);
+    ops::Fill(C,0.0F);
+
+
+    ops::Matmul(A, B, C);
+
+    float result[] = {};
+    Tensor<float> R{ 8, 8 };
+    R.allocateCustom(result, 64);
+    ops::Fill(R,16.0F);
+
+    C.print();
+    return ops::Equals(C, R);
+}
+
 inline int testMatmulShape()
 {
     float a_data[] = { 1, 2, 3, 4, 5, 6 };
@@ -97,6 +126,7 @@ inline void TestTensorOps()
 {
     EML_RUN_TEST( testMatmulSquare );
     EML_RUN_TEST( testMatmulSquare2 );
+    EML_RUN_TEST( testMatmulSquare3 );
     EML_RUN_TEST( testMatmulShape );
     EML_RUN_TEST( testEquals );
 }

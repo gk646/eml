@@ -42,15 +42,15 @@ inline void BenchTensorOps()
     constexpr int size = 128;
     constexpr int count = 100;
 
-    matmulStack<float>( count, size );
-    matmulStack<qint8_t>( count, size );
-    matmulStack<qint16_t>( count, size );
-    matmulStack<qint32_t>( count, size );
-
     matmulAlloc<float>( count, size );
     matmulAlloc<qint8_t>( count, size );
     matmulAlloc<qint16_t>( count, size );
     matmulAlloc<qint32_t>( count, size );
+
+    matmulStack<float>( count, size );
+    matmulStack<qint8_t>( count, size );
+    matmulStack<qint16_t>( count, size );
+    matmulStack<qint32_t>( count, size );
 }
 
 #endif // EML_BENCHMARK_TENSOR_OPS_H

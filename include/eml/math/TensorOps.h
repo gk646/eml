@@ -2,13 +2,17 @@
 #define EML_TENSOR_OPS_H
 
 #include <eml/math/Tensor.h>
+#include <xsimd/xsimd.hpp>
 
 namespace eml::ops
 {
 
 // Matrix multiplication of A and B into R
-template <typename AT, typename BT, typename RT>
-void Matmul( const Tensor<AT>& A, const Tensor<BT>& B, Tensor<RT>& R );
+template <typename T>
+void Matmul( const Tensor<T>& __restrict__ A, const Tensor<T>& __restrict__ B, Tensor<T>& __restrict__ R );
+
+template <typename T>
+void Matmul16x16( const Tensor<T>& __restrict__ A, const Tensor<T>& __restrict__ B, Tensor<T>& __restrict__ R );
 
 // Returns true if both tensors have the same shape and data
 template <typename AT, typename BT>
@@ -65,31 +69,95 @@ void ElemOp( Tensor<T>& A, void ( *op )( T& ) );
 namespace eml::ops
 {
 
-template <typename AT, typename BT, typename RT>
-void Matmul( const Tensor<AT>& A, const Tensor<BT>& B, Tensor<RT>& R )
+namespace impl
 {
-    // Type
-    static_assert( std::is_same_v<AT, BT> && std::is_same_v<BT, RT> && "Tensor types must match" );
 
+template <typename T, int size>
+void Kernel( const Tensor<T>& __restrict__ A, const Tensor<T>& __restrict__ B, Tensor<T>& __restrict__ R, int x, int y,
+             int l, int r )
+{
+    xsimd::batch<T> t[ size ]{}; // 8 rows, 1 SIMD register per row for an 8x8 block
+
+    for( int k = l; k < r; k++ )
+    {
+        for( int i = 0; i < size; i++ )
+        {
+            // Broadcast a[x + i][k] into a register
+            xsimd::batch<T> alpha{ A[ ( x + i ) * A.w + k ] };
+            // Multiply B[k][y:y+8] by alpha and update t[i][0]
+            t[ i ] += alpha * xsimd::load_unaligned( &B[ k * B.w + y ] );
+        }
+    }
+
+    for( int i = 0; i < size; i++ )
+    {
+        const auto res = xsimd::load_unaligned( &R[ ( x + i ) * R.w + y ] ) + t[ i ];
+        xsimd::store_unaligned( &R[ ( ( x + i ) * R.w + y ) ], res );
+    }
+}
+
+} // namespace impl
+
+template <typename T>
+void Matmul( const Tensor<T>& __restrict__ A, const Tensor<T>& __restrict__ B, Tensor<T>& __restrict__ R )
+{
     // [1][1]  A       [1][1][1]  B         [1][1][1]  R
     // [1][1]  3x2     [1][1][1]  2x3       [1][1][1]  3x3
     // [1][1]                               [1][1][1]
     EML_ASSERT( A.w == B.h && R.h == A.h && R.w == B.w, "Invalid dimensions" );
 
-    for( int32_t height = 0; height < A.h; ++height )
+    constexpr int simdValues = (int)xsimd::simd_type<T>::size;
+    const int stepsA = A.w - ( A.w % simdValues );
+    const int stepsB = B.w - ( B.w % simdValues );
+
+    if constexpr( simdValues != 0 )
     {
-        const int32_t idxa = height * A.w;
-        const int32_t idxr = height * R.w;
-        for( int32_t width = 0; width < B.w; ++width )
+        for( int x = 0; x < stepsA; x += simdValues )
+            for( int y = 0; y < stepsB; y += simdValues )
+                impl::Kernel<T, simdValues>( A, B, R, x, y, 0, A.w);
+    }
+    else
+    {
+        int32_t AchannelOff = 0;
+        int32_t BchannelOff = 0;
+        int32_t RchannelOff = 0;
+        for( int32_t c = 0; c < A.c; ++c )
         {
-            AT sum = 0;
-            for( int k = 0; k < A.w; ++k )
+            int32_t idxa = AchannelOff;
+            int32_t idxr = RchannelOff;
+            for( int32_t h = 0; h < A.h; ++h )
             {
-                sum += A[ idxa + k ] * B[ k * B.w + width ];
+                for( int32_t w = 0; w < B.w; ++w )
+                {
+                    T sum = T( 0 );
+                    int32_t idxb = BchannelOff + w;
+                    for( int32_t k = 0; k < A.w; ++k )
+                    {
+                        sum += A[ idxa + k ] * B[ idxb ];
+                        idxb += B.w;
+                    }
+                    R[ idxr + w ] = sum;
+                }
+                idxa += A.w;
+                idxr += R.w;
             }
-            R[ idxr + width ] = sum;
+            AchannelOff += A.hw;
+            BchannelOff += B.hw;
+            RchannelOff += R.hw;
         }
     }
+}
+
+template <typename T>
+void Matmul16x16( const Tensor<T>& __restrict__ A, const Tensor<T>& __restrict__ B, Tensor<T>& __restrict__ R )
+{
+    // [1][1]  A       [1][1][1]  B         [1][1][1]  R
+    // [1][1]  3x2     [1][1][1]  2x3       [1][1][1]  3x3
+    // [1][1]                               [1][1][1]
+    EML_ASSERT( A.w == B.h && R.h == A.h && R.w == B.w, "Invalid dimensions" );
+
+    constexpr int MATRIX_SIZE = 16;
+    constexpr int BLOCK_SIZE = 4;
 }
 
 template <typename AT, typename BT>

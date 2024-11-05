@@ -50,7 +50,7 @@ set(EML_CORES 1 CACHE STRING "The amount of cores to optimize for")
 # Choose to build the test executable
 # Executable can be run on the target platform or on the host
 # If building with GCC or clang builds a coverage report in /testbench/artifacts
-option(EML_TEST "Enable building the tests" ON)
+option(EML_TEST "Enable building the tests" OFF)
 
 # ----------------------------------------------------------------------
 # Build Library

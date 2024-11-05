@@ -46,15 +46,12 @@ struct StackAllocator final
     {
         EML_ASSERT( historyIdx > 0, "Free called with no allocations made" );
         EML_ASSERT( free != nullptr, "Free called with nullptr" );
-
         const int allocSize = historySize[ historyIdx - 1 ];
-
 #ifdef EML_DEBUG
         const int calcSize = (int)( memory - (unsigned char*)free ) + allocSize;
         EML_ASSERT( calcSize == size, "Freed memory in wrong order!" );
         EML_ASSERT( historyPtr[ historyIdx - 1 ] == (unsigned char*)free, "Freed memory in wrong order!" );
 #endif
-
         size -= allocSize;
         --historyIdx;
         EML_ASSERT( size >= 0, "Freed invalid memory" );

@@ -31,4 +31,8 @@ using qint32_t = int32_t;
 #define EML_LOG_INFO( msg ) PlatformLog( "[INFO]: %s:%d\n\t%s", __FILE__, __LINE__, msg )
 
 
+
+#define EML_AVX2
+
+
 #endif // EML_CONFIG_H

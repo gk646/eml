@@ -31,17 +31,17 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
 
         # For both release and debug
         target_compile_options(${TARGET_NAME} PRIVATE
-                -Wall -Wextra -Werror -fno-exceptions -fno-rtti -march=native -flto -ffast-math
+                -Wall -Wextra -fno-exceptions -fno-rtti -march=native -flto
         )
         target_compile_options(${TARGET_NAME} PRIVATE
                 $<$<CONFIG:Debug>: -O0 -g>
-                $<$<CONFIG:Release>: -DNDEBUG -Ofast>
+                $<$<CONFIG:Release>: -DNDEBUG -Ofast -funroll-loops >
         )
 
         # Set link options for Release configuration
         target_link_options(${TARGET_NAME} PRIVATE
                 $<$<CONFIG:Debug>:-flto -Wl,-Map=output.map >
-                $<$<CONFIG:Release>:-flto>
+                $<$<CONFIG:Release>:-flto >
         )
 
         # Insert test coverage flags if EML_TEST is set
@@ -53,7 +53,6 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
                     -fprofile-arcs -ftest-coverage -fno-inline
             )
         endif ()
-
     elseif ("${EML_ARCH}" STREQUAL "arm")
         # Add ARM-specific options here if needed
         message(STATUS "Configuring for ARM architecture")
