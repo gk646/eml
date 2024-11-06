@@ -16,6 +16,10 @@
 
 inline void RunTests()
 {
+    PlatformPrint( "\n-------------------------------------------\n" );
+    PlatformPrint( "|................ T E S T ................|\n" );
+    PlatformPrint( "-------------------------------------------\n" );
+
     // Math
     TestTensorOps();
 

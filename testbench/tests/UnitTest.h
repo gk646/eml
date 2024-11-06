@@ -34,45 +34,42 @@ inline TestContext TEST_CONTEXT{};
 #define EML_RUN_TEST( func, ... )                                                                                      \
     {                                                                                                                  \
         const auto res = func( __VA_ARGS__ );                                                                          \
-        const char* result_str = nullptr;                                                                              \
         switch( res )                                                                                                  \
         {                                                                                                              \
         case TestResult::TEST_PASSED:                                                                                  \
             TEST_CONTEXT.passedTest++;                                                                                 \
-            result_str = "PASSED";                                                                                     \
             break;                                                                                                     \
         case TestResult::TEST_FAILED:                                                                                  \
             TEST_CONTEXT.failedTest++;                                                                                 \
-            result_str = "FAILED";                                                                                     \
+            PlatformPrint( "[Test] %d:%s\n     -> %s\n", TEST_CONTEXT.currentTest, #func, "FAILED" );                  \
             break;                                                                                                     \
         case TestResult::TEST_SKIPPED:                                                                                 \
             TEST_CONTEXT.skippedTest++;                                                                                \
-            result_str = "SKIPPED";                                                                                    \
+            PlatformPrint( "[Test] %d:%s\n     -> %s\n", TEST_CONTEXT.currentTest, #func, "SKIPPED" );                 \
             break;                                                                                                     \
         default:                                                                                                       \
             TEST_CONTEXT.unknownTest++;                                                                                \
-            result_str = "UNKNOWN";                                                                                    \
+            PlatformPrint( "[Test] %d:%s\n     -> %s\n", TEST_CONTEXT.currentTest, #func, "UNKNOWN" );                 \
             break;                                                                                                     \
         }                                                                                                              \
-        PlatformPrint( "Test [%d]:%s\n     -> %s\n", TEST_CONTEXT.currentTest, #func, result_str );                    \
         ++TEST_CONTEXT.currentTest;                                                                                    \
     }
 
 inline void PrintTestStats()
 {
-    eml::PlatformPrint( "----------------------------------------\n"
-                        "Test stats:\n"
-                        "  Total Tests   :%3d\n"
-                        "  Passed Tests  :%3d (%3d%%)\n"
-                        "  Failed Tests  :%3d (%3d%%)\n"
-                        "  Skipped Tests :%3d\n"
-                        "  Unknown Tests :%3d\n"
-                        "----------------------------------------\n",
-                        TEST_CONTEXT.currentTest, TEST_CONTEXT.passedTest,
-                        (int)( (float)TEST_CONTEXT.passedTest / (float)TEST_CONTEXT.currentTest * 100.0F ),
-                        TEST_CONTEXT.failedTest,
-                        (int)( (float)TEST_CONTEXT.failedTest / (float)TEST_CONTEXT.currentTest * 100.0F ),
-                        TEST_CONTEXT.skippedTest, TEST_CONTEXT.unknownTest );
+
+    PlatformPrint( "\n.............. S T A T S .............\n"
+                   "%-7s:%3d\n"
+                   "%-7s:%3d (%3d%%)\n"
+                   "%-7s:%3d (%3d%%)\n"
+                   "%-7s:%3d\n"
+                   "%-7s:%3d\n"
+                   "----------------------------------------\n\n\n",
+                   "Total", TEST_CONTEXT.currentTest, "Passed", TEST_CONTEXT.passedTest,
+                   (int)( (float)TEST_CONTEXT.passedTest / (float)TEST_CONTEXT.currentTest * 100.0F ), "Failed",
+                   TEST_CONTEXT.failedTest,
+                   (int)( (float)TEST_CONTEXT.failedTest / (float)TEST_CONTEXT.currentTest * 100.0F ), "Skipped",
+                   TEST_CONTEXT.skippedTest, "Unknown", TEST_CONTEXT.unknownTest );
 }
 
 #endif // EML_UNIT_TEST_H

@@ -1,9 +1,10 @@
 #ifndef EML_MICROBENCH_H
 #define EML_MICROBENCH_H
 
-using namespace eml;
-
 #include <eml/config.h>
+#include <type_traits>
+
+using namespace eml;
 
 template <typename T>
 constexpr const char* GetTypeString()
@@ -30,7 +31,7 @@ constexpr const char* GetTypeString()
     }
 }
 
-#define EML_BENCHMARK( type, func, iterations, size, ... )                                                             \
+#define EML_BENCHMARK_MATMUL( type, func, iterations, size, ... )                                                      \
     const auto start = PlatformClock();                                                                                \
     for( int32_t i = 0; i < iterations; ++i )                                                                          \
     {                                                                                                                  \
@@ -38,14 +39,26 @@ constexpr const char* GetTypeString()
     }                                                                                                                  \
     const auto end = PlatformClock();                                                                                  \
     const float elapsed = static_cast<float>( end - start ) / 1'000'000.0F;                                            \
-    const float totalFLOP = iterations * powf( static_cast<float>( size ), 3 );                                        \
+    const float totalOps = iterations * powf( static_cast<float>( size ), 3 );                                         \
                                                                                                                        \
     const auto startCycle = PlatformCycleCount();                                                                      \
     func( __VA_ARGS__ );                                                                                               \
     const auto endCycle = PlatformCycleCount();                                                                        \
     const auto elapsedCycles = endCycle - startCycle;                                                                  \
-    PlatformPrint( "[Benchmark]:%s_%s\n\t%f mults/cycle | Giga Ops: %.2f\n", __FUNCTION__, GetTypeString<type>(),      \
-                   powf( static_cast<float>( size ), 3 ) / elapsedCycles,                                              \
-                   ( totalFLOP / elapsed ) / 1'000'000'000.0F );
+                                                                                                                       \
+    if constexpr( std::is_floating_point<type>::value )                                                                \
+    {                                                                                                                  \
+        PlatformPrint( "[Benchmark]: %s:%s\n\t%4.1f mults/cycle | GFLOPS: %4.2f\n", __FUNCTION__,                      \
+                       GetTypeString<type>(), powf( static_cast<float>( size ), 3 ) / elapsedCycles,                   \
+                       ( totalOps / elapsed ) / 1'000'000'000.0F );                                                    \
+    }                                                                                                                  \
+    else                                                                                                               \
+    {                                                                                                                  \
+        PlatformPrint( "[Benchmark]: %s_%s\n\t%4.1f mults/cycle | GIOPS:  %4.2f\n", __FUNCTION__,                      \
+                       GetTypeString<type>(), powf( static_cast<float>( size ), 3 ) / elapsedCycles,                   \
+                       ( totalOps / elapsed ) / 1'000'000'000.0F );                                                    \
+    }
+
+#define EML_BENCHMARK_TIME( func )
 
 #endif // EML_MICROBENCH_H

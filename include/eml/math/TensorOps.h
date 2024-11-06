@@ -9,10 +9,7 @@ namespace eml::ops
 
 // Matrix multiplication of A and B into R
 template <typename T>
-void Matmul( const Tensor<T>& __restrict__ A, const Tensor<T>& __restrict__ B, Tensor<T>& __restrict__ R );
-
-template <typename T>
-void Matmul16x16( const Tensor<T>& __restrict__ A, const Tensor<T>& __restrict__ B, Tensor<T>& __restrict__ R );
+void Matmul( const Tensor<T>& A, const Tensor<T>& B, Tensor<T>& R );
 
 // Returns true if both tensors have the same shape and data
 template <typename AT, typename BT>
@@ -73,19 +70,43 @@ namespace impl
 {
 
 template <typename T, int size>
-void Kernel( const Tensor<T>& __restrict__ A, const Tensor<T>& __restrict__ B, Tensor<T>& __restrict__ R, int x, int y,
-             int l, int r )
+void Kernel( const Tensor<T>& __restrict__ A, const Tensor<T>& __restrict__ B, Tensor<T>& __restrict__ R, const int x,
+             const int y, const int l, const int r )
 {
-    xsimd::batch<T> t[ size ]{}; // 8 rows, 1 SIMD register per row for an 8x8 block
+    xsimd::batch<T> t[ size ]{};
 
     for( int k = l; k < r; k++ )
     {
-        for( int i = 0; i < size; i++ )
+        const auto bBatch = xsimd::load_unaligned( &B[ k * B.w + y ] );
+        if constexpr( std::is_same_v<T, float> )
         {
-            // Broadcast a[x + i][k] into a register
-            xsimd::batch<T> alpha{ A[ ( x + i ) * A.w + k ] };
-            // Multiply B[k][y:y+8] by alpha and update t[i][0]
-            t[ i ] += alpha * xsimd::load_unaligned( &B[ k * B.w + y ] );
+            for( int i = 0; i < size; i += 4 )
+            {
+                xsimd::batch<T> alpha0{ A[ ( x + i ) * A.w + k ] };
+                xsimd::batch<T> alpha1{ A[ ( x + i + 1 ) * A.w + k ] };
+                xsimd::batch<T> alpha2{ A[ ( x + i + 2 ) * A.w + k ] };
+                xsimd::batch<T> alpha3{ A[ ( x + i + 3 ) * A.w + k ] };
+
+                t[ i ] = xsimd::fma( alpha0, bBatch, t[ i ] );
+                t[ i + 1 ] = xsimd::fma( alpha1, bBatch, t[ i + 1 ] );
+                t[ i + 2 ] = xsimd::fma( alpha2, bBatch, t[ i + 2 ] );
+                t[ i + 3 ] = xsimd::fma( alpha3, bBatch, t[ i + 3 ] );
+            }
+        }
+        else
+        {
+            for( int i = 0; i < size; i += 4 )
+            {
+                xsimd::batch<T> alpha0{ A[ ( x + i ) * A.w + k ] };
+                xsimd::batch<T> alpha1{ A[ ( x + i + 1 ) * A.w + k ] };
+                xsimd::batch<T> alpha2{ A[ ( x + i + 2 ) * A.w + k ] };
+                xsimd::batch<T> alpha3{ A[ ( x + i + 3 ) * A.w + k ] };
+
+                t[ i ] += alpha0 * bBatch;
+                t[ i + 1 ] += alpha1 * bBatch;
+                t[ i + 2 ] += alpha2 * bBatch;
+                t[ i + 3 ] += alpha3 * bBatch;
+            }
         }
     }
 
@@ -99,22 +120,39 @@ void Kernel( const Tensor<T>& __restrict__ A, const Tensor<T>& __restrict__ B, T
 } // namespace impl
 
 template <typename T>
-void Matmul( const Tensor<T>& __restrict__ A, const Tensor<T>& __restrict__ B, Tensor<T>& __restrict__ R )
+void Matmul( const Tensor<T>& A, const Tensor<T>& B, Tensor<T>& R )
 {
     // [1][1]  A       [1][1][1]  B         [1][1][1]  R
     // [1][1]  3x2     [1][1][1]  2x3       [1][1][1]  3x3
     // [1][1]                               [1][1][1]
     EML_ASSERT( A.w == B.h && R.h == A.h && R.w == B.w, "Invalid dimensions" );
 
-    constexpr int simdValues = (int)xsimd::simd_type<T>::size;
-    const int stepsA = A.w - ( A.w % simdValues );
-    const int stepsB = B.w - ( B.w % simdValues );
+    constexpr auto simdValues = static_cast<int32_t>( xsimd::simd_type<T>::size );
+    const int32_t stepsA = A.w - ( A.w % simdValues );
+    const int32_t stepsB = B.w - ( B.w % simdValues );
 
     if constexpr( simdValues != 0 )
     {
+        constexpr int s3 = 512;
+        constexpr int s2 = 512;
+        constexpr int s1 = 512;
+
+        /* With cache blocking
+        for( int i3 = 0; i3 < stepsB; i3 += s3 )
+            // now we are working with b[:][i3:i3+s3]
+                for( int i2 = 0; i2 < stepsA; i2 += s2 )
+                    // now we are working with a[i2:i2+s2][:]
+                        for( int i1 = 0; i1 < stepsB; i1 += s1 )
+                            // now we are working with b[i1:i1+s1][i3:i3+s3]
+                                // and we need to update c[i2:i2+s2][i3:i3+s3] with [l:r] = [i1:i1+s1]
+                                    for( int x = i2; x < std::min( i2 + s2, stepsA ); x += simdValues )
+                                        for( int y = i3; y < std::min( i3 + s3, stepsB ); y += simdValues )
+                                            impl::Kernel<T, simdValues>( A, B, R, x, y, i1, std::min( i1 + s1, stepsA ) );
+*/
+
         for( int x = 0; x < stepsA; x += simdValues )
             for( int y = 0; y < stepsB; y += simdValues )
-                impl::Kernel<T, simdValues>( A, B, R, x, y, 0, A.w);
+                impl::Kernel<T, simdValues>( A, B, R, x, y, 0, R.w );
     }
     else
     {
@@ -146,18 +184,6 @@ void Matmul( const Tensor<T>& __restrict__ A, const Tensor<T>& __restrict__ B, T
             RchannelOff += R.hw;
         }
     }
-}
-
-template <typename T>
-void Matmul16x16( const Tensor<T>& __restrict__ A, const Tensor<T>& __restrict__ B, Tensor<T>& __restrict__ R )
-{
-    // [1][1]  A       [1][1][1]  B         [1][1][1]  R
-    // [1][1]  3x2     [1][1][1]  2x3       [1][1][1]  3x3
-    // [1][1]                               [1][1][1]
-    EML_ASSERT( A.w == B.h && R.h == A.h && R.w == B.w, "Invalid dimensions" );
-
-    constexpr int MATRIX_SIZE = 16;
-    constexpr int BLOCK_SIZE = 4;
 }
 
 template <typename AT, typename BT>

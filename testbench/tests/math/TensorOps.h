@@ -77,7 +77,6 @@ inline int testMatmulSquare3()
     R.allocateCustom(result, 64);
     ops::Fill(R,16.0F);
 
-    C.print();
     return ops::Equals(C, R);
 }
 

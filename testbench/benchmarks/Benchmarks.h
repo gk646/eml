@@ -3,10 +3,20 @@
 
 #include "MicroBench.h"
 
+#include <eml/platform.h>
+#include <eml/math/Tensor.h>
+#include <eml/math/TensorOps.h>
+
 #include "math/TensorOps.h"
+
+using namespace eml;
 
 inline void RunBenchmarks()
 {
+    PlatformPrint( "-------------------------------------------\n" );
+    PlatformPrint( "|............... B E N C H ...............|\n" );
+    PlatformPrint( "-------------------------------------------\n" );
+
     BenchTensorOps();
 }
 

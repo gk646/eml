@@ -35,13 +35,13 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         )
         target_compile_options(${TARGET_NAME} PRIVATE
                 $<$<CONFIG:Debug>: -O0 -g>
-                $<$<CONFIG:Release>: -DNDEBUG -Ofast -funroll-loops >
+                $<$<CONFIG:Release>: -DNDEBUG -Ofast -funroll-loops>
         )
 
         # Set link options for Release configuration
         target_link_options(${TARGET_NAME} PRIVATE
                 $<$<CONFIG:Debug>:-flto -Wl,-Map=output.map >
-                $<$<CONFIG:Release>:-flto >
+                $<$<CONFIG:Release>:-flto>
         )
 
         # Insert test coverage flags if EML_TEST is set
