@@ -11,7 +11,6 @@ inline int testConv2DCase1()
     A.allocateCustom( input, 18 );
     Conv2D<float> layer{ 3, 1, { 2, 1 }, { 2, 1 }, { 1, 0 }, false, PaddingMode::REFLECT };
     ops::Fill( layer.weights, 1.0F );
-    ops::Fill( layer.biases, 1.0F );
     const auto out = layer.forward( A );
     float expected[] = { 51.0, 57.0, 63.0, 51.0, 57.0, 63.0 };
     Tensor R = out.copyDims();
@@ -43,7 +42,7 @@ inline int testConv2DCase3()
     A.allocateCustom( input, 6 );
     Conv2D<float> layer{ 1, 1, { 1, 2 }, { 1, 2 }, { 0, 0 }, false, PaddingMode::CIRCULAR };
     ops::Fill( layer.weights, 1.0F );
-    ops::Fill( layer.biases, 1.0F );
+
     const auto out = layer.forward( A );
     float expected[] = { 3.0, 7.0, 11.0 };
     Tensor R = out.copyDims();
@@ -74,7 +73,7 @@ inline int testConv2DCase5()
     A.allocateCustom( input, 9 );
     Conv2D<float> layer{ 1, 3, { 1, 1 }, { 1, 1 }, { 0, 1 }, false, PaddingMode::REFLECT };
     ops::Fill( layer.weights, 1.0F );
-    ops::Fill( layer.biases, 1.0F );
+
     const auto out = layer.forward( A );
     float expected[] = { 2.0, 1.0, 2.0, 3.0, 2.0, 5.0, 4.0, 5.0, 6.0, 5.0, 8.0, 7.0, 8.0, 9.0, 8.0,
                          2.0, 1.0, 2.0, 3.0, 2.0, 5.0, 4.0, 5.0, 6.0, 5.0, 8.0, 7.0, 8.0, 9.0, 8.0,
@@ -107,7 +106,7 @@ inline int testConv2DCase7()
     A.allocateCustom( input, 18 );
     Conv2D<float> layer{ 3, 1, { 2, 1 }, { 2, 1 }, { 1, 0 }, false, PaddingMode::CIRCULAR };
     ops::Fill( layer.weights, 1.0F );
-    ops::Fill( layer.biases, 1.0F );
+
     const auto out = layer.forward( A );
     float expected[] = { 51.0, 57.0, 63.0, 51.0, 57.0, 63.0 };
     Tensor R = out.copyDims();
@@ -124,6 +123,7 @@ inline int testConv2DCase8()
     ops::Fill( layer.weights, 1.0F );
     ops::Fill( layer.biases, 1.0F );
     const auto out = layer.forward( A );
+    out.print();
     float expected[] = { 1.0, 2.0, 3.0, 4.0, 1.0, 1.0, 5.0, 6.0, 7.0, 1.0, 1.0, 8.0, 9.0, 10.0, 1.0,
                          1.0, 2.0, 3.0, 4.0, 1.0, 1.0, 5.0, 6.0, 7.0, 1.0, 1.0, 8.0, 9.0, 10.0, 1.0,
                          1.0, 2.0, 3.0, 4.0, 1.0, 1.0, 5.0, 6.0, 7.0, 1.0, 1.0, 8.0, 9.0, 10.0, 1.0 };
@@ -139,7 +139,7 @@ inline int testConv2DCase9()
     A.allocateCustom( input, 6 );
     Conv2D<float> layer{ 1, 1, { 1, 2 }, { 1, 2 }, { 0, 0 }, false, PaddingMode::REFLECT };
     ops::Fill( layer.weights, 1.0F );
-    ops::Fill( layer.biases, 1.0F );
+
     const auto out = layer.forward( A );
     float expected[] = { 3.0, 7.0, 11.0 };
     Tensor R = out.copyDims();
@@ -170,7 +170,7 @@ inline int testConv2DCase11()
     A.allocateCustom( input, 9 );
     Conv2D<float> layer{ 1, 3, { 1, 1 }, { 1, 1 }, { 0, 1 }, false, PaddingMode::CIRCULAR };
     ops::Fill( layer.weights, 1.0F );
-    ops::Fill( layer.biases, 1.0F );
+
     const auto out = layer.forward( A );
     float expected[] = { 3.0, 1.0, 2.0, 3.0, 1.0, 6.0, 4.0, 5.0, 6.0, 4.0, 9.0, 7.0, 8.0, 9.0, 7.0,
                          3.0, 1.0, 2.0, 3.0, 1.0, 6.0, 4.0, 5.0, 6.0, 4.0, 9.0, 7.0, 8.0, 9.0, 7.0,
@@ -203,7 +203,7 @@ inline int testConv2DCase13()
     A.allocateCustom( input, 18 );
     Conv2D<float> layer{ 3, 1, { 2, 1 }, { 2, 1 }, { 1, 0 }, false, PaddingMode::REFLECT };
     ops::Fill( layer.weights, 1.0F );
-    ops::Fill( layer.biases, 1.0F );
+
     const auto out = layer.forward( A );
     float expected[] = { 51.0, 57.0, 63.0, 51.0, 57.0, 63.0 };
     Tensor R = out.copyDims();
@@ -235,7 +235,7 @@ inline int testConv2DCase15()
     A.allocateCustom( input, 6 );
     Conv2D<float> layer{ 1, 1, { 1, 2 }, { 1, 2 }, { 0, 0 }, false, PaddingMode::CIRCULAR };
     ops::Fill( layer.weights, 1.0F );
-    ops::Fill( layer.biases, 1.0F );
+
     const auto out = layer.forward( A );
     float expected[] = { 3.0, 7.0, 11.0 };
     Tensor R = out.copyDims();
@@ -266,7 +266,7 @@ inline int testConv2DCase17()
     A.allocateCustom( input, 9 );
     Conv2D<float> layer{ 1, 3, { 1, 1 }, { 1, 1 }, { 0, 1 }, false, PaddingMode::REFLECT };
     ops::Fill( layer.weights, 1.0F );
-    ops::Fill( layer.biases, 1.0F );
+
     const auto out = layer.forward( A );
     float expected[] = { 2.0, 1.0, 2.0, 3.0, 2.0, 5.0, 4.0, 5.0, 6.0, 5.0, 8.0, 7.0, 8.0, 9.0, 8.0,
                          2.0, 1.0, 2.0, 3.0, 2.0, 5.0, 4.0, 5.0, 6.0, 5.0, 8.0, 7.0, 8.0, 9.0, 8.0,
@@ -299,7 +299,7 @@ inline int testConv2DCase19()
     A.allocateCustom( input, 18 );
     Conv2D<float> layer{ 3, 1, { 2, 1 }, { 2, 1 }, { 1, 0 }, false, PaddingMode::CIRCULAR };
     ops::Fill( layer.weights, 1.0F );
-    ops::Fill( layer.biases, 1.0F );
+
     const auto out = layer.forward( A );
     float expected[] = { 51.0, 57.0, 63.0, 51.0, 57.0, 63.0 };
     Tensor R = out.copyDims();
@@ -331,7 +331,7 @@ inline int testConv2DCase21()
     A.allocateCustom( input, 6 );
     Conv2D<float> layer{ 1, 1, { 1, 2 }, { 1, 2 }, { 0, 0 }, false, PaddingMode::REFLECT };
     ops::Fill( layer.weights, 1.0F );
-    ops::Fill( layer.biases, 1.0F );
+
     const auto out = layer.forward( A );
     float expected[] = { 3.0, 7.0, 11.0 };
     Tensor R = out.copyDims();
@@ -362,7 +362,7 @@ inline int testConv2DCase23()
     A.allocateCustom( input, 9 );
     Conv2D<float> layer{ 1, 3, { 1, 1 }, { 1, 1 }, { 0, 1 }, false, PaddingMode::CIRCULAR };
     ops::Fill( layer.weights, 1.0F );
-    ops::Fill( layer.biases, 1.0F );
+
     const auto out = layer.forward( A );
     float expected[] = { 3.0, 1.0, 2.0, 3.0, 1.0, 6.0, 4.0, 5.0, 6.0, 4.0, 9.0, 7.0, 8.0, 9.0, 7.0,
                          3.0, 1.0, 2.0, 3.0, 1.0, 6.0, 4.0, 5.0, 6.0, 4.0, 9.0, 7.0, 8.0, 9.0, 7.0,
@@ -395,7 +395,7 @@ inline int testConv2DCase25()
     A.allocateCustom( input, 18 );
     Conv2D<float> layer{ 3, 1, { 2, 1 }, { 2, 1 }, { 1, 0 }, false, PaddingMode::REFLECT };
     ops::Fill( layer.weights, 1.0F );
-    ops::Fill( layer.biases, 1.0F );
+
     const auto out = layer.forward( A );
     float expected[] = { 51.0, 57.0, 63.0, 51.0, 57.0, 63.0 };
     Tensor R = out.copyDims();
@@ -427,7 +427,7 @@ inline int testConv2DCase27()
     A.allocateCustom( input, 6 );
     Conv2D<float> layer{ 1, 1, { 1, 2 }, { 1, 2 }, { 0, 0 }, false, PaddingMode::CIRCULAR };
     ops::Fill( layer.weights, 1.0F );
-    ops::Fill( layer.biases, 1.0F );
+
     const auto out = layer.forward( A );
     float expected[] = { 3.0, 7.0, 11.0 };
     Tensor R = out.copyDims();
@@ -458,7 +458,7 @@ inline int testConv2DCase29()
     A.allocateCustom( input, 9 );
     Conv2D<float> layer{ 1, 3, { 1, 1 }, { 1, 1 }, { 0, 1 }, false, PaddingMode::REFLECT };
     ops::Fill( layer.weights, 1.0F );
-    ops::Fill( layer.biases, 1.0F );
+
     const auto out = layer.forward( A );
     float expected[] = { 2.0, 1.0, 2.0, 3.0, 2.0, 5.0, 4.0, 5.0, 6.0, 5.0, 8.0, 7.0, 8.0, 9.0, 8.0,
                          2.0, 1.0, 2.0, 3.0, 2.0, 5.0, 4.0, 5.0, 6.0, 5.0, 8.0, 7.0, 8.0, 9.0, 8.0,
@@ -491,7 +491,7 @@ inline int testConv2DCase31()
     A.allocateCustom( input, 18 );
     Conv2D<float> layer{ 3, 1, { 2, 1 }, { 2, 1 }, { 1, 0 }, false, PaddingMode::CIRCULAR };
     ops::Fill( layer.weights, 1.0F );
-    ops::Fill( layer.biases, 1.0F );
+
     const auto out = layer.forward( A );
     float expected[] = { 51.0, 57.0, 63.0, 51.0, 57.0, 63.0 };
     Tensor R = out.copyDims();
@@ -523,7 +523,7 @@ inline int testConv2DCase33()
     A.allocateCustom( input, 6 );
     Conv2D<float> layer{ 1, 1, { 1, 2 }, { 1, 2 }, { 0, 0 }, false, PaddingMode::REFLECT };
     ops::Fill( layer.weights, 1.0F );
-    ops::Fill( layer.biases, 1.0F );
+
     const auto out = layer.forward( A );
     float expected[] = { 3.0, 7.0, 11.0 };
     Tensor R = out.copyDims();
@@ -554,7 +554,7 @@ inline int testConv2DCase35()
     A.allocateCustom( input, 9 );
     Conv2D<float> layer{ 1, 3, { 1, 1 }, { 1, 1 }, { 0, 1 }, false, PaddingMode::CIRCULAR };
     ops::Fill( layer.weights, 1.0F );
-    ops::Fill( layer.biases, 1.0F );
+
     const auto out = layer.forward( A );
     float expected[] = { 3.0, 1.0, 2.0, 3.0, 1.0, 6.0, 4.0, 5.0, 6.0, 4.0, 9.0, 7.0, 8.0, 9.0, 7.0,
                          3.0, 1.0, 2.0, 3.0, 1.0, 6.0, 4.0, 5.0, 6.0, 4.0, 9.0, 7.0, 8.0, 9.0, 7.0,
@@ -587,7 +587,7 @@ inline int testConv2DCase37()
     A.allocateCustom( input, 18 );
     Conv2D<float> layer{ 3, 1, { 2, 1 }, { 2, 1 }, { 1, 0 }, false, PaddingMode::REFLECT };
     ops::Fill( layer.weights, 1.0F );
-    ops::Fill( layer.biases, 1.0F );
+
     const auto out = layer.forward( A );
     float expected[] = { 51.0, 57.0, 63.0, 51.0, 57.0, 63.0 };
     Tensor R = out.copyDims();
@@ -619,7 +619,7 @@ inline int testConv2DCase39()
     A.allocateCustom( input, 6 );
     Conv2D<float> layer{ 1, 1, { 1, 2 }, { 1, 2 }, { 0, 0 }, false, PaddingMode::CIRCULAR };
     ops::Fill( layer.weights, 1.0F );
-    ops::Fill( layer.biases, 1.0F );
+
     const auto out = layer.forward( A );
     float expected[] = { 3.0, 7.0, 11.0 };
     Tensor R = out.copyDims();
@@ -650,7 +650,7 @@ inline int testConv2DCase41()
     A.allocateCustom( input, 9 );
     Conv2D<float> layer{ 1, 3, { 1, 1 }, { 1, 1 }, { 0, 1 }, false, PaddingMode::REFLECT };
     ops::Fill( layer.weights, 1.0F );
-    ops::Fill( layer.biases, 1.0F );
+
     const auto out = layer.forward( A );
     float expected[] = { 2.0, 1.0, 2.0, 3.0, 2.0, 5.0, 4.0, 5.0, 6.0, 5.0, 8.0, 7.0, 8.0, 9.0, 8.0,
                          2.0, 1.0, 2.0, 3.0, 2.0, 5.0, 4.0, 5.0, 6.0, 5.0, 8.0, 7.0, 8.0, 9.0, 8.0,
@@ -683,7 +683,7 @@ inline int testConv2DCase43()
     A.allocateCustom( input, 18 );
     Conv2D<float> layer{ 3, 1, { 2, 1 }, { 2, 1 }, { 1, 0 }, false, PaddingMode::CIRCULAR };
     ops::Fill( layer.weights, 1.0F );
-    ops::Fill( layer.biases, 1.0F );
+
     const auto out = layer.forward( A );
     float expected[] = { 51.0, 57.0, 63.0, 51.0, 57.0, 63.0 };
     Tensor R = out.copyDims();
@@ -715,7 +715,7 @@ inline int testConv2DCase45()
     A.allocateCustom( input, 6 );
     Conv2D<float> layer{ 1, 1, { 1, 2 }, { 1, 2 }, { 0, 0 }, false, PaddingMode::REFLECT };
     ops::Fill( layer.weights, 1.0F );
-    ops::Fill( layer.biases, 1.0F );
+
     const auto out = layer.forward( A );
     float expected[] = { 3.0, 7.0, 11.0 };
     Tensor R = out.copyDims();
@@ -746,7 +746,7 @@ inline int testConv2DCase47()
     A.allocateCustom( input, 9 );
     Conv2D<float> layer{ 1, 3, { 1, 1 }, { 1, 1 }, { 0, 1 }, false, PaddingMode::CIRCULAR };
     ops::Fill( layer.weights, 1.0F );
-    ops::Fill( layer.biases, 1.0F );
+
     const auto out = layer.forward( A );
     float expected[] = { 3.0, 1.0, 2.0, 3.0, 1.0, 6.0, 4.0, 5.0, 6.0, 4.0, 9.0, 7.0, 8.0, 9.0, 7.0,
                          3.0, 1.0, 2.0, 3.0, 1.0, 6.0, 4.0, 5.0, 6.0, 4.0, 9.0, 7.0, 8.0, 9.0, 7.0,
@@ -779,7 +779,7 @@ inline int testConv2DCase49()
     A.allocateCustom( input, 18 );
     Conv2D<float> layer{ 3, 1, { 2, 1 }, { 2, 1 }, { 1, 0 }, false, PaddingMode::REFLECT };
     ops::Fill( layer.weights, 1.0F );
-    ops::Fill( layer.biases, 1.0F );
+
     const auto out = layer.forward( A );
     float expected[] = { 51.0, 57.0, 63.0, 51.0, 57.0, 63.0 };
     Tensor R = out.copyDims();
@@ -811,7 +811,7 @@ inline int testConv2DCase51()
     A.allocateCustom( input, 6 );
     Conv2D<float> layer{ 1, 1, { 1, 2 }, { 1, 2 }, { 0, 0 }, false, PaddingMode::CIRCULAR };
     ops::Fill( layer.weights, 1.0F );
-    ops::Fill( layer.biases, 1.0F );
+
     const auto out = layer.forward( A );
     float expected[] = { 3.0, 7.0, 11.0 };
     Tensor R = out.copyDims();
@@ -842,7 +842,7 @@ inline int testConv2DCase53()
     A.allocateCustom( input, 9 );
     Conv2D<float> layer{ 1, 3, { 1, 1 }, { 1, 1 }, { 0, 1 }, false, PaddingMode::REFLECT };
     ops::Fill( layer.weights, 1.0F );
-    ops::Fill( layer.biases, 1.0F );
+
     const auto out = layer.forward( A );
     float expected[] = { 2.0, 1.0, 2.0, 3.0, 2.0, 5.0, 4.0, 5.0, 6.0, 5.0, 8.0, 7.0, 8.0, 9.0, 8.0,
                          2.0, 1.0, 2.0, 3.0, 2.0, 5.0, 4.0, 5.0, 6.0, 5.0, 8.0, 7.0, 8.0, 9.0, 8.0,
@@ -875,7 +875,7 @@ inline int testConv2DCase55()
     A.allocateCustom( input, 18 );
     Conv2D<float> layer{ 3, 1, { 2, 1 }, { 2, 1 }, { 1, 0 }, false, PaddingMode::CIRCULAR };
     ops::Fill( layer.weights, 1.0F );
-    ops::Fill( layer.biases, 1.0F );
+
     const auto out = layer.forward( A );
     float expected[] = { 51.0, 57.0, 63.0, 51.0, 57.0, 63.0 };
     Tensor R = out.copyDims();
@@ -907,7 +907,7 @@ inline int testConv2DCase57()
     A.allocateCustom( input, 6 );
     Conv2D<float> layer{ 1, 1, { 1, 2 }, { 1, 2 }, { 0, 0 }, false, PaddingMode::REFLECT };
     ops::Fill( layer.weights, 1.0F );
-    ops::Fill( layer.biases, 1.0F );
+
     const auto out = layer.forward( A );
     float expected[] = { 3.0, 7.0, 11.0 };
     Tensor R = out.copyDims();
@@ -938,7 +938,7 @@ inline int testConv2DCase59()
     A.allocateCustom( input, 9 );
     Conv2D<float> layer{ 1, 3, { 1, 1 }, { 1, 1 }, { 0, 1 }, false, PaddingMode::CIRCULAR };
     ops::Fill( layer.weights, 1.0F );
-    ops::Fill( layer.biases, 1.0F );
+
     const auto out = layer.forward( A );
     float expected[] = { 3.0, 1.0, 2.0, 3.0, 1.0, 6.0, 4.0, 5.0, 6.0, 4.0, 9.0, 7.0, 8.0, 9.0, 7.0,
                          3.0, 1.0, 2.0, 3.0, 1.0, 6.0, 4.0, 5.0, 6.0, 4.0, 9.0, 7.0, 8.0, 9.0, 7.0,
@@ -971,7 +971,7 @@ inline int testConv2DCase61()
     A.allocateCustom( input, 18 );
     Conv2D<float> layer{ 3, 1, { 2, 1 }, { 2, 1 }, { 1, 0 }, false, PaddingMode::REFLECT };
     ops::Fill( layer.weights, 1.0F );
-    ops::Fill( layer.biases, 1.0F );
+
     const auto out = layer.forward( A );
     float expected[] = { 51.0, 57.0, 63.0, 51.0, 57.0, 63.0 };
     Tensor R = out.copyDims();
@@ -1003,7 +1003,7 @@ inline int testConv2DCase63()
     A.allocateCustom( input, 6 );
     Conv2D<float> layer{ 1, 1, { 1, 2 }, { 1, 2 }, { 0, 0 }, false, PaddingMode::CIRCULAR };
     ops::Fill( layer.weights, 1.0F );
-    ops::Fill( layer.biases, 1.0F );
+
     const auto out = layer.forward( A );
     float expected[] = { 3.0, 7.0, 11.0 };
     Tensor R = out.copyDims();
@@ -1034,7 +1034,7 @@ inline int testConv2DCase65()
     A.allocateCustom( input, 9 );
     Conv2D<float> layer{ 1, 3, { 1, 1 }, { 1, 1 }, { 0, 1 }, false, PaddingMode::REFLECT };
     ops::Fill( layer.weights, 1.0F );
-    ops::Fill( layer.biases, 1.0F );
+
     const auto out = layer.forward( A );
     float expected[] = { 2.0, 1.0, 2.0, 3.0, 2.0, 5.0, 4.0, 5.0, 6.0, 5.0, 8.0, 7.0, 8.0, 9.0, 8.0,
                          2.0, 1.0, 2.0, 3.0, 2.0, 5.0, 4.0, 5.0, 6.0, 5.0, 8.0, 7.0, 8.0, 9.0, 8.0,
@@ -1067,7 +1067,7 @@ inline int testConv2DCase67()
     A.allocateCustom( input, 18 );
     Conv2D<float> layer{ 3, 1, { 2, 1 }, { 2, 1 }, { 1, 0 }, false, PaddingMode::CIRCULAR };
     ops::Fill( layer.weights, 1.0F );
-    ops::Fill( layer.biases, 1.0F );
+
     const auto out = layer.forward( A );
     float expected[] = { 51.0, 57.0, 63.0, 51.0, 57.0, 63.0 };
     Tensor R = out.copyDims();
@@ -1099,7 +1099,7 @@ inline int testConv2DCase69()
     A.allocateCustom( input, 6 );
     Conv2D<float> layer{ 1, 1, { 1, 2 }, { 1, 2 }, { 0, 0 }, false, PaddingMode::REFLECT };
     ops::Fill( layer.weights, 1.0F );
-    ops::Fill( layer.biases, 1.0F );
+
     const auto out = layer.forward( A );
     float expected[] = { 3.0, 7.0, 11.0 };
     Tensor R = out.copyDims();
@@ -1130,7 +1130,7 @@ inline int testConv2DCase71()
     A.allocateCustom( input, 9 );
     Conv2D<float> layer{ 1, 3, { 1, 1 }, { 1, 1 }, { 0, 1 }, false, PaddingMode::CIRCULAR };
     ops::Fill( layer.weights, 1.0F );
-    ops::Fill( layer.biases, 1.0F );
+
     const auto out = layer.forward( A );
     float expected[] = { 3.0, 1.0, 2.0, 3.0, 1.0, 6.0, 4.0, 5.0, 6.0, 4.0, 9.0, 7.0, 8.0, 9.0, 7.0,
                          3.0, 1.0, 2.0, 3.0, 1.0, 6.0, 4.0, 5.0, 6.0, 4.0, 9.0, 7.0, 8.0, 9.0, 7.0,
@@ -1163,7 +1163,7 @@ inline int testConv2DCase73()
     A.allocateCustom( input, 18 );
     Conv2D<float> layer{ 3, 1, { 2, 1 }, { 2, 1 }, { 1, 0 }, false, PaddingMode::REFLECT };
     ops::Fill( layer.weights, 1.0F );
-    ops::Fill( layer.biases, 1.0F );
+
     const auto out = layer.forward( A );
     float expected[] = { 51.0, 57.0, 63.0, 51.0, 57.0, 63.0 };
     Tensor R = out.copyDims();
@@ -1195,7 +1195,7 @@ inline int testConv2DCase75()
     A.allocateCustom( input, 6 );
     Conv2D<float> layer{ 1, 1, { 1, 2 }, { 1, 2 }, { 0, 0 }, false, PaddingMode::CIRCULAR };
     ops::Fill( layer.weights, 1.0F );
-    ops::Fill( layer.biases, 1.0F );
+
     const auto out = layer.forward( A );
     float expected[] = { 3.0, 7.0, 11.0 };
     Tensor R = out.copyDims();

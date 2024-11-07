@@ -70,7 +70,7 @@ struct Tensor final
     Tensor<T> copyTensor() const;
 
     // Prints the tensor with PlatformPrint()
-    void print( const char* name = "Tensor" );
+    void print( const char* name = "Tensor" ) const;
 
     // Returns true if the tensor is allocated
     [[nodiscard]] bool isAllocated() const;
@@ -154,8 +154,7 @@ Tensor<T>::Tensor( int32_t W ) : Tensor( 1, 1, 1, W )
 template <typename T>
 T& Tensor<T>::operator[]( int32_t idx )
 {
-    EML_ASSERT( idx < capacity, "Out of bounds access" );
-    EML_ASSERT( idx < size, "Out of bounds access" );
+    EML_ASSERT( idx < size && idx < capacity && idx >= 0, "Out of bounds access" );
 #ifdef EML_DEBUG
     const int32_t batch = idx / chw;
     const int32_t channel = ( idx % chw ) / hw;
@@ -169,8 +168,7 @@ T& Tensor<T>::operator[]( int32_t idx )
 template <typename T>
 const T& Tensor<T>::operator[]( int32_t idx ) const
 {
-    EML_ASSERT( idx < capacity, "Out of bounds access" );
-    EML_ASSERT( idx < size, "Out of bounds access" );
+    EML_ASSERT( idx < size && idx < capacity && idx >= 0, "Out of bounds access" );
 #ifdef EML_DEBUG
     const int32_t batch = idx / chw;
     const int32_t channel = ( idx % chw ) / hw;
@@ -253,9 +251,8 @@ Tensor<T> Tensor<T>::copyTensor() const
 }
 
 template <typename T>
-void Tensor<T>::print( const char* name )
+void Tensor<T>::print( const char* name ) const
 {
-    const char* format = std::is_floating_point_v<T> ? "%4.1f " : "%d ";
     int32_t batchIndex = 0;
     PlatformPrint( "%s:\n", name );
     for( int32_t batch = 0; batch < n; ++batch )
@@ -269,7 +266,22 @@ void Tensor<T>::print( const char* name )
                 PlatformPrint( "[" );
                 for( int32_t col = 0; col < w; ++col )
                 {
-                    PlatformPrint( format, this->operator[]( rowIndex + col ) );
+                    const auto val = this->operator[]( rowIndex + col );
+                    if constexpr( std::is_floating_point_v<T> )
+                    {
+                        if( static_cast<float>( static_cast<int>( val ) ) == val )
+                        {
+                            PlatformPrint( "%4.0f. ", val );
+                        }
+                        else
+                        {
+                            PlatformPrint( "%4.1f", val );
+                        }
+                    }
+                    else
+                    {
+                        PlatformPrint( " %4d", val );
+                    }
                 }
                 PlatformPrint( "]" );
                 rowIndex += hw;

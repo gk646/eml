@@ -22,6 +22,7 @@ def generate_conv2d_test(test_name, input_size, in_channels, out_channels, kerne
     if use_bias:
         torch.nn.init.constant_(conv_layer.bias, 1.0)
 
+
     # Get the output from the PyTorch Conv2D layer
     output_tensor = conv_layer(input_tensor).detach().numpy()
 
@@ -43,7 +44,7 @@ inline int {test_name}()
     A.allocateCustom(input, {len(input_data)});
     Conv2D<float> layer{{ {in_channels}, {out_channels}, {{ {kernel_size[0]}, {kernel_size[1]} }}, {{ {stride[0]}, {stride[1]} }}, {{ {padding[0]}, {padding[1]} }}, {str(use_bias).lower()}, PaddingMode::{padding_mode} }};
     ops::Fill(layer.weights, 1.0F);
-    ops::Fill(layer.biases, 1.0F);
+    {"ops::Fill(layer.biases, 1.0F);" if use_bias else ""}
     const auto out = layer.forward(A);
     float expected[] = {{
         {output_data_str}

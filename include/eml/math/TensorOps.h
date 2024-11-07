@@ -44,6 +44,10 @@ T Min( const Tensor<T>& A );
 template <typename T>
 void ElemOp( Tensor<T>& A, void ( *op )( T& ) );
 
+// Fills the Tensor
+template <typename T>
+void Arange( Tensor<T>& A, T start, T step = T( 1 ) );
+
 } // namespace eml::ops
 
 // IMPLEMENTATION
@@ -110,10 +114,17 @@ void Kernel( const Tensor<T>& __restrict__ A, const Tensor<T>& __restrict__ B, T
         }
     }
 
-    for( int i = 0; i < size; i++ )
+    for( int i = 0; i < size; i += 4 )
     {
-        const auto res = xsimd::load_unaligned( &R[ ( x + i ) * R.w + y ] ) + t[ i ];
-        xsimd::store_unaligned( &R[ ( ( x + i ) * R.w + y ) ], res );
+        const auto res0 = xsimd::load_unaligned( &R[ ( x + i ) * R.w + y ] ) + t[ i ];
+        const auto res1 = xsimd::load_unaligned( &R[ ( x + i + 1 ) * R.w + y ] ) + t[ i + 1 ];
+        const auto res2 = xsimd::load_unaligned( &R[ ( x + i + 2 ) * R.w + y ] ) + t[ i + 2 ];
+        const auto res3 = xsimd::load_unaligned( &R[ ( x + i + 3 ) * R.w + y ] ) + t[ i + 3 ];
+
+        xsimd::store_unaligned( &R[ ( x + i ) * R.w + y ], res0 );
+        xsimd::store_unaligned( &R[ ( x + i + 1 ) * R.w + y ], res1 );
+        xsimd::store_unaligned( &R[ ( x + i + 2 ) * R.w + y ], res2 );
+        xsimd::store_unaligned( &R[ ( x + i + 3 ) * R.w + y ], res3 );
     }
 }
 
@@ -128,16 +139,17 @@ void Matmul( const Tensor<T>& A, const Tensor<T>& B, Tensor<T>& R )
     EML_ASSERT( A.w == B.h && R.h == A.h && R.w == B.w, "Invalid dimensions" );
 
     constexpr auto simdValues = static_cast<int32_t>( xsimd::simd_type<T>::size );
-    const int32_t stepsA = A.w - ( A.w % simdValues );
+    const int32_t stepsA = A.h - ( A.h % simdValues );
     const int32_t stepsB = B.w - ( B.w % simdValues );
 
     if constexpr( simdValues != 0 )
     {
+        /*
         constexpr int s3 = 512;
         constexpr int s2 = 512;
         constexpr int s1 = 512;
 
-        /* With cache blocking
+        With cache blocking
         for( int i3 = 0; i3 < stepsB; i3 += s3 )
             // now we are working with b[:][i3:i3+s3]
                 for( int i2 = 0; i2 < stepsA; i2 += s2 )
@@ -147,12 +159,32 @@ void Matmul( const Tensor<T>& A, const Tensor<T>& B, Tensor<T>& R )
                                 // and we need to update c[i2:i2+s2][i3:i3+s3] with [l:r] = [i1:i1+s1]
                                     for( int x = i2; x < std::min( i2 + s2, stepsA ); x += simdValues )
                                         for( int y = i3; y < std::min( i3 + s3, stepsB ); y += simdValues )
-                                            impl::Kernel<T, simdValues>( A, B, R, x, y, i1, std::min( i1 + s1, stepsA ) );
+                                            impl::Kernel<T, simdValues>( A, B, R, x, y, i1, std::min( i1 + s1, stepsA )
+        );
 */
 
         for( int x = 0; x < stepsA; x += simdValues )
             for( int y = 0; y < stepsB; y += simdValues )
                 impl::Kernel<T, simdValues>( A, B, R, x, y, 0, R.w );
+
+        int32_t idxa = 0;
+        int32_t idxr = 0;
+        for( int32_t h = stepsA; h < A.h; ++h )
+        {
+            for( int32_t w = stepsB; w < B.w; ++w )
+            {
+                T sum = T( 0 );
+                int32_t idxb =  w;
+                for( int32_t k = 0; k < A.w; ++k )
+                {
+                    sum += A[ idxa + k ] * B[ idxb ];
+                    idxb += B.w;
+                }
+                R[ idxr + w ] = sum;
+            }
+            idxa += A.w;
+            idxr += R.w;
+        }
     }
     else
     {
@@ -322,6 +354,15 @@ void ElemOp( Tensor<T>& A, void ( *op )( T& ) )
     for( int32_t i = 0; i < A.size; ++i )
     {
         op( A[ i ] );
+    }
+}
+
+template <typename T>
+void Arange( Tensor<T>& A, T start, T step )
+{
+    for( int32_t i = 0; i < A.size; ++i )
+    {
+        A[ i ] = start + T( i ) * step;
     }
 }
 

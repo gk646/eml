@@ -98,6 +98,7 @@ Conv2D<T>::Conv2D( int32_t inC, int32_t outC, Pair kernel, Pair stride, Pair pad
     {
         ops::Zero( biases );
     }
+    ops::Random(weights, -1.0F, 1.0F);
 }
 
 template <typename T>
@@ -119,49 +120,71 @@ Tensor<T> Conv2DApplyPadding( const Tensor<T>& input, const Pair padding )
     Tensor<T> inputCopy{ input.n, input.c, input.h + 2 * padding.first, input.w + 2 * padding.second };
     inputCopy.allocate();
 
-    int32_t offset = 0;
-    for( int32_t i = 0; i < inputCopy.n; ++i )
+    int32_t padOffset = 0;
+    int32_t inOffset = 0;
+    for( int32_t n = 0; n < inputCopy.n; ++n )
     {
-        int32_t channelOff = offset;
-        for( int32_t j = 0; j < inputCopy.c; ++j )
+        int32_t padChannelOff = padOffset;
+        int32_t inChannelOff = inOffset;
+        for( int32_t c = 0; c < inputCopy.c; ++c )
         {
-            int32_t matrixOff = channelOff;
-            for( int32_t k = 0; k < inputCopy.h; ++k )
+            int32_t padMatrixOff = padChannelOff;
+            int32_t inMatrixOff = inChannelOff;
+            for( int32_t h = 0; h < inputCopy.h; ++h )
             {
-                bool isSpecial = k < padding.first;
-                for( int32_t l = 0; l < inputCopy.w; ++l )
+                bool inPadding = h < padding.first || h > input.h;
+                // inputCopy.print();
+                for( int32_t w = 0; w < inputCopy.w; ++w )
                 {
-                    isSpecial = isSpecial || l < padding.second;
-                    if( isSpecial ) [[unlikely]]
+                    inPadding = inPadding || w < padding.second || w > input.w;
+                    if( inPadding ) [[unlikely]]
                     {
                         if constexpr( pMode == PaddingMode::ZEROS )
                         {
-                            inputCopy[ matrixOff + l ] = T( 0 );
+                            inputCopy[ padMatrixOff + h * inputCopy.w + w ] = T( 0 );
                         }
                         else if constexpr( pMode == PaddingMode::REFLECT )
                         {
-                            const int distance = 2 * abs( l - padding.first ) - 1;
-                            inputCopy[ matrixOff + l ] = inputCopy[ matrixOff + l + distance ];
+                            int minusY = abs( ( padding.first - h ) );
+                            if( h >= input.h + padding.first )
+                                minusY = ( input.h + padding.first * 2 - 1 ) - h;
+                            int minusX = abs( padding.second - w );
+                            if( w >= input.w + padding.second )
+                                minusX = ( input.w + padding.second * 2 - 1 ) - w;
+                            inputCopy[ padMatrixOff + h * inputCopy.w + w ] =
+                                input[ inMatrixOff + input.w * minusY + minusX ];
                         }
                         else if constexpr( pMode == PaddingMode::REPLICATE )
                         {
-                            inputCopy[ matrixOff + l ] = inputCopy[ matrixOff + padding.second ];
+                            int inputH = h > input.h ? h - padding.first * 2 : h - padding.first;
+                            int inputW = w > input.w ? w - padding.second * 2 : w - padding.second;
+                            inputH = std::min( std::max( 0, inputH ), input.h );
+                            inputW = std::min( std::max( 0, inputW ), input.w );
+                            inputCopy[ padMatrixOff + h * inputCopy.w + w ] =
+                                input[ inMatrixOff + inputH * input.w + inputW ];
                         }
                         else if constexpr( pMode == PaddingMode::CIRCULAR )
                         {
-                            inputCopy[ matrixOff + l ] = inputCopy[ matrixOff + l + padding.second ];
+                            int inputH = abs( h - padding.first ) % input.h;
+                            int inputW = abs( w - padding.second ) % input.w;
+                            inputCopy[ padMatrixOff + h * inputCopy.w + w ] =
+                                input[ inMatrixOff + inputH * input.w + inputW ];
                         }
                     }
                     else
                     {
-                        inputCopy[ matrixOff + l ] = input[ matrixOff + l ];
+                        const int inputH = h > input.h ? h - padding.first * 2 : h - padding.first;
+                        const int inputW = w > input.w ? w - padding.second * 2 : w - padding.second;
+                        inputCopy[ padMatrixOff + h * inputCopy.w + w ] =
+                            input[ inMatrixOff + inputH * input.w + inputW ];
                     }
                 }
-                matrixOff += inputCopy.w;
             }
-            channelOff *= inputCopy.hw;
+            padChannelOff += inputCopy.hw;
+            inChannelOff += input.hw;
         }
-        offset += inputCopy.chw;
+        padOffset += inputCopy.chw;
+        inOffset += input.chw;
     }
     return inputCopy;
 }
@@ -180,10 +203,8 @@ Tensor<T> Conv2D<T>::forward( const Tensor<T>& input )
 template <typename T>
 void Conv2D<T>::forward( const Tensor<T>& input, Tensor<T>& __restrict output )
 {
-    // Checks
     EML_ASSERT( output.h == getOutHeight( input.h ) && output.w == getOutWidth( input.w ), "Wrong output dimensions!" );
 
-    // Padding
     Tensor<T> paddedInput = input;
     if( padding.first != 0 || padding.second != 0 ) // Don't copy if there's no padding
     {
@@ -193,23 +214,23 @@ void Conv2D<T>::forward( const Tensor<T>& input, Tensor<T>& __restrict output )
             paddedInput = impl::Conv2DApplyPadding<T, PaddingMode::ZEROS>( input, padding );
             break;
         case PaddingMode::REFLECT:
-            paddedInput = impl::Conv2DApplyPadding<T, PaddingMode::ZEROS>( input, padding );
+            paddedInput = impl::Conv2DApplyPadding<T, PaddingMode::REFLECT>( input, padding );
             break;
         case PaddingMode::REPLICATE:
-            paddedInput = impl::Conv2DApplyPadding<T, PaddingMode::ZEROS>( input, padding );
+            paddedInput = impl::Conv2DApplyPadding<T, PaddingMode::REPLICATE>( input, padding );
             break;
         case PaddingMode::CIRCULAR:
-            paddedInput = impl::Conv2DApplyPadding<T, PaddingMode::ZEROS>( input, padding );
+            paddedInput = impl::Conv2DApplyPadding<T, PaddingMode::CIRCULAR>( input, padding );
             break;
         }
     }
 
-    // Initialization
+    paddedInput.print();
+
     for( int32_t i = 0; i < outChannels; i++ )
     {
         ops::FillDim( output, biases[ i ], 0, i );
     }
-    ops::Fill( output, T( 0 ) );
 
     int32_t weightOffset = 0;
     int32_t outputOffset = 0;
@@ -239,7 +260,6 @@ void Conv2D<T>::forward( const Tensor<T>& input, Tensor<T>& __restrict output )
                         }
                         kernelInputOffset += paddedInput.w;
                     }
-
                     output[ outputChannelOffset + x ] += kSum;
                 }
                 outputChannelOffset += output.w;
