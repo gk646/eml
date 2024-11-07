@@ -4,10 +4,10 @@
 #include <eml/math/Tensor.h>
 #include <eml/math/TensorOps.h>
 
-namespace eml
+namespace eml::nn
 {
 template <typename T>
-struct Linear final
+struct Linear final : Layer
 {
     Linear( int32_t in, int32_t out, bool bias = true );
 
@@ -17,6 +17,14 @@ struct Linear final
     // Expects a correctly shaped and sufficiently allocated output tensor (in, out)
     void forward( Tensor<T>& input, Tensor<T>& output );
 
+    // ------------ Info ------------
+
+    // see nn/Layer.h
+    [[nodiscard]] int32_t getWeights() const override;
+
+    // see nn/Layer.h
+    [[nodiscard]] int32_t getMults( const Tuple& inputShape ) const override;
+
   private:
     int32_t inputSize;
     int32_t outputSize;
@@ -25,11 +33,26 @@ struct Linear final
     bool useBias = true;
 };
 
-} // namespace eml
+} // namespace eml::nn
 
-// ----------- IMPLEMENTATION -----------
+// IMPLEMENTATION
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
-namespace eml
+namespace eml::nn
 {
 template <typename T>
 Linear<T>::Linear( const int32_t in, const int32_t out, const bool bias )
@@ -57,6 +80,19 @@ void Linear<T>::forward( Tensor<T>& input, Tensor<T>& output )
     if( useBias )
         Matmul( output, biases, output );
 }
-} // namespace eml
+
+template <typename T>
+int32_t Linear<T>::getWeights() const
+{
+    return useBias ? weights.size + biases.size : weights.size;
+}
+
+template <typename T>
+int32_t Linear<T>::getMults( const Tuple& inputShape ) const
+{
+    return inputShape.third * inputShape.fourth * weights.h;
+}
+
+} // namespace eml::nn
 
 #endif // EML_LAYER_LINEAR_H

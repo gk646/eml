@@ -61,7 +61,7 @@ input_sizes = [(3, 2), (2, 3), (3, 3)]  # Even and uneven input sizes
 kernels = [(1, 2), (2, 1), (1, 1)]  # Square and rectangular, even and uneven
 strides = [(1, 2), (2, 1),(1,1)]
 channels_cases = [(1, 1), (3, 1), (1, 3)]  # Less than, same, more channels
-paddings = [(0, 0), (1, 0), (0, 1)]
+paddings = [(0, 0), (1, 0), (0, 1),(1,1)]
 padding_modes = ["ZEROS", "REFLECT", "REPLICATE", "CIRCULAR"]
 
 # Generate 75 test cases
@@ -69,7 +69,7 @@ test_cases = ""
 test_count = 1
 
 while test_count <= 75:
-    input_size = input_sizes[test_count % len(input_sizes)]
+    input_size = input_sizes[(test_count) % len(input_sizes) ]
     in_channels, out_channels = channels_cases[test_count % len(channels_cases)]
     kernel_size = kernels[test_count % len(kernels)]
     stride = strides[test_count % len(strides)]

@@ -3,6 +3,7 @@
 
 #include <eml/math/Tensor.h>
 #include <eml/math/TensorOps.h>
+#include <eml/nn/Layer.h>
 #include <eml/util/StackAllocator.h>
 
 // ----------------------------------------------------------------
@@ -14,11 +15,11 @@
 // Doc: https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html
 // ................................................................
 
-namespace eml
+namespace eml::nn
 {
 
 template <typename T>
-struct Conv2D final
+struct Conv2D final : Layer
 {
 
     // Creates a new Conv2D layer with the given parameters
@@ -35,6 +36,8 @@ struct Conv2D final
     //      - padding: dimensions of the kernel
     Conv2D( int32_t inC, int32_t outC, Pair kernel );
 
+    // ------------ Inference ------------
+
     // Returns an allocated tensor with shape (in, out)
     Tensor<T> forward( const Tensor<T>& input );
 
@@ -43,9 +46,14 @@ struct Conv2D final
 
     // ------------ Info ------------
 
-    [[nodiscard]] int32_t getOutHeight( int32_t inHeight ) const;
+    // Returns the shape of the output tensor given a certain input tensor
+    [[nodiscard]] Tuple getOutShape( const Tuple& input ) const;
 
-    [[nodiscard]] int32_t getOutWidth( int32_t inWidth ) const;
+    // see nn/Layer.h
+    [[nodiscard]] int32_t getWeights() const override;
+
+    // see nn/Layer.h
+    [[nodiscard]] int32_t getMults( const Tuple& shape ) const override;
 
     // ------------ Access ------------
 
@@ -60,7 +68,7 @@ struct Conv2D final
     bool useBias = true;
 };
 
-} // namespace eml
+} // namespace eml::nn
 
 // IMPLEMENTATION
 //
@@ -79,7 +87,7 @@ struct Conv2D final
 //
 //
 
-namespace eml
+namespace eml::nn
 {
 
 template <typename T>
@@ -92,13 +100,13 @@ Conv2D<T>::Conv2D( int32_t inC, int32_t outC, Pair kernel, Pair stride, Pair pad
     weights.allocate();
     if( useBias )
     {
-        ops::Random( biases, -1.0F, 1.0F );
+        ops::Random( biases, T( -1.0 ), T( 1.0 ) );
     }
     else
     {
         ops::Zero( biases );
     }
-    ops::Random(weights, -1.0F, 1.0F);
+    ops::Random( weights, T( -1.0 ), T( 1.0 ) );
 }
 
 template <typename T>
@@ -132,12 +140,11 @@ Tensor<T> Conv2DApplyPadding( const Tensor<T>& input, const Pair padding )
             int32_t inMatrixOff = inChannelOff;
             for( int32_t h = 0; h < inputCopy.h; ++h )
             {
-                bool inPadding = h < padding.first || h > input.h;
-                // inputCopy.print();
+                bool inPaddingH = h < padding.first || h > input.h;
                 for( int32_t w = 0; w < inputCopy.w; ++w )
                 {
-                    inPadding = inPadding || w < padding.second || w > input.w;
-                    if( inPadding ) [[unlikely]]
+                    bool inPaddingW = w < padding.second || w > input.w;
+                    if( inPaddingH || inPaddingW ) [[unlikely]]
                     {
                         if constexpr( pMode == PaddingMode::ZEROS )
                         {
@@ -150,7 +157,7 @@ Tensor<T> Conv2DApplyPadding( const Tensor<T>& input, const Pair padding )
                                 minusY = ( input.h + padding.first * 2 - 1 ) - h;
                             int minusX = abs( padding.second - w );
                             if( w >= input.w + padding.second )
-                                minusX = ( input.w + padding.second * 2 - 1 ) - w;
+                                minusX = ( input.w + padding.second * 2 ) - w;
                             inputCopy[ padMatrixOff + h * inputCopy.w + w ] =
                                 input[ inMatrixOff + input.w * minusY + minusX ];
                         }
@@ -165,16 +172,24 @@ Tensor<T> Conv2DApplyPadding( const Tensor<T>& input, const Pair padding )
                         }
                         else if constexpr( pMode == PaddingMode::CIRCULAR )
                         {
-                            int inputH = abs( h - padding.first ) % input.h;
-                            int inputW = abs( w - padding.second ) % input.w;
+                            int inputW = w - padding.second;
+                            if( inputW < 0 )
+                                inputW += input.w;
+                            inputW %= input.w;
+
+                            int inputH = h - padding.first;
+                            if( inputH < 0 )
+                                inputH += input.h;
+                            inputH %= input.h;
+
                             inputCopy[ padMatrixOff + h * inputCopy.w + w ] =
                                 input[ inMatrixOff + inputH * input.w + inputW ];
                         }
                     }
                     else
                     {
-                        const int inputH = h > input.h ? h - padding.first * 2 : h - padding.first;
-                        const int inputW = w > input.w ? w - padding.second * 2 : w - padding.second;
+                        const int inputH = h - padding.first;
+                        const int inputW = w - padding.second;
                         inputCopy[ padMatrixOff + h * inputCopy.w + w ] =
                             input[ inMatrixOff + inputH * input.w + inputW ];
                     }
@@ -194,16 +209,19 @@ Tensor<T> Conv2DApplyPadding( const Tensor<T>& input, const Pair padding )
 template <typename T>
 Tensor<T> Conv2D<T>::forward( const Tensor<T>& input )
 {
-    Tensor<T> out{ input.n, outChannels, getOutHeight( input.h ), getOutWidth( input.w ) };
+    EML_ASSERT( input.isAllocated() || input.isAllocatedCustom(), "Input Tensor is not allocated!" );
+    Tensor<T> out{ getOutShape( input.shape() ) };
     out.allocate();
     forward( input, out );
     return out;
 }
 
 template <typename T>
-void Conv2D<T>::forward( const Tensor<T>& input, Tensor<T>& __restrict output )
+void Conv2D<T>::forward( const Tensor<T>& __restrict input, Tensor<T>& __restrict output )
 {
-    EML_ASSERT( output.h == getOutHeight( input.h ) && output.w == getOutWidth( input.w ), "Wrong output dimensions!" );
+    EML_ASSERT( output.shape() == getOutShape( input.shape() ), "Output Tensor has wrong dimensions!" );
+    EML_ASSERT( output.isAllocated() || output.isAllocatedCustom(), "Output Tensor is not allocated!" );
+    EML_ASSERT( input.isAllocated() || input.isAllocatedCustom(), "Input Tensor is not allocated!" );
 
     Tensor<T> paddedInput = input;
     if( padding.first != 0 || padding.second != 0 ) // Don't copy if there's no padding
@@ -225,11 +243,12 @@ void Conv2D<T>::forward( const Tensor<T>& input, Tensor<T>& __restrict output )
         }
     }
 
-    paddedInput.print();
-
-    for( int32_t i = 0; i < outChannels; i++ )
+    if( useBias )
     {
-        ops::FillDim( output, biases[ i ], 0, i );
+        for( int32_t i = 0; i < outChannels; i++ )
+        {
+            ops::FillDim( output, biases[ i ], 0, i );
+        }
     }
 
     int32_t weightOffset = 0;
@@ -272,19 +291,30 @@ void Conv2D<T>::forward( const Tensor<T>& input, Tensor<T>& __restrict output )
 }
 
 template <typename T>
-int32_t Conv2D<T>::getOutHeight( const int32_t inHeight ) const
+Tuple Conv2D<T>::getOutShape( const Tuple& input ) const
 {
-    const int32_t normal = inHeight - kernel.first + ( 2 * padding.first );
-    return ( normal / stride.first ) + 1;
+    const int32_t simpleHeight = input.third - kernel.first + ( 2 * padding.first );
+    const int32_t outHeight = ( simpleHeight / stride.first ) + 1;
+
+    const int32_t simpleWidth = input.fourth - kernel.second + ( 2 * padding.second );
+    const int32_t outWidth = ( simpleWidth / stride.second ) + 1;
+
+    return { input.first, outChannels, outHeight, outWidth };
 }
 
 template <typename T>
-int32_t Conv2D<T>::getOutWidth( const int32_t inWidth ) const
+int32_t Conv2D<T>::getWeights() const
 {
-    const int32_t normal = inWidth - kernel.second + ( 2 * padding.second );
-    return ( normal / stride.second ) + 1;
+    return useBias ? weights.size + biases.size : weights.size;
 }
 
-} // namespace eml
+template <typename T>
+int32_t Conv2D<T>::getMults( const Tuple& shape ) const
+{
+    const auto outShape = getOutShape( shape );
+    return shape.first * outChannels * shape.second * outShape.third * outShape.fourth * kernel.first * kernel.second;
+}
+
+} // namespace eml::nn
 
 #endif // EML_LAYERS_CONV2D_H

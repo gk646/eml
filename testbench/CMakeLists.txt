@@ -17,7 +17,7 @@ add_custom_target(coverage
         COMMAND ${TARGET_NAME}
 
         # Step 3: Generate an HTML coverage report with gcovr
-        COMMAND gcovr
+        COMMAND /home/gk646/dev/python/venv/bin/gcovr
         --root="${CMAKE_SOURCE_DIR}/include/eml"
         --object-directory="${CMAKE_BINARY_DIR}/testbench/CMakeFiles/eml-testbench.dir"
         --html

@@ -20,6 +20,7 @@ struct TestContext final
     int skippedTest = 0;
     int unknownTest = 0;
     int currentTest = 0;
+    const char* currentFile = nullptr;
 };
 
 enum TestResult : int
@@ -41,15 +42,21 @@ inline TestContext TEST_CONTEXT{};
             break;                                                                                                     \
         case TestResult::TEST_FAILED:                                                                                  \
             TEST_CONTEXT.failedTest++;                                                                                 \
-            PlatformPrint( "[Test] %d:%s\n     -> %s\n", TEST_CONTEXT.currentTest, #func, "FAILED" );                  \
+            PlatformPrint( "[Test] (%d) %s :%s:%d\n     -> %s\n", TEST_CONTEXT.currentTest, #func, __FILE__, __LINE__, \
+                           "FAILED" );                                                                                 \
+                                                                                                                       \
             break;                                                                                                     \
         case TestResult::TEST_SKIPPED:                                                                                 \
             TEST_CONTEXT.skippedTest++;                                                                                \
-            PlatformPrint( "[Test] %d:%s\n     -> %s\n", TEST_CONTEXT.currentTest, #func, "SKIPPED" );                 \
+            PlatformPrint( "[Test] (%d) %s :%s:%d\n     -> %s\n", TEST_CONTEXT.currentTest, #func, __FILE__, __LINE__, \
+                           "SKIPPED" );                                                                                \
+                                                                                                                       \
             break;                                                                                                     \
         default:                                                                                                       \
             TEST_CONTEXT.unknownTest++;                                                                                \
-            PlatformPrint( "[Test] %d:%s\n     -> %s\n", TEST_CONTEXT.currentTest, #func, "UNKNOWN" );                 \
+            PlatformPrint( "[Test] (%d) %s :%s:%d\n     -> %s\n", TEST_CONTEXT.currentTest, #func, __FILE__, __LINE__, \
+                           "UNKONW" );                                                                                 \
+                                                                                                                       \
             break;                                                                                                     \
         }                                                                                                              \
         ++TEST_CONTEXT.currentTest;                                                                                    \
@@ -57,14 +64,15 @@ inline TestContext TEST_CONTEXT{};
 
 inline void PrintTestStats()
 {
-
-    PlatformPrint( "\n.............. S T A T S .............\n"
-                   "%-7s:%3d\n"
-                   "%-7s:%3d (%3d%%)\n"
-                   "%-7s:%3d (%3d%%)\n"
-                   "%-7s:%3d\n"
-                   "%-7s:%3d\n"
-                   "----------------------------------------\n\n\n",
+    PlatformPrint( " =========================================\n"
+                   "|............... S T A T S ...............|\n"
+                   " =========================================\n"
+                   "| %-7s : %3d                           |\n"
+                   "| %-7s : %3d (%3d%%)                    |\n"
+                   "| %-7s : %3d (%3d%%)                    |\n"
+                   "| %-7s : %3d                           |\n"
+                   "| %-7s : %3d                           |\n"
+                   "-------------------------------------------\n\n",
                    "Total", TEST_CONTEXT.currentTest, "Passed", TEST_CONTEXT.passedTest,
                    (int)( (float)TEST_CONTEXT.passedTest / (float)TEST_CONTEXT.currentTest * 100.0F ), "Failed",
                    TEST_CONTEXT.failedTest,

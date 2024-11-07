@@ -44,12 +44,13 @@ struct Tensor final
     //      - W: Horizontal size
     explicit Tensor( int32_t W );
 
+    explicit Tensor( const Tuple& shape );
+
     // Access via flattened array index
     T& operator[]( int32_t idx );
     const T& operator[]( int32_t idx ) const;
 
-    T* data();
-    const T* data() const;
+    // ------------ Memory ------------
 
     // Allocates memory according to the current size ONLY when data is nullptr - uses PlatformAlloc
     void allocate();
@@ -63,20 +64,24 @@ struct Tensor final
     // Sets the data to nullptr and returns the memory
     void* freeCustom();
 
-    // Returns a new unallocated tensor with the same dims and scale - equal to calling the constructor
-    Tensor<T> copyDims() const;
-
-    // Returns a copy of the tensor using allocate() - equal to copyDims(), allocate() and memcpy()
-    Tensor<T> copyTensor() const;
-
-    // Prints the tensor with PlatformPrint()
-    void print( const char* name = "Tensor" ) const;
-
     // Returns true if the tensor is allocated
     [[nodiscard]] bool isAllocated() const;
 
     // Returns true if the tensor is allocated custom
     [[nodiscard]] bool isAllocatedCustom() const;
+
+    // Returns a copy of the tensor using allocate() - equal to Tensor(shape()), allocate() and memcpy()
+    Tensor<T> copyTensor() const;
+
+    // ------------ Shape ------------
+
+    // Returns a tuple that contains this vectors dimensions in the form {n, c, h, w}
+    [[nodiscard]] Tuple shape() const;
+
+    // ------------ Misc ------------
+
+    // Prints the tensor with PlatformPrint()
+    void print( const char* name = "Tensor" ) const;
 
     // ------------ Data ------------
 
@@ -152,6 +157,11 @@ Tensor<T>::Tensor( int32_t W ) : Tensor( 1, 1, 1, W )
 }
 
 template <typename T>
+Tensor<T>::Tensor( const Tuple& shape ) : Tensor( shape.first, shape.second, shape.third, shape.fourth )
+{
+}
+
+template <typename T>
 T& Tensor<T>::operator[]( int32_t idx )
 {
     EML_ASSERT( idx < size && idx < capacity && idx >= 0, "Out of bounds access" );
@@ -177,18 +187,6 @@ const T& Tensor<T>::operator[]( int32_t idx ) const
     EML_ASSERT( batch < n && channel < c && row < h && col < w, "Out of bounds access" );
 #endif
     return ptr[ idx ];
-}
-
-template <typename T>
-T* Tensor<T>::data()
-{
-    return ptr;
-}
-
-template <typename T>
-const T* Tensor<T>::data() const
-{
-    return ptr;
 }
 
 template <typename T>
@@ -233,14 +231,6 @@ void* Tensor<T>::freeCustom()
 }
 
 template <typename T>
-Tensor<T> Tensor<T>::copyDims() const
-{
-    Tensor<T> copy{ n, c, h, w };
-    copy.scale = scale;
-    return copy;
-}
-
-template <typename T>
 Tensor<T> Tensor<T>::copyTensor() const
 {
     Tensor<T> copy{ n, c, h, w };
@@ -248,6 +238,12 @@ Tensor<T> Tensor<T>::copyTensor() const
     copy.allocate();
     memcpy( copy.data, ptr, size * sizeof( T ) );
     return copy;
+}
+
+template <typename T>
+Tuple Tensor<T>::shape() const
+{
+    return { n, c, h, w };
 }
 
 template <typename T>
