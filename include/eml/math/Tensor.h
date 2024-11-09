@@ -78,6 +78,9 @@ struct Tensor final
     // Returns a tuple that contains this vectors dimensions in the form {n, c, h, w}
     [[nodiscard]] Tuple shape() const;
 
+    // Transposes the tensor inplace
+    void transpose();
+
     // ------------ Misc ------------
 
     // Prints the tensor with PlatformPrint()
@@ -164,6 +167,7 @@ Tensor<T>::Tensor( const Tuple& shape ) : Tensor( shape.first, shape.second, sha
 template <typename T>
 T& Tensor<T>::operator[]( int32_t idx )
 {
+    EML_ASSERT( ptr != nullptr, "Tensor is not allocated!" );
     EML_ASSERT( idx < size && idx < capacity && idx >= 0, "Out of bounds access" );
 #ifdef EML_DEBUG
     const int32_t batch = idx / chw;
@@ -236,7 +240,7 @@ Tensor<T> Tensor<T>::copyTensor() const
     Tensor<T> copy{ n, c, h, w };
     copy.scale = scale;
     copy.allocate();
-    memcpy( copy.data, ptr, size * sizeof( T ) );
+    memcpy( copy.ptr, ptr, size * sizeof( T ) );
     return copy;
 }
 
@@ -244,6 +248,33 @@ template <typename T>
 Tuple Tensor<T>::shape() const
 {
     return { n, c, h, w };
+}
+
+template <typename T>
+void Tensor<T>::transpose()
+{
+    if( h == w )
+    {
+        for( int32_t i = 0; i < h; i++ )
+        {
+            for( int32_t j = i + 1; j < w; j++ )
+            {
+                int32_t indexT = j * w + i;
+                int32_t index = i * w + j;
+                const auto tmp = operator[]( indexT );
+                operator[]( indexT ) = operator[]( index );
+                operator[]( index ) = tmp;
+            }
+        }
+    }
+    else
+    {
+        EML_ASSERT( false, "Not implemented" );
+    }
+
+    const int32_t tmp = h;
+    h = w;
+    w = tmp;
 }
 
 template <typename T>

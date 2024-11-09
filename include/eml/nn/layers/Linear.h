@@ -25,7 +25,6 @@ struct Linear final : Layer
     // see nn/Layer.h
     [[nodiscard]] int32_t getMults( const Tuple& inputShape ) const override;
 
-  private:
     int32_t inputSize;
     int32_t outputSize;
     Tensor<T> weights; // Learnable weights of shape (out, in)
@@ -67,9 +66,44 @@ Tensor<T> Linear<T>::forward( Tensor<T>& input )
 {
     Tensor<T> output{ input.h, weights.w };
     output.allocate();
-    ops::Matmul( input, weights, output );
     if( useBias )
-        ops::Matmul( output, biases, output );
+    {
+        constexpr int32_t simdSize = xsimd::batch<T>::size;
+        if constexpr( simdSize >= 4 )
+        {
+            for( int32_t row = 0; row < output.h; ++row )
+            {
+                T* outputRow = &output[ +row * outputSize ];
+
+                int32_t i = 0;
+                for( ; i <= outputSize - simdSize; i += simdSize )
+                {
+                    xsimd::batch<T> outputBatch = xsimd::load_unaligned( outputRow + i );
+                    xsimd::batch<T> biasBatch = xsimd::load_unaligned( &biases[ i ] );
+                    outputBatch += biasBatch;
+                    outputBatch.store_unaligned( outputRow + i );
+                }
+
+                for( ; i < outputSize; ++i )
+                {
+                    outputRow[ i ] += biases[ i ];
+                }
+            }
+        }
+        else
+        {
+            int32_t rowOff = 0;
+            for( int32_t row = 0; row < output.h; ++row )
+            {
+                for( int32_t i = 0; i < outputSize; ++i )
+                {
+                    output[ rowOff + i ] = biases[ i ];
+                }
+                rowOff += output.w;
+            }
+        }
+    }
+    ops::Matmul( input, weights, output );
     return output;
 }
 
@@ -90,7 +124,11 @@ int32_t Linear<T>::getWeights() const
 template <typename T>
 int32_t Linear<T>::getMults( const Tuple& inputShape ) const
 {
-    return inputShape.third * inputShape.fourth * weights.h;
+    // Inputs for linear layer are at the simplest form a vector
+    // But you can have a matrix where each vector is an input vector
+    // For each input vector you do a matmul with dims (MxN): (1xinput) * (input,output)
+    // For a matmul (MxN) the multiplications are: m1 * n1 * n2
+    return inputShape.third * ( 1 * inputShape.fourth * weights.h );
 }
 
 } // namespace eml::nn

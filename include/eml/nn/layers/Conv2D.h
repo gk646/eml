@@ -311,6 +311,9 @@ int32_t Conv2D<T>::getWeights() const
 template <typename T>
 int32_t Conv2D<T>::getMults( const Tuple& shape ) const
 {
+    // A single filter operation is output shape times kernel multiplications: (x * y) * (kx * ky) = m
+    // This is done for each input channel for each output channel: m * input * output
+    // This is then done for each batch
     const auto outShape = getOutShape( shape );
     return shape.first * outChannels * shape.second * outShape.third * outShape.fourth * kernel.first * kernel.second;
 }

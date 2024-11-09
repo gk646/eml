@@ -11,7 +11,13 @@ namespace eml::ops
 template <typename T>
 void Matmul( const Tensor<T>& A, const Tensor<T>& B, Tensor<T>& R );
 
-// Returns true if both tensors have the same shape and data
+// Matrix multiplication of A and B into R
+template <typename T>
+void MatmulATrans( const Tensor<T>& A, const Tensor<T>& B, Tensor<T>& R );
+
+template <typename T>
+void MatmulBTrans( const Tensor<T>& A, const Tensor<T>& B, Tensor<T>& R );
+
 template <typename AT, typename BT>
 bool Equals( const Tensor<AT>& A, const Tensor<BT>& B );
 
@@ -73,15 +79,48 @@ namespace eml::ops
 namespace impl
 {
 
-template <typename T, int size>
+template <typename T, int size, bool transposeA, bool transposeB>
 void Kernel( const Tensor<T>& __restrict__ A, const Tensor<T>& __restrict__ B, Tensor<T>& __restrict__ R, const int x,
              const int y, const int l, const int r )
 {
+    if constexpr( size == 0 )
+    {
+        T t[ 16 ];
+        for( int k = l; k < r; k++ )
+        {
+            const auto b = B[ k * B.w + y ];
+
+            xsimd::batch<T> alpha0{ A[ ( x + i ) * A.w + k ] };
+            xsimd::batch<T> alpha1{ A[ ( x + i + 1 ) * A.w + k ] };
+            xsimd::batch<T> alpha2{ A[ ( x + i + 2 ) * A.w + k ] };
+            xsimd::batch<T> alpha3{ A[ ( x + i + 3 ) * A.w + k ] };
+
+            t[ i ] += alpha0 * b;
+            t[ i + 1 ] += alpha1 * b;
+            t[ i + 2 ] += alpha2 * b;
+            t[ i + 3 ] += alpha3 * b;
+        }
+
+        for( int i = 0; i < size; i += 4 )
+        {
+            const auto res0 = xsimd::load_unaligned( &R[ ( x + i ) * R.w + y ] ) + t[ i ];
+            const auto res1 = xsimd::load_unaligned( &R[ ( x + i + 1 ) * R.w + y ] ) + t[ i + 1 ];
+            const auto res2 = xsimd::load_unaligned( &R[ ( x + i + 2 ) * R.w + y ] ) + t[ i + 2 ];
+            const auto res3 = xsimd::load_unaligned( &R[ ( x + i + 3 ) * R.w + y ] ) + t[ i + 3 ];
+
+            xsimd::store_unaligned( &R[ ( x + i ) * R.w + y ], res0 );
+            xsimd::store_unaligned( &R[ ( x + i + 1 ) * R.w + y ], res1 );
+            xsimd::store_unaligned( &R[ ( x + i + 2 ) * R.w + y ], res2 );
+            xsimd::store_unaligned( &R[ ( x + i + 3 ) * R.w + y ], res3 );
+        }
+        return;
+    }
+
     xsimd::batch<T> t[ size ]{};
 
     for( int k = l; k < r; k++ )
     {
-        const auto bBatch = xsimd::load_unaligned( &B[ k * B.w + y ] );
+        const auto bBatch = xsimd::load_unaligned( transposeB ? &B[ y * B.w + k ] : &B[ k * B.w + y ] );
         if constexpr( std::is_same_v<T, float> )
         {
             for( int i = 0; i < size; i += 4 )
@@ -128,94 +167,83 @@ void Kernel( const Tensor<T>& __restrict__ A, const Tensor<T>& __restrict__ B, T
     }
 }
 
+template <typename T, bool transposeA, bool transposeB>
+void MatmulImpl( const Tensor<T>& A, const Tensor<T>& B, Tensor<T>& R )
+{
+    const int32_t Ah = transposeA ? A.w : A.h;
+    const int32_t Aw = transposeA ? A.h : A.w;
+    const int32_t Bh = transposeB ? B.w : B.h;
+    const int32_t Bw = transposeB ? B.h : B.w;
+    EML_ASSERT( Aw == Bh && R.h == Ah && R.w == Bw, "Invalid dimensions" );
+
+    /*
+     *
+        constexpr auto simdValues = static_cast<int32_t>( xsimd::simd_type<T>::size );
+        const int32_t stepsA = A.h - ( A.h % simdValues );
+        const int32_t stepsB = B.w - ( B.w % simdValues );
+
+        if constexpr( simdValues != 0 )
+        {
+            for( int x = 0; x < stepsA; x += simdValues )
+                for( int y = 0; y < stepsB; y += simdValues )
+                    impl::Kernel<T, simdValues, transposeA, transposeB>( A, B, R, x, y, 0, R.w );
+
+            int32_t idxA = 0;
+            int32_t idxR = 0;
+            for( int32_t h = stepsA; h < A.h; ++h )
+            {
+                for( int32_t w = stepsB; w < B.w; ++w )
+                {
+                    T sum = T( 0 );
+                    int32_t idxB = w;
+                    for( int32_t k = 0; k < A.w; ++k )
+                    {
+                        sum += A[ idxA + k ] * B[ idxB ];
+                        idxB += B.w;
+                    }
+                    R[ idxR + w ] = sum;
+                }
+                idxA += A.w;
+                idxR += R.w;
+            }
+        }
+        else
+        */
+    {
+        constexpr int s3 = 16;
+        constexpr int s2 = 16;
+        constexpr int s1 = 16;
+        for( int i3 = 0; i3 < B.w; i3 += s3 )
+            // now we are working with b[:][i3:i3+s3]
+            for( int i2 = 0; i2 < A.h; i2 += s2 )
+                // now we are working with a[i2:i2+s2][:]
+                for( int i1 = 0; i1 < B.w; i1 += s1 )
+                    // now we are working with b[i1:i1+s1][i3:i3+s3]
+                    // and we need to update c[i2:i2+s2][i3:i3+s3] with [l:r] = [i1:i1+s1]
+                    for( int x = i2; x < std::min( i2 + s2, A.h ); x += 4 )
+                        for( int y = i3; y < std::min( i3 + s3, B.w ); y += 4 )
+                            impl::Kernel<T, 0>( A, B, R, x, y, i1, std::min( i1 + s1, A.h ) );
+    }
+}
+
 } // namespace impl
 
 template <typename T>
 void Matmul( const Tensor<T>& A, const Tensor<T>& B, Tensor<T>& R )
 {
-    // [1][1]  A       [1][1][1]  B         [1][1][1]  R
-    // [1][1]  3x2     [1][1][1]  2x3       [1][1][1]  3x3
-    // [1][1]                               [1][1][1]
-    EML_ASSERT( A.w == B.h && R.h == A.h && R.w == B.w, "Invalid dimensions" );
+    impl::MatmulImpl<T, false, false>( A, B, R );
+}
 
-    constexpr auto simdValues = static_cast<int32_t>( xsimd::simd_type<T>::size );
-    const int32_t stepsA = A.h - ( A.h % simdValues );
-    const int32_t stepsB = B.w - ( B.w % simdValues );
+template <typename T>
+void MatmulATrans( const Tensor<T>& A, const Tensor<T>& B, Tensor<T>& R )
+{
+    impl::MatmulImpl<T, true, false>( A, B, R );
+}
 
-    if constexpr( simdValues != 0 )
-    {
-        /*
-        constexpr int s3 = 512;
-        constexpr int s2 = 512;
-        constexpr int s1 = 512;
-
-        With cache blocking
-        for( int i3 = 0; i3 < stepsB; i3 += s3 )
-            // now we are working with b[:][i3:i3+s3]
-                for( int i2 = 0; i2 < stepsA; i2 += s2 )
-                    // now we are working with a[i2:i2+s2][:]
-                        for( int i1 = 0; i1 < stepsB; i1 += s1 )
-                            // now we are working with b[i1:i1+s1][i3:i3+s3]
-                                // and we need to update c[i2:i2+s2][i3:i3+s3] with [l:r] = [i1:i1+s1]
-                                    for( int x = i2; x < std::min( i2 + s2, stepsA ); x += simdValues )
-                                        for( int y = i3; y < std::min( i3 + s3, stepsB ); y += simdValues )
-                                            impl::Kernel<T, simdValues>( A, B, R, x, y, i1, std::min( i1 + s1, stepsA )
-        );
-*/
-
-        for( int x = 0; x < stepsA; x += simdValues )
-            for( int y = 0; y < stepsB; y += simdValues )
-                impl::Kernel<T, simdValues>( A, B, R, x, y, 0, R.w );
-
-        int32_t idxa = 0;
-        int32_t idxr = 0;
-        for( int32_t h = stepsA; h < A.h; ++h )
-        {
-            for( int32_t w = stepsB; w < B.w; ++w )
-            {
-                T sum = T( 0 );
-                int32_t idxb =  w;
-                for( int32_t k = 0; k < A.w; ++k )
-                {
-                    sum += A[ idxa + k ] * B[ idxb ];
-                    idxb += B.w;
-                }
-                R[ idxr + w ] = sum;
-            }
-            idxa += A.w;
-            idxr += R.w;
-        }
-    }
-    else
-    {
-        int32_t AchannelOff = 0;
-        int32_t BchannelOff = 0;
-        int32_t RchannelOff = 0;
-        for( int32_t c = 0; c < A.c; ++c )
-        {
-            int32_t idxa = AchannelOff;
-            int32_t idxr = RchannelOff;
-            for( int32_t h = 0; h < A.h; ++h )
-            {
-                for( int32_t w = 0; w < B.w; ++w )
-                {
-                    T sum = T( 0 );
-                    int32_t idxb = BchannelOff + w;
-                    for( int32_t k = 0; k < A.w; ++k )
-                    {
-                        sum += A[ idxa + k ] * B[ idxb ];
-                        idxb += B.w;
-                    }
-                    R[ idxr + w ] = sum;
-                }
-                idxa += A.w;
-                idxr += R.w;
-            }
-            AchannelOff += A.hw;
-            BchannelOff += B.hw;
-            RchannelOff += R.hw;
-        }
-    }
+template <typename T>
+void MatmulBTrans( const Tensor<T>& A, const Tensor<T>& B, Tensor<T>& R )
+{
+    impl::MatmulImpl<T, false, true>( A, B, R );
 }
 
 template <typename AT, typename BT>
