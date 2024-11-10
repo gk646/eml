@@ -6,6 +6,13 @@
 
 using namespace eml;
 
+namespace eml
+{
+
+struct BenchmarkData final
+{
+};
+
 template <typename T>
 constexpr const char* GetTypeString()
 {
@@ -30,6 +37,8 @@ constexpr const char* GetTypeString()
         return "unknown";
     }
 }
+
+} // namespace eml
 
 #define EML_BENCHMARK_FLOPS( type, func, iterations, ops, ... )                                                        \
     const auto start = PlatformClock();                                                                                \

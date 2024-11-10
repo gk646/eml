@@ -32,7 +32,7 @@ class HeaderGenerator:
                 break
             content += f"inline int test{file_name}Case{i}()\n{{"
             content += func_str
-            content += "\n}\n"
+            content += "}\n"
             num_tests += 1
 
         if num_tests == 0:
@@ -69,9 +69,13 @@ header_gen = HeaderGenerator(75, 25, "EML_RUN_TEST")
 import test_conv2d
 import test_linear
 import test_matmul
+import test_reflectionpad2d
+import test_zeropad2d
 
-header_gen.create_header("nn/layers", "Conv2D", test_conv2d.conv2d_gen_function)
-header_gen.create_header("nn/layers", "Linear", test_linear.linear_gen_function)
-header_gen.create_header("math", "MatMul", test_matmul.matmul_gen_function)
+header_gen.create_header("nn/layers", "Conv2D", test_conv2d.gen_function)
+header_gen.create_header("nn/layers", "Linear", test_linear.gen_function)
+header_gen.create_header("math", "MatMul", test_matmul.gen_function)
+header_gen.create_header("nn/layers", "ReflectionPad2D", test_reflectionpad2d.gen_function)
+header_gen.create_header("nn/layers", "ZeroPad2D", test_zeropad2d.gen_function)
 
 print("Done generating")

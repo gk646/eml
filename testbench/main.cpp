@@ -24,12 +24,18 @@ int main()
                    "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\n"
                    " ===============================================\n"
                    "|          embeddable machine learning          |\n"
-                   "|                Version: %-18s    |\n"
+                   "|                Version: %-17s    |\n"
                    " ===============================================\n\n",
-                   EML_VERSION, __DATE__, __TIME__ );
-
+                   EML_VERSION );
+    // ----------- //
+    const uint32_t start = PlatformClock();
+    // ----------- //
     RunTests();
-    // -----------
+    // ----------- //
     RunBenchmarks();
+    // ----------- //
+    const uint32_t end = PlatformClock();
+    // ----------- //
+    printf( "Took: %.2f seconds\n", ( (float)( end - start ) / 1'000 ) / 1'000.0F );
     return 0;
 }

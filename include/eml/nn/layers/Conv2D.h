@@ -4,7 +4,8 @@
 #include <eml/math/Tensor.h>
 #include <eml/math/TensorOps.h>
 #include <eml/nn/Layer.h>
-#include <eml/util/StackAllocator.h>
+#include <eml/nn/layers/ReflectionPad2D.h>
+#include <eml/nn/layers/ZeroPad2D.h>
 
 // ----------------------------------------------------------------
 // Conv2D
@@ -118,6 +119,22 @@ Conv2D<T>::Conv2D( int32_t inC, int32_t outC, Pair kernel )
 namespace impl
 {
 
+int reflectIndex( int index, int size )
+{
+    if( size == 1 )
+        return 0; // The only valid index is 0
+
+    int period = 2 * size - 2;
+    int i_mod = index % period;
+    if( i_mod < 0 )
+        i_mod += period; // Ensure positive modulus
+
+    if( i_mod >= size )
+        return period - i_mod;
+    else
+        return i_mod;
+}
+
 template <typename T, PaddingMode pMode>
 Tensor<T> Conv2DApplyPadding( const Tensor<T>& input, const Pair padding )
 {
@@ -140,10 +157,10 @@ Tensor<T> Conv2DApplyPadding( const Tensor<T>& input, const Pair padding )
             int32_t inMatrixOff = inChannelOff;
             for( int32_t h = 0; h < inputCopy.h; ++h )
             {
-                bool inPaddingH = h < padding.first || h > input.h;
+                const bool inPaddingH = h < padding.first || h >= padding.first + input.h;
                 for( int32_t w = 0; w < inputCopy.w; ++w )
                 {
-                    bool inPaddingW = w < padding.second || w > input.w;
+                    const bool inPaddingW = w < padding.second || w >= padding.second + input.w;
                     if( inPaddingH || inPaddingW ) [[unlikely]]
                     {
                         if constexpr( pMode == PaddingMode::ZEROS )
@@ -152,21 +169,16 @@ Tensor<T> Conv2DApplyPadding( const Tensor<T>& input, const Pair padding )
                         }
                         else if constexpr( pMode == PaddingMode::REFLECT )
                         {
-                            int minusY = abs( ( padding.first - h ) );
-                            if( h >= input.h + padding.first )
-                                minusY = ( input.h + padding.first * 2 - 1 ) - h;
-                            int minusX = abs( padding.second - w );
-                            if( w >= input.w + padding.second )
-                                minusX = ( input.w + padding.second * 2 ) - w;
-                            inputCopy[ padMatrixOff + h * inputCopy.w + w ] =
-                                input[ inMatrixOff + input.w * minusY + minusX ];
+                            int y = reflectIndex( h - padding.first, input.h );
+                            int x = reflectIndex( w - padding.second, input.w );
+
+                            inputCopy[ padMatrixOff + h * inputCopy.w + w ] = input[ inMatrixOff + y * input.w + x ];
                         }
                         else if constexpr( pMode == PaddingMode::REPLICATE )
                         {
-                            int inputH = h > input.h ? h - padding.first * 2 : h - padding.first;
-                            int inputW = w > input.w ? w - padding.second * 2 : w - padding.second;
-                            inputH = std::min( std::max( 0, inputH ), input.h );
-                            inputW = std::min( std::max( 0, inputW ), input.w );
+                            int inputH = Clamp( h - padding.first, 0, input.h - 1 );
+                            int inputW = Clamp( w - padding.second, 0, input.w - 1 );
+
                             inputCopy[ padMatrixOff + h * inputCopy.w + w ] =
                                 input[ inMatrixOff + inputH * input.w + inputW ];
                         }

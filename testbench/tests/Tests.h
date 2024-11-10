@@ -4,6 +4,7 @@
 #include <eml/math/TensorOps.h>
 #include <eml/nn/layers/Conv2D.h>
 #include <eml/nn/layers/Linear.h>
+#include <eml/nn/layers/ReflectionPad2D.h>
 
 using namespace eml::nn;
 using namespace eml::ops;
@@ -17,6 +18,8 @@ using namespace eml::ops;
 // Layers
 #include "nn/layers/Conv2D.h"
 #include "nn/layers/Linear.h"
+#include "nn/layers/ReflectionPad2D.h"
+#include "nn/layers/ZeroPad2D.h"
 #include "nn/models/LogicGates.h"
 
 // Models
@@ -28,14 +31,6 @@ inline void RunTests()
                    "|............... T E S T S ...............|\n"
                    " =========================================\n" );
 
-    Tensor<float> A{ 3, 3 };
-    A.allocate();
-    Arange( A, 1.0F );
-    A.print();
-    A.transpose();
-    A.print();
-    return;
-
     // Math
     TestTensorOps();
     TestMATHMatMul();
@@ -43,6 +38,8 @@ inline void RunTests()
     // Layers
     TestNNLinear();
     TestNNConv2D();
+    TestNNReflectionPad2D();
+    TestNNZeroPad2D();
 
     // Models
     TestNNCustom();

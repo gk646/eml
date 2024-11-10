@@ -3,6 +3,15 @@
 
 #include <random>
 
+// ----------------------------------------------------------------
+// Softmax
+// ----------------------------------------------------------------
+// ................................................................
+// ................................................................
+// Doc: https://pytorch.org/docs/stable/generated/torch.nn.Softmax.html
+// ................................................................
+
+
 namespace eml
 {
 
@@ -37,6 +46,12 @@ float GetRandomFloat( float min, float max );
 // Returns the amount of digits needed to represent the number
 template <typename T>
 int32_t GetDigitCount( T num );
+
+template <typename T>
+T Clamp( T val, T min, T max );
+
+template <typename T>
+T Exp( const T& val );
 
 } // namespace eml
 
@@ -82,6 +97,16 @@ template <typename T>
 int32_t GetDigitCount( T num )
 {
     return 1;
+}
+
+template <typename T>
+T Clamp( const T val, const T min, const T max )
+{
+    if( val < min )
+        return min;
+    if( val > max )
+        return max;
+    return val;
 }
 
 } // namespace eml

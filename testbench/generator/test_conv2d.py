@@ -30,12 +30,10 @@ def generate_conv2d_layer(name, in_channels, out_channels, kernel_size, stride, 
 
 
 def impl_gen_conv2d(input_size, in_channels, out_channels, kernel_size, stride, padding, use_bias, padding_mode):
-    # Create a fixed input tensor for reproducibility
     input_height, input_width = input_size
     input_tensor = torch.arange(1, 1 + in_channels * input_height * input_width, dtype=torch.float32).reshape(
         1, in_channels, input_height, input_width)
 
-    # Create a Conv2D layer in PyTorch
     conv_layer = torch.nn.Conv2d(
         in_channels=in_channels,
         out_channels=out_channels,
@@ -46,43 +44,45 @@ def impl_gen_conv2d(input_size, in_channels, out_channels, kernel_size, stride, 
         padding_mode=padding_mode.lower() if padding_mode != "ZEROS" else "zeros"
     )
 
-    # Initialize weights and biases
     torch.nn.init.constant_(conv_layer.weight, 1.0)
     if use_bias:
         torch.nn.init.constant_(conv_layer.bias, 1.0)
 
-    # Get the output tensor
     output_tensor = conv_layer(input_tensor).detach().numpy()
 
-    # Flatten input and output for C++ representation
     input_data = input_tensor.flatten().tolist()
     output_data = output_tensor.flatten().tolist()
 
-    # Generate C++ code for the test function
-    input_array = gen_utils.generate_stack_array_data("input", input_data)
-    output_array = gen_utils.generate_stack_array_data("expected", output_data)
-    input_tensor_decl = gen_utils.generate_tensor("A", "input", (in_channels, input_height, input_width),
-                                                  len(input_data))
+    input_shape = (in_channels, input_height, input_width)
+    input_tensor_decl = gen_utils.generate_decl_tensor_range("A", input_shape, len(input_data))
+
+    output_shape = output_tensor.shape
+    output_tensor_decl = gen_utils.generate_tensor_data("R", output_shape, output_data)
+
     conv2d_layer = generate_conv2d_layer("layer", in_channels, out_channels, kernel_size, stride, padding, use_bias,
                                          padding_mode)
 
     cpp_code = f"""
-    {input_array}
     {input_tensor_decl}
     {conv2d_layer}
-    ops::Fill(layer.weights, 1);
-    {"ops::Fill(layer.biases, 1);" if use_bias else ""}
+    Fill(layer.weights, 1);
+    {"Fill(layer.biases, 1);" if use_bias else ""}
     const auto out = layer.forward(A);
-    {output_array}
-    Tensor<qint32_t> R{{out.shape()}};
-    R.allocateCustom(expected, {len(output_data)});
-    return ops::Equals(out, R);
+    
+    {output_tensor_decl}
+    return Equals(out, R);
 """
     return cpp_code
 
 
-def conv2d_gen_function(index):
+def gen_function(index):
     direction = 1 if index % 2 == 0 else -1
+    random.shuffle(input_sizes)
+    random.shuffle(kernels)
+    random.shuffle(strides)
+    random.shuffle(channels_cases)
+    random.shuffle(paddings)
+    random.shuffle(padding_modes)
     input_size = input_sizes[(index * direction) % len(input_sizes)]
     in_channels, out_channels = channels_cases[(index * direction) % len(channels_cases)]
     kernel_size = kernels[(index * direction) % len(kernels)]

@@ -4,108 +4,129 @@
 
 inline int testLinearCase0()
 {
-    qint32_t input[] = { 1, 2, 3, 4 };
-    Tensor<qint32_t> A{ 1, 4 };
-A.allocateCustom(input, 4);
-    Linear<qint32_t> layer{ 4, 2, true };
-    ops::Fill(layer.weights, 1);
-    ops::Fill(layer.biases, 1);
-    const auto out = layer.forward(A);
-    qint32_t expected[] = { 11, 11 };
-    Tensor<qint32_t> R{out.shape()};
-    R.allocateCustom(expected, 2);
-    return ops::Equals(out, R);
+    qint32_t A_data[4] ;
+	Tensor<qint32_t> A{ 1, 4 };
+	A.allocateCustom(A_data, 4);
+	Arange(A,1);
 
+    Linear<qint32_t> layer{ 4, 2, true };
+    Fill(layer.weights, 1);
+    Fill(layer.biases, 1);
+    const auto out = layer.forward(A);
+    
+    qint32_t R_data[] = { 11, 11 };
+	Tensor<qint32_t> R{ 2 };
+	R.allocateCustom(R_data, 2);
+
+    return Equals(out, R);
 }
 inline int testLinearCase1()
 {
-    qint32_t input[] = { 1, 2, 3, 4, 5, 6, 7, 8 };
-    Tensor<qint32_t> A{ 1, 8 };
-A.allocateCustom(input, 8);
+    qint32_t A_data[8] ;
+	Tensor<qint32_t> A{ 1, 8 };
+	A.allocateCustom(A_data, 8);
+	Arange(A,1);
+
     Linear<qint32_t> layer{ 8, 8, false };
-    ops::Fill(layer.weights, 1);
+    Fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
-    qint32_t expected[] = { 36, 36, 36, 36, 36, 36, 36, 36 };
-    Tensor<qint32_t> R{out.shape()};
-    R.allocateCustom(expected, 8);
-    return ops::Equals(out, R);
+    
+    qint32_t R_data[] = { 36, 36, 36, 36, 36, 36, 36, 36 };
+	Tensor<qint32_t> R{ 8 };
+	R.allocateCustom(R_data, 8);
 
+    return Equals(out, R);
 }
 inline int testLinearCase2()
 {
-    qint32_t input[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
-    Tensor<qint32_t> A{ 1, 16 };
-A.allocateCustom(input, 16);
-    Linear<qint32_t> layer{ 16, 20, true };
-    ops::Fill(layer.weights, 1);
-    ops::Fill(layer.biases, 1);
-    const auto out = layer.forward(A);
-    qint32_t expected[] = { 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137 };
-    Tensor<qint32_t> R{out.shape()};
-    R.allocateCustom(expected, 20);
-    return ops::Equals(out, R);
+    qint32_t A_data[16] ;
+	Tensor<qint32_t> A{ 1, 16 };
+	A.allocateCustom(A_data, 16);
+	Arange(A,1);
 
+    Linear<qint32_t> layer{ 16, 20, true };
+    Fill(layer.weights, 1);
+    Fill(layer.biases, 1);
+    const auto out = layer.forward(A);
+    
+    qint32_t R_data[] = { 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137 };
+	Tensor<qint32_t> R{ 20 };
+	R.allocateCustom(R_data, 20);
+
+    return Equals(out, R);
 }
 inline int testLinearCase3()
 {
-    qint32_t input[] = { 1, 2, 3, 4 };
-    Tensor<qint32_t> A{ 1, 4 };
-A.allocateCustom(input, 4);
+    qint32_t A_data[4] ;
+	Tensor<qint32_t> A{ 1, 4 };
+	A.allocateCustom(A_data, 4);
+	Arange(A,1);
+
     Linear<qint32_t> layer{ 4, 2, false };
-    ops::Fill(layer.weights, 1);
+    Fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
-    qint32_t expected[] = { 10, 10 };
-    Tensor<qint32_t> R{out.shape()};
-    R.allocateCustom(expected, 2);
-    return ops::Equals(out, R);
+    
+    qint32_t R_data[] = { 10, 10 };
+	Tensor<qint32_t> R{ 2 };
+	R.allocateCustom(R_data, 2);
 
+    return Equals(out, R);
 }
 inline int testLinearCase4()
 {
-    qint32_t input[] = { 1, 2, 3, 4, 5, 6, 7, 8 };
-    Tensor<qint32_t> A{ 1, 8 };
-A.allocateCustom(input, 8);
-    Linear<qint32_t> layer{ 8, 8, true };
-    ops::Fill(layer.weights, 1);
-    ops::Fill(layer.biases, 1);
-    const auto out = layer.forward(A);
-    qint32_t expected[] = { 37, 37, 37, 37, 37, 37, 37, 37 };
-    Tensor<qint32_t> R{out.shape()};
-    R.allocateCustom(expected, 8);
-    return ops::Equals(out, R);
+    qint32_t A_data[8] ;
+	Tensor<qint32_t> A{ 1, 8 };
+	A.allocateCustom(A_data, 8);
+	Arange(A,1);
 
+    Linear<qint32_t> layer{ 8, 8, true };
+    Fill(layer.weights, 1);
+    Fill(layer.biases, 1);
+    const auto out = layer.forward(A);
+    
+    qint32_t R_data[] = { 37, 37, 37, 37, 37, 37, 37, 37 };
+	Tensor<qint32_t> R{ 8 };
+	R.allocateCustom(R_data, 8);
+
+    return Equals(out, R);
 }
 inline int testLinearCase5()
 {
-    qint32_t input[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
-    Tensor<qint32_t> A{ 1, 16 };
-A.allocateCustom(input, 16);
+    qint32_t A_data[16] ;
+	Tensor<qint32_t> A{ 1, 16 };
+	A.allocateCustom(A_data, 16);
+	Arange(A,1);
+
     Linear<qint32_t> layer{ 16, 20, false };
-    ops::Fill(layer.weights, 1);
+    Fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
-    qint32_t expected[] = { 136, 136, 136, 136, 136, 136, 136, 136, 136, 136, 136, 136, 136, 136, 136, 136, 136, 136, 136, 136 };
-    Tensor<qint32_t> R{out.shape()};
-    R.allocateCustom(expected, 20);
-    return ops::Equals(out, R);
+    
+    qint32_t R_data[] = { 136, 136, 136, 136, 136, 136, 136, 136, 136, 136, 136, 136, 136, 136, 136, 136, 136, 136, 136, 136 };
+	Tensor<qint32_t> R{ 20 };
+	R.allocateCustom(R_data, 20);
 
+    return Equals(out, R);
 }
 inline int testLinearCase6()
 {
-    qint32_t input[] = { 1, 2, 3, 4 };
-    Tensor<qint32_t> A{ 1, 4 };
-A.allocateCustom(input, 4);
-    Linear<qint32_t> layer{ 4, 2, true };
-    ops::Fill(layer.weights, 1);
-    ops::Fill(layer.biases, 1);
-    const auto out = layer.forward(A);
-    qint32_t expected[] = { 11, 11 };
-    Tensor<qint32_t> R{out.shape()};
-    R.allocateCustom(expected, 2);
-    return ops::Equals(out, R);
+    qint32_t A_data[4] ;
+	Tensor<qint32_t> A{ 1, 4 };
+	A.allocateCustom(A_data, 4);
+	Arange(A,1);
 
+    Linear<qint32_t> layer{ 4, 2, true };
+    Fill(layer.weights, 1);
+    Fill(layer.biases, 1);
+    const auto out = layer.forward(A);
+    
+    qint32_t R_data[] = { 11, 11 };
+	Tensor<qint32_t> R{ 2 };
+	R.allocateCustom(R_data, 2);
+
+    return Equals(out, R);
 }
 
 inline void TestNNLinear()

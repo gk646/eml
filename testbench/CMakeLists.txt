@@ -1,14 +1,17 @@
-add_executable(eml-testbench main.cpp)
+
+
+add_executable(eml-testbench main.cpp ${CMAKE_SOURCE_DIR}/platforms/platform_desktop.cpp)
 
 target_include_directories(eml-testbench
         PRIVATE ${CMAKE_SOURCE_DIR}/include
         PRIVATE ${CMAKE_SOURCE_DIR}/tests
 )
 
-target_link_libraries(eml-testbench PRIVATE eml)
 target_compile_definitions(eml-testbench PRIVATE EML_TEST)
 set(TARGET_NAME eml-testbench)
 include(CompilerOptions)
+
+
 
 # Custom target to run the test executable and generate a coverage report
 add_custom_target(coverage

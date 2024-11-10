@@ -79,40 +79,39 @@ namespace eml::ops
 namespace impl
 {
 
+// Heavily inspired by:
+// https://en.algorithmica.org/hpc/algorithms/matmul/
+
 template <typename T, int size, bool transposeA, bool transposeB>
 void Kernel( const Tensor<T>& __restrict__ A, const Tensor<T>& __restrict__ B, Tensor<T>& __restrict__ R, const int x,
              const int y, const int l, const int r )
 {
-    if constexpr( size == 0 )
+    if constexpr( size == 2 )
     {
-        T t[ 16 ];
+        T c00 = 0, c01 = 0, c10 = 0, c11 = 0;
+
         for( int k = l; k < r; k++ )
         {
-            const auto b = B[ k * B.w + y ];
+            // read rows
+            T a0 = transposeA ? A[ k * A.w + x ] : A[ x * A.w + k ];
+            T a1 = transposeA ? A[ ( k + 1 ) * A.w + x ] : A[ ( x + 1 ) * A.w + k ];
 
-            xsimd::batch<T> alpha0{ A[ ( x + i ) * A.w + k ] };
-            xsimd::batch<T> alpha1{ A[ ( x + i + 1 ) * A.w + k ] };
-            xsimd::batch<T> alpha2{ A[ ( x + i + 2 ) * A.w + k ] };
-            xsimd::batch<T> alpha3{ A[ ( x + i + 3 ) * A.w + k ] };
+            // read columns
+            T b0 = B[ k * B.w + y ];
+            T b1 = B[ k * B.w + y + 1 ];
 
-            t[ i ] += alpha0 * b;
-            t[ i + 1 ] += alpha1 * b;
-            t[ i + 2 ] += alpha2 * b;
-            t[ i + 3 ] += alpha3 * b;
+            // update all combinations
+            c00 += a0 * b0;
+            c01 += a0 * b1;
+            c10 += a1 * b0;
+            c11 += a1 * b1;
         }
 
-        for( int i = 0; i < size; i += 4 )
-        {
-            const auto res0 = xsimd::load_unaligned( &R[ ( x + i ) * R.w + y ] ) + t[ i ];
-            const auto res1 = xsimd::load_unaligned( &R[ ( x + i + 1 ) * R.w + y ] ) + t[ i + 1 ];
-            const auto res2 = xsimd::load_unaligned( &R[ ( x + i + 2 ) * R.w + y ] ) + t[ i + 2 ];
-            const auto res3 = xsimd::load_unaligned( &R[ ( x + i + 3 ) * R.w + y ] ) + t[ i + 3 ];
-
-            xsimd::store_unaligned( &R[ ( x + i ) * R.w + y ], res0 );
-            xsimd::store_unaligned( &R[ ( x + i + 1 ) * R.w + y ], res1 );
-            xsimd::store_unaligned( &R[ ( x + i + 2 ) * R.w + y ], res2 );
-            xsimd::store_unaligned( &R[ ( x + i + 3 ) * R.w + y ], res3 );
-        }
+        // write the results to C
+        R[ x * R.w + y ] = c00;
+        R[ x * R.w + y + 1 ] = c01;
+        R[ ( x + 1 ) * R.w + y ] = c10;
+        R[ ( x + 1 ) * R.w + y + 1 ] = c11;
         return;
     }
 
@@ -177,52 +176,30 @@ void MatmulImpl( const Tensor<T>& A, const Tensor<T>& B, Tensor<T>& R )
     EML_ASSERT( Aw == Bh && R.h == Ah && R.w == Bw, "Invalid dimensions" );
 
     /*
-     *
-        constexpr auto simdValues = static_cast<int32_t>( xsimd::simd_type<T>::size );
-        const int32_t stepsA = A.h - ( A.h % simdValues );
-        const int32_t stepsB = B.w - ( B.w % simdValues );
+    constexpr auto simdValues = xsimd::simd_type<T>::size == 0 ? 2 : static_cast<int32_t>( xsimd::simd_type<T>::size );
 
-        if constexpr( simdValues != 0 )
-        {
-            for( int x = 0; x < stepsA; x += simdValues )
-                for( int y = 0; y < stepsB; y += simdValues )
-                    impl::Kernel<T, simdValues, transposeA, transposeB>( A, B, R, x, y, 0, R.w );
+    const int32_t stepsA = Ah - ( Ah % simdValues );
+    const int32_t stepsB = Bw - ( Bw % simdValues );
 
-            int32_t idxA = 0;
-            int32_t idxR = 0;
-            for( int32_t h = stepsA; h < A.h; ++h )
-            {
-                for( int32_t w = stepsB; w < B.w; ++w )
-                {
-                    T sum = T( 0 );
-                    int32_t idxB = w;
-                    for( int32_t k = 0; k < A.w; ++k )
-                    {
-                        sum += A[ idxA + k ] * B[ idxB ];
-                        idxB += B.w;
-                    }
-                    R[ idxR + w ] = sum;
-                }
-                idxA += A.w;
-                idxR += R.w;
-            }
-        }
-        else
-        */
+    for( int x = 0; x < stepsA; x += simdValues )
+        for( int y = 0; y < stepsB; y += simdValues )
+            impl::Kernel<T, simdValues, transposeA, transposeB>( A, B, R, x, y, 0, R.w );
+
+    */
+
+    for( int32_t h = 0; h < Ah; ++h )
     {
-        constexpr int s3 = 16;
-        constexpr int s2 = 16;
-        constexpr int s1 = 16;
-        for( int i3 = 0; i3 < B.w; i3 += s3 )
-            // now we are working with b[:][i3:i3+s3]
-            for( int i2 = 0; i2 < A.h; i2 += s2 )
-                // now we are working with a[i2:i2+s2][:]
-                for( int i1 = 0; i1 < B.w; i1 += s1 )
-                    // now we are working with b[i1:i1+s1][i3:i3+s3]
-                    // and we need to update c[i2:i2+s2][i3:i3+s3] with [l:r] = [i1:i1+s1]
-                    for( int x = i2; x < std::min( i2 + s2, A.h ); x += 4 )
-                        for( int y = i3; y < std::min( i3 + s3, B.w ); y += 4 )
-                            impl::Kernel<T, 0>( A, B, R, x, y, i1, std::min( i1 + s1, A.h ) );
+        for( int32_t w = 0; w < Bw; ++w )
+        {
+            T sum = T( 0 );
+            for( int32_t k = 0; k < Aw; ++k )
+            {
+                const auto valA = transposeA ? A[ k * A.h + h ] : A[ h * A.w + k ];
+                const auto valB = transposeB ? B[ w * B.w + k ] : B[ k * B.w + w ];
+                sum += valA * valB;
+            }
+            R[ h * R.w + w ] = sum;
+        }
     }
 }
 

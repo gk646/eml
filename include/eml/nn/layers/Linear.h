@@ -64,8 +64,12 @@ Linear<T>::Linear( const int32_t in, const int32_t out, const bool bias )
 template <typename T>
 Tensor<T> Linear<T>::forward( Tensor<T>& input )
 {
-    Tensor<T> output{ input.h, weights.w };
+    // Weights are in shape (out,in) so whe need weights.h to get out
+    Tensor<T> output{ input.h, weights.h };
     output.allocate();
+    // Multiplied as if b is transposed to match the dims (1, in), (out,in)
+    ops::MatmulBTrans( input, weights, output );
+
     if( useBias )
     {
         constexpr int32_t simdSize = xsimd::batch<T>::size;
@@ -103,7 +107,7 @@ Tensor<T> Linear<T>::forward( Tensor<T>& input )
             }
         }
     }
-    ops::Matmul( input, weights, output );
+
     return output;
 }
 
