@@ -17,7 +17,7 @@ def impl_gen_linear(input_size, output_size, use_bias):
     output_tensor = linear_layer(input_tensor).detach().numpy()
     output_data = output_tensor.flatten().tolist()
 
-    input_tensor_decl = gen_utils.generate_decl_tensor_range("A", (1, input_size), input_size)
+    input_tensor_decl = gen_utils.generate_decl_tensor_range("A", (1, input_size))
 
     linear_layer_decl = f"Linear<qint32_t> layer{{ {input_size}, {output_size}, {str(use_bias).lower()} }};"
 

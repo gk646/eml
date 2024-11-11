@@ -77,7 +77,7 @@ Tensor<T> Linear<T>::forward( Tensor<T>& input )
 template <typename T>
 void Linear<T>::forward( Tensor<T>& input, Tensor<T>& output )
 {
-    EML_ASSERT(input.w == inputSize ,"Invalid input shape");
+    EML_ASSERT( input.w == inputSize, "Invalid input shape" );
     // Multiplied as if b is transposed to match the dims (1, in), (out,in)
     ops::MatmulBTrans( input, weights, output );
 

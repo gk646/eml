@@ -1,6 +1,7 @@
 #ifndef EML_TENSOR_H
 #define EML_TENSOR_H
 
+#include <cstring>
 #include <eml/util/Types.h>
 
 // ================================================================
@@ -55,6 +56,7 @@ struct Tensor final
     void free();
 
     // Initializes the tensor with user managed memory
+    // IMPORTANT: you need to zero initialized empty stack memory (e.g. int buf[25]{} // With {} init)
     void allocateCustom( void* memory, int count );
 
     // Sets the data to nullptr and returns the memory
@@ -199,6 +201,7 @@ void Tensor<T>::allocate()
     EML_ASSERT( capacity == 0, "Calling allocate() on an already allocated tensor" );
     EML_ASSERT( size > 0, "Calling allocate() on an empty tensor - likely a mistake" );
     ptr = static_cast<T*>( PlatformAlloc( sizeof( T ) * size ) );
+    memset( ptr, 0, size * sizeof( T ) );
     capacity = size;
 }
 
@@ -280,6 +283,13 @@ void Tensor<T>::transpose()
 template <typename T>
 void Tensor<T>::reshape( const Tuple& shape )
 {
+    const int32_t magnitudeNew = shape.first * shape.second * shape.third * shape.fourth;
+    const int32_t magnitude = n * c * h * w;
+    EML_ASSERT( magnitudeNew > magnitude, "New shape exceeds current bounds. Allocate a bigger tensor" );
+    n = shape.first;
+    c = shape.second;
+    h = shape.third;
+    w = shape.fourth;
 }
 
 template <typename T>

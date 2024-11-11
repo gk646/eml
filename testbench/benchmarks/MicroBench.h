@@ -60,17 +60,16 @@ constexpr const char* GetTypeString()
                                                                                                                        \
     if constexpr( std::is_floating_point<type>::value )                                                                \
     {                                                                                                                  \
-        PlatformPrint( "[Benchmark]: %s:%s\n\t%4.1f (mults/cycle) : %4.1f (GFLOPS) \n", __FUNCTION__,                  \
-                       GetTypeString<type>(), (float)totalOps / (float)elapsedCycles,                                  \
+        PlatformPrint( "[Benchmark]: %s:%s\n\t==> %4.1f ms : %4.1f (mults/cycle) : %4.1f (GFLOPS) \n", __FUNCTION__,                  \
+                       GetTypeString<type>(), elapsed * 1000.0F,(float)totalOps / (float)elapsedCycles,                                  \
                        ( totalOps / elapsed ) / 1'000'000'000.0F );                                                    \
     }                                                                                                                  \
     else                                                                                                               \
     {                                                                                                                  \
-        PlatformPrint( "Benchmark]: %s:%s\n\t%4.1f (mults/cycle) : %4.1f (GIOPS) \n", __FUNCTION__,                    \
-                       GetTypeString<type>(), (float)totalOps / (float)elapsedCycles,                                  \
+        PlatformPrint( "Benchmark]: %s:%s\n\t==> %4.1f ms : %4.1f (mults/cycle) : %4.1f (GIOPS) \n", __FUNCTION__,                    \
+                       GetTypeString<type>(), elapsed * 1000.0F, (float)totalOps / (float)elapsedCycles,                                  \
                        ( totalOps / elapsed ) / 1'000'000'000.0F );                                                    \
     }
 
-#define EML_BENCHMARK_TIME( func )
 
 #endif // EML_MICROBENCH_H

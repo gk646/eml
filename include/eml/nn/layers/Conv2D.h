@@ -170,8 +170,8 @@ Tensor<T> Conv2DApplyPadding( const Tensor<T>& input, const Pair padding )
                         }
                         else if constexpr( pMode == PaddingMode::REPLICATE )
                         {
-                            int inputH = Clamp( h - padding.first, 0, input.h - 1 );
-                            int inputW = Clamp( w - padding.second, 0, input.w - 1 );
+                            int inputH = clampt( h - padding.first, 0, input.h - 1 );
+                            int inputW = clampt( w - padding.second, 0, input.w - 1 );
 
                             inputCopy[ padMatrixOff + h * inputCopy.w + w ] =
                                 input[ inMatrixOff + inputH * input.w + inputW ];

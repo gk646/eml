@@ -32,7 +32,7 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         # For both release and debug
         target_compile_options(${TARGET_NAME} PRIVATE
                 -Wall -Wextra -fno-exceptions -fno-rtti -march=native -flto -ffunction-sections -fdata-sections
-                -Wdouble-promotion
+
         )
         target_compile_options(${TARGET_NAME} PRIVATE
                 $<$<CONFIG:Debug>: -O0 -g>

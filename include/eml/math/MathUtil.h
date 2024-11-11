@@ -10,11 +10,12 @@
 // ................................................................
 // ................................................................
 
-
 namespace eml
 {
 
-
+// Returns the absolute value
+template <typename T>
+T abst( T val );
 
 // Returns a random float between min and max (inclusive)
 float GetRandomFloat( float min, float max );
@@ -24,10 +25,10 @@ template <typename T>
 int32_t GetDigitCount( T num );
 
 template <typename T>
-T Clamp( T val, T min, T max );
+T clampt( T val, T min, T max );
 
 template <typename T>
-T Exp( const T& val );
+T expt( const T& val );
 
 } // namespace eml
 
@@ -60,13 +61,20 @@ inline float GetRandomFloat( float min, float max )
 }
 
 template <typename T>
+T abst( T val )
+{
+    if( val < T( 0 ) )
+        return -val;
+    return val;
+}
+template <typename T>
 int32_t GetDigitCount( T num )
 {
     return 1;
 }
 
 template <typename T>
-T Clamp( const T val, const T min, const T max )
+T clampt( const T val, const T min, const T max )
 {
     if( val < min )
         return min;
@@ -76,7 +84,7 @@ T Clamp( const T val, const T min, const T max )
 }
 
 template <typename T>
-T Exp( const T& val )
+T expt( const T& val )
 {
 }
 

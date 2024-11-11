@@ -41,7 +41,7 @@ def impl_gen_conv1d(input_size, in_channels, out_channels, kernel_size, stride, 
     output_data = output_tensor.flatten().tolist()
 
     input_shape = (in_channels, 1, input_size)
-    input_tensor_decl = gen_utils.generate_decl_tensor_range("A", input_shape, len(input_data))
+    input_tensor_decl = gen_utils.generate_decl_tensor_range("A", input_shape)
 
     output_shape = (out_channels, 1, output_tensor.shape[-1])
     output_tensor_decl = gen_utils.generate_tensor_data("R", output_shape, output_data)

@@ -72,6 +72,8 @@ import test_linear
 import test_matmul
 import test_reflectionpad2d
 import test_zeropad2d
+import test_relu
+import test_leakyrelu
 
 header_gen.create_header("nn/layers", "Conv2D", test_conv2d.gen_function)
 header_gen.create_header("nn/layers", "Conv1D", test_conv1d.gen_function)
@@ -79,5 +81,7 @@ header_gen.create_header("nn/layers", "Linear", test_linear.gen_function)
 header_gen.create_header("math", "MatMul", test_matmul.gen_function)
 header_gen.create_header("nn/layers", "ReflectionPad2D", test_reflectionpad2d.gen_function)
 header_gen.create_header("nn/layers", "ZeroPad2D", test_zeropad2d.gen_function)
+header_gen.create_header("nn/layers", "ReLU", test_relu.gen_function)
+header_gen.create_header("nn/layers", "LeakyReLU", test_leakyrelu.gen_function)
 
 print("Done generating")

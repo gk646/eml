@@ -19,10 +19,11 @@ namespace eml::ops
 template <typename T>
 void Matmul( const Tensor<T>& A, const Tensor<T>& B, Tensor<T>& R );
 
-// Matrix multiplication of A and B into R
+// Matrix multiplication of A and B into R with A being handled like its transposed
 template <typename T>
 void MatmulATrans( const Tensor<T>& A, const Tensor<T>& B, Tensor<T>& R );
 
+// Matrix multiplication of A and B into R with B being handled like its transposed
 template <typename T>
 void MatmulBTrans( const Tensor<T>& A, const Tensor<T>& B, Tensor<T>& R );
 
@@ -127,18 +128,35 @@ void Kernel( const Tensor<T>& __restrict__ A, const Tensor<T>& __restrict__ B, T
 
     for( int k = l; k < r; k++ )
     {
-        const auto bBatch = xsimd::load_unaligned( transposeB ? &B[ y * B.w + k ] : &B[ k * B.w + y ] );
-        for( int i = 0; i < size; i += 4 )
+        xsimd::batch<T> bBatch;
+        if( !transposeB )
         {
-            xsimd::batch<T> alpha0{ transposeA ? A[ k * A.w + x + i ] : A[ ( x + i ) * A.w + k ] };
-            xsimd::batch<T> alpha1{ transposeA ? A[ k * A.w + x + i + 1 ] : A[ ( x + i + 1 ) * A.w + k ] };
-            xsimd::batch<T> alpha2{ transposeA ? A[ k * A.w + x + i + 2 ] : A[ ( x + i + 2 ) * A.w + k ] };
-            xsimd::batch<T> alpha3{ transposeA ? A[ k * A.w + x + i + 3 ] : A[ ( x + i + 3 ) * A.w + k ] };
+            bBatch = xsimd::load_unaligned( &B[ k * B.w + y ] );
+        }
+        else
+        {
+            T bVals[ size ];
+            for( int idx = 0; idx < size; ++idx )
+            {
+                bVals[ idx ] = B[ ( y + idx ) * B.w + k ];
+            }
+            bBatch = xsimd::load_unaligned( bVals );
+        }
 
-            t[ i ] = xsimd::fma( alpha0, bBatch, t[ i ] );
-            t[ i + 1 ] = xsimd::fma( alpha1, bBatch, t[ i + 1 ] );
-            t[ i + 2 ] = xsimd::fma( alpha2, bBatch, t[ i + 2 ] );
-            t[ i + 3 ] = xsimd::fma( alpha3, bBatch, t[ i + 3 ] );
+        for( int i = 0; i < size; ++i )
+        {
+            T aVal;
+            if( !transposeA )
+            {
+                aVal = A[ ( x + i ) * A.w + k ];
+            }
+            else
+            {
+                aVal = A[ k * A.w + x + i ];
+            }
+            xsimd::batch<T> alpha = xsimd::batch<T>::broadcast( aVal );
+
+            t[ i ] += alpha * bBatch;
         }
     }
 
@@ -161,7 +179,9 @@ void MatmulImpl( const Tensor<T>& A, const Tensor<T>& B, Tensor<T>& R )
 {
     const int32_t Ah = transposeA ? A.w : A.h;
     const int32_t Aw = transposeA ? A.h : A.w;
+#ifdef EML_DEBUG
     const int32_t Bh = transposeB ? B.w : B.h;
+#endif
     const int32_t Bw = transposeB ? B.h : B.w;
     EML_ASSERT( Aw == Bh && R.h == Ah && R.w == Bw, "Invalid dimensions" );
 
@@ -236,20 +256,19 @@ bool Equals( const Tensor<AT>& A, const Tensor<BT>& B )
     if( A.n != B.n || A.c != B.c || A.h != B.h || A.w != B.w )
         return false;
 
-    for( int32_t batch = 0; batch < A.n; ++batch )
+    for( int32_t i = 0; i < A.size; ++i )
     {
-        for( int32_t channel = 0; channel < A.c; ++channel )
+        if constexpr( std::is_same_v<float, AT> )
         {
-            for( int32_t height = 0; height < A.h; ++height )
+            if( abst( A[ i ] - B[ i ] ) > 0.0001F )
             {
-                for( int32_t width = 0; width < A.w; ++width )
-                {
-                    const auto a = A[ batch * A.chw + channel * A.hw + height * A.w + width ];
-                    const auto b = B[ batch * A.chw + channel * A.hw + height * A.w + width ];
-                    if( a != b )
-                        return false;
-                }
+                return false;
             }
+        }
+        else
+        {
+            if( A[ i ] != B[ i ] )
+                return false;
         }
     }
     return true;

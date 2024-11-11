@@ -1,27 +1,32 @@
-#ifndef EML_LAYERS_RELU_H
-#define EML_LAYERS_RELU_H
+#ifndef EML_LAYERS_LEAKYRELU_H
+#define EML_LAYERS_LEAKYRELU_H
 
 // ================================================================
-// ReLU
+// LeakyReLU
 // ================================================================
 // ................................................................
 // ................................................................
-// Doc: https://pytorch.org/docs/stable/generated/torch.nn.ReLU.html
+// Doc: https://pytorch.org/docs/stable/generated/torch.nn.LeakyReLU.html
 // ................................................................
 
 namespace eml::nn
 {
 
-struct ReLU final
+struct LeakyReLU final
 {
+
+    // Applies ReLU as normal but instead of zero multiplies negative values with the given slop
+    explicit LeakyReLU( float negativeSlope = 0.01 );
 
     // Returns an allocated tensor with the same shape as the input with the ReLU applied to all elements
     template <typename T>
-    [[nodiscard( "Allocates output tensor" )]] static Tensor<T> forward( const Tensor<T>& input );
+    [[nodiscard( "Allocates output tensor" )]] Tensor<T> forward( const Tensor<T>& input );
 
     // Applies the ReLU inplace
     template <typename T>
-    static void forward( Tensor<T>&& input );
+    void forward( Tensor<T>&& input );
+
+    float negativeSlope;
 };
 
 } // namespace eml::nn
@@ -46,8 +51,12 @@ struct ReLU final
 namespace eml::nn
 {
 
+inline LeakyReLU::LeakyReLU( const float negativeSlope ) : negativeSlope( negativeSlope )
+{
+}
+
 template <typename T>
-Tensor<T> ReLU::forward( const Tensor<T>& input )
+Tensor<T> LeakyReLU::forward( const Tensor<T>& input )
 {
     Tensor<T> output = input.copyTensor();
     forward( std::move( output ) );
@@ -55,7 +64,7 @@ Tensor<T> ReLU::forward( const Tensor<T>& input )
 }
 
 template <typename T>
-void ReLU::forward( Tensor<T>&& input )
+void LeakyReLU::forward( Tensor<T>&& input )
 {
     constexpr auto simdSize = static_cast<int32_t>( xsimd::batch<T>::size );
 
@@ -63,11 +72,14 @@ void ReLU::forward( Tensor<T>&& input )
     if constexpr( simdSize > 0 )
     {
         xsimd::batch zero_batch = xsimd::broadcast<T>( 0 );
+        xsimd::batch slope = xsimd::broadcast<T>( negativeSlope );
+
         const int32_t vec_size = input.size - input.size % simdSize;
         for( ; i < vec_size; i += simdSize )
         {
             const auto loaded = xsimd::load_unaligned( &input[ i ] );
-            const auto comp = xsimd::max( zero_batch, loaded );
+            const auto mask = loaded < zero_batch;
+            const auto comp = xsimd::select( mask, loaded * slope, loaded );
             comp.store_unaligned( &input[ i ] );
         }
     }
@@ -83,4 +95,4 @@ void ReLU::forward( Tensor<T>&& input )
 
 } // namespace eml::nn
 
-#endif // EML_LAYERS_RELU_H
+#endif // EML_LAYERS_LEAKYRELU_H

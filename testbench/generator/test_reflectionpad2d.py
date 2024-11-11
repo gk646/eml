@@ -6,7 +6,7 @@ import gen_utils
 
 def impl_gen_reflectionpad2d(input_shape, padding):
     input_size = input_shape[0] * input_shape[1]
-    input_tensor_decl = gen_utils.generate_decl_tensor_range("A", input_shape, input_size)
+    input_tensor_decl = gen_utils.generate_decl_tensor_range("A", input_shape)
 
     pad_tuple = (padding[1],padding[1],padding[0],padding[0])
     pad = torch.nn.ReflectionPad2d(pad_tuple)

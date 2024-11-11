@@ -4,7 +4,9 @@
 #include <eml/math/TensorOps.h>
 #include <eml/nn/layers/Conv1D.h>
 #include <eml/nn/layers/Conv2D.h>
+#include <eml/nn/layers/LeakyReLU.h>
 #include <eml/nn/layers/Linear.h>
+#include <eml/nn/layers/ReLU.h>
 #include <eml/nn/layers/ReflectionPad2D.h>
 
 using namespace eml::nn;
@@ -19,7 +21,9 @@ using namespace eml::ops;
 // Layers
 #include "nn/layers/Conv1D.h"
 #include "nn/layers/Conv2D.h"
+#include "nn/layers/LeakyReLU.h"
 #include "nn/layers/Linear.h"
+#include "nn/layers/ReLU.h"
 #include "nn/layers/ReflectionPad2D.h"
 #include "nn/layers/ZeroPad2D.h"
 #include "nn/models/LogicGates.h"
@@ -42,6 +46,8 @@ inline void RunTests()
     TestNNReflectionPad2D();
     TestNNZeroPad2D();
     TestNNConv1D();
+    TestNNReLU();
+    TestNNLeakyReLU();
 
     // Models
     TestNNCustom();
