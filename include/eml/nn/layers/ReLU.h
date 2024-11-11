@@ -1,33 +1,29 @@
-#ifndef EML_NN_LAYERS_REFLECTIONPAD2D_H
-#define EML_NN_LAYERS_REFLECTIONPAD2D_H
+#ifndef EML_LAYERS_RELU_H
+#define EML_LAYERS_RELU_H
+
 
 // ================================================================
-// ReflectionPad2D
+// ReLU
 // ================================================================
 // ................................................................
 // ................................................................
-// Doc: https://pytorch.org/docs/stable/generated/torch.nn.ReflectionPad2d.html
+// Doc: https://pytorch.org/docs/stable/generated/torch.nn.ReLU.html
 // ................................................................
 
 namespace eml::nn
 {
 
-struct ReflectionPad2D final
+struct ReLU final
 {
-
-    explicit ReflectionPad2D( Pair padding );
 
     // Allocates a tensor of size (input.h + padding.first * 2, input.w + padding.second * 2)
     template <typename T>
-    Tensor<T> forward( const Tensor<T>& input );
+    static Tensor<T> forward( const Tensor<T>& input );
 
     // Expects output a tensor of size (input.h + padding.first * 2, input.w + padding.second * 2)
     template <typename T>
-    void forward( const Tensor<T>& input, Tensor<T>& output );
+    static void forward( Tensor<T>& input );
 
-
-  private:
-    Pair padding;
 };
 
 } // namespace eml::nn
@@ -52,23 +48,19 @@ struct ReflectionPad2D final
 namespace eml::nn
 {
 
-inline ReflectionPad2D::ReflectionPad2D( const Pair padding ) : padding( padding )
-{
-}
-
 template <typename T>
-Tensor<T> ReflectionPad2D::forward( const Tensor<T>& input )
+static Tensor<T> ReLU::forward( const Tensor<T>& input )
 {
-    Tensor<T> output{ input.h + padding.first * 2, input.w + padding.second * 2 };
+    Tensor<T> output{ };
     output.allocate();
-    forward( input, output );
+    forward( output );
     return output;
 }
 
 template <typename T>
-void ReflectionPad2D::forward( const Tensor<T>& input, Tensor<T>& output )
+static void ReLU::forward( const Tensor<T>& input )
 {
-    EML_ASSERT( output.h == input.h + padding.first * 2 && output.w == input.w + padding.second * 2, "Invalid shape" );
+
     int32_t directionH = padding.first > 0 ? -1 : 1;
     int32_t indexH = padding.first;
     for( int32_t h = 0; h < output.h; h++ )
@@ -94,4 +86,4 @@ void ReflectionPad2D::forward( const Tensor<T>& input, Tensor<T>& output )
 
 } // namespace eml::nn
 
-#endif // EML_NN_LAYERS_REFLECTIONPAD2D_H
+#endif // EML_LAYERS_SOFTMAX_H

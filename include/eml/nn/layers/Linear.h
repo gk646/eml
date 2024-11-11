@@ -4,26 +4,29 @@
 #include <eml/math/Tensor.h>
 #include <eml/math/TensorOps.h>
 
+// ================================================================
+// Linear
+// ================================================================
+// ................................................................
+// Linear or dense layer with an optional bias vector
+// ................................................................
+// Doc: https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html
+// ................................................................
+
 namespace eml::nn
 {
 template <typename T>
-struct Linear final : Layer
+struct Linear final
 {
     Linear( int32_t in, int32_t out, bool bias = true );
 
-    // Returns an allocated tensor with shape (in, out)
+    // Returns an allocated tensor with shape (input.nch, out)
     Tensor<T> forward( Tensor<T>& input );
 
-    // Expects a correctly shaped and sufficiently allocated output tensor (in, out)
+    // Expects a correctly shaped and sufficiently allocated output tensor (input.nch, out)
     void forward( Tensor<T>& input, Tensor<T>& output );
 
-    // ------------ Info ------------
-
-    // see nn/Layer.h
-    [[nodiscard]] int32_t getWeights() const override;
-
-    // see nn/Layer.h
-    [[nodiscard]] int32_t getMults( const Tuple& inputShape ) const override;
+    // ============ Info ============
 
     int32_t inputSize;
     int32_t outputSize;
@@ -67,6 +70,14 @@ Tensor<T> Linear<T>::forward( Tensor<T>& input )
     // Weights are in shape (out,in) so whe need weights.h to get out
     Tensor<T> output{ input.h, weights.h };
     output.allocate();
+    forward( input, output );
+    return output;
+}
+
+template <typename T>
+void Linear<T>::forward( Tensor<T>& input, Tensor<T>& output )
+{
+    EML_ASSERT(input.w == inputSize ,"Invalid input shape");
     // Multiplied as if b is transposed to match the dims (1, in), (out,in)
     ops::MatmulBTrans( input, weights, output );
 
@@ -107,32 +118,6 @@ Tensor<T> Linear<T>::forward( Tensor<T>& input )
             }
         }
     }
-
-    return output;
-}
-
-template <typename T>
-void Linear<T>::forward( Tensor<T>& input, Tensor<T>& output )
-{
-    Matmul( input, weights, output );
-    if( useBias )
-        Matmul( output, biases, output );
-}
-
-template <typename T>
-int32_t Linear<T>::getWeights() const
-{
-    return useBias ? weights.size + biases.size : weights.size;
-}
-
-template <typename T>
-int32_t Linear<T>::getMults( const Tuple& inputShape ) const
-{
-    // Inputs for linear layer are at the simplest form a vector
-    // But you can have a matrix where each vector is an input vector
-    // For each input vector you do a matmul with dims (MxN): (1xinput) * (input,output)
-    // For a matmul (MxN) the multiplications are: m1 * n1 * n2
-    return inputShape.third * ( 1 * inputShape.fourth * weights.h );
 }
 
 } // namespace eml::nn

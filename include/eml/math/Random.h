@@ -1,0 +1,4 @@
+#ifndef EML_MATH_RANDOM_H
+#define EML_MATH_RANDOM_H
+
+#endif //EML_MATH_RANDOM_H

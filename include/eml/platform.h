@@ -3,16 +3,16 @@
 
 #include <cstdint>
 
-//-----------------------------------------------
+//==============================================-
 // Platform Interface
-//-----------------------------------------------
+//==============================================-
 // ................................................................................
 // This header defines the public interface of a platform for ecml
 // ................................................................................
 
 namespace eml
 {
-//----------------- SETUP -----------------//
+//================- SETUP ================-//
 
 // Called at program startup
 void PlatformInit();
@@ -20,7 +20,7 @@ void PlatformInit();
 // Called at program stop
 void PlatformDestroy();
 
-//----------------- IO -----------------//
+//================- IO ================-//
 
 // Used for asserts
 void PlatformAssert( char const* expr, const char* msg, char const* file, unsigned line );
@@ -31,7 +31,7 @@ void PlatformPrint( const char* format, ... );
 // Logs a string
 void PlatformLog( const char* format, ... );
 
-//----------------- MEASURE -----------------//
+//================- MEASURE ================-//
 
 // Returns the current cpu clock count
 uint32_t PlatformCycleCount();
@@ -39,13 +39,13 @@ uint32_t PlatformCycleCount();
 // Returns a steady clock value in microseconds
 uint32_t PlatformClock();
 
-//----------------- MEMORY -----------------//
+//================- MEMORY ================-//
 
 // Handles memory allocations
 void* PlatformAlloc( uint32_t size );
 void PlatformFree( void* ptr );
 
-//----------------- MULTICORE -----------------//
+//================- MULTICORE ================-//
 
 // Executes the given method in the specified core
 void PlatformCoreExecute( int core, void* method );
@@ -53,7 +53,7 @@ void PlatformCoreExecute( int core, void* method );
 // Sends data from core 'from' to core 'to'
 void PlatformCoreSendData( int from, int to, void* data );
 
-//----------------- MISC -----------------//
+//================- MISC ================-//
 
 // Returns a human-readable platform name
 const char* PlatformName();

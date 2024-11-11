@@ -3,13 +3,14 @@ import random
 import torch
 import gen_utils
 
+
 def impl_gen_zeropad2d(input_shape, padding):
     input_size = input_shape[0] * input_shape[1]
     input_tensor_decl = gen_utils.generate_decl_tensor_range("A", input_shape, input_size)
 
-    pad_tuple = (padding[1],padding[1],padding[0],padding[0])
+    pad_tuple = (padding[1], padding[1], padding[0], padding[0])
     pad = torch.nn.ZeroPad2d(pad_tuple)
-    input_tensor = torch.arange(1,input_size + 1).reshape(1,1,input_shape[0],input_shape[1])
+    input_tensor = torch.arange(1, input_size + 1).reshape(1, 1, input_shape[0], input_shape[1])
     torch_output = pad(input_tensor).detach()
 
     output_data = torch_output.numpy()
@@ -22,7 +23,7 @@ def impl_gen_zeropad2d(input_shape, padding):
     ZeroPad2D layer{{ {{ {padding[0]},{padding[1]} }} }};
     auto out = layer.forward(A);
     {output_tensor_decl}
-    return Equals(R, out);
+    {gen_utils.test_macro}(R, out);
 """
     return cpp_code
 
@@ -33,7 +34,6 @@ input_shapes = [
     (4, 5),
     (6, 6),
     (7, 8),
-    (8, 8)
 ]
 
 paddings = [

@@ -1,3 +1,5 @@
+import random
+
 import torch
 
 import gen_utils
@@ -29,7 +31,7 @@ def impl_gen_linear(input_size, output_size, use_bias):
     const auto out = layer.forward(A);
     
     {output_tensor_decl}
-    return Equals(out, R);
+     {gen_utils.test_macro}(R, out);
 """
     return cpp_code
 
@@ -43,6 +45,8 @@ def gen_function(index):
     input_size = input_sizes[index % len(input_sizes)]
     output_size = output_sizes[index % len(output_sizes)]
     use_bias = bias_options[index % len(bias_options)]
-    if index > 6:
+    random.shuffle(output_sizes)
+    random.shuffle(input_sizes)
+    if index > 25:
         return None
     return impl_gen_linear(input_size, output_size, use_bias)

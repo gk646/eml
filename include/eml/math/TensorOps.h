@@ -1,8 +1,16 @@
 #ifndef EML_TENSOR_OPS_H
 #define EML_TENSOR_OPS_H
 
+#include <eml/math/MathUtil.h>
 #include <eml/math/Tensor.h>
 #include <xsimd/xsimd.hpp>
+
+// ================================================================
+// TensorOps
+// ================================================================
+// ................................................................
+// Various operations performed on tensors
+// ................................................................
 
 namespace eml::ops
 {
@@ -92,13 +100,13 @@ void Kernel( const Tensor<T>& __restrict__ A, const Tensor<T>& __restrict__ B, T
 
         for( int k = l; k < r; k++ )
         {
-            // read rows
-            T a0 = transposeA ? A[ k * A.w + x ] : A[ x * A.w + k ];
-            T a1 = transposeA ? A[ ( k + 1 ) * A.w + x ] : A[ ( x + 1 ) * A.w + k ];
 
-            // read columns
-            T b0 = B[ k * B.w + y ];
-            T b1 = B[ k * B.w + y + 1 ];
+            T a0 = transposeA ? A[ k * A.w + x ] : A[ x * A.w + k ];
+            T a1 = transposeA ? A[ k * A.w + x + 1 ] : A[ ( x + 1 ) * A.w + k ];
+
+            // read elements from B
+            T b0 = transposeB ? B[ y * B.w + k ] : B[ k * B.w + y ];
+            T b1 = transposeB ? B[ ( y + 1 ) * B.w + k ] : B[ k * B.w + y + 1 ];
 
             // update all combinations
             c00 += a0 * b0;
@@ -120,35 +128,17 @@ void Kernel( const Tensor<T>& __restrict__ A, const Tensor<T>& __restrict__ B, T
     for( int k = l; k < r; k++ )
     {
         const auto bBatch = xsimd::load_unaligned( transposeB ? &B[ y * B.w + k ] : &B[ k * B.w + y ] );
-        if constexpr( std::is_same_v<T, float> )
+        for( int i = 0; i < size; i += 4 )
         {
-            for( int i = 0; i < size; i += 4 )
-            {
-                xsimd::batch<T> alpha0{ A[ ( x + i ) * A.w + k ] };
-                xsimd::batch<T> alpha1{ A[ ( x + i + 1 ) * A.w + k ] };
-                xsimd::batch<T> alpha2{ A[ ( x + i + 2 ) * A.w + k ] };
-                xsimd::batch<T> alpha3{ A[ ( x + i + 3 ) * A.w + k ] };
+            xsimd::batch<T> alpha0{ transposeA ? A[ k * A.w + x + i ] : A[ ( x + i ) * A.w + k ] };
+            xsimd::batch<T> alpha1{ transposeA ? A[ k * A.w + x + i + 1 ] : A[ ( x + i + 1 ) * A.w + k ] };
+            xsimd::batch<T> alpha2{ transposeA ? A[ k * A.w + x + i + 2 ] : A[ ( x + i + 2 ) * A.w + k ] };
+            xsimd::batch<T> alpha3{ transposeA ? A[ k * A.w + x + i + 3 ] : A[ ( x + i + 3 ) * A.w + k ] };
 
-                t[ i ] = xsimd::fma( alpha0, bBatch, t[ i ] );
-                t[ i + 1 ] = xsimd::fma( alpha1, bBatch, t[ i + 1 ] );
-                t[ i + 2 ] = xsimd::fma( alpha2, bBatch, t[ i + 2 ] );
-                t[ i + 3 ] = xsimd::fma( alpha3, bBatch, t[ i + 3 ] );
-            }
-        }
-        else
-        {
-            for( int i = 0; i < size; i += 4 )
-            {
-                xsimd::batch<T> alpha0{ A[ ( x + i ) * A.w + k ] };
-                xsimd::batch<T> alpha1{ A[ ( x + i + 1 ) * A.w + k ] };
-                xsimd::batch<T> alpha2{ A[ ( x + i + 2 ) * A.w + k ] };
-                xsimd::batch<T> alpha3{ A[ ( x + i + 3 ) * A.w + k ] };
-
-                t[ i ] += alpha0 * bBatch;
-                t[ i + 1 ] += alpha1 * bBatch;
-                t[ i + 2 ] += alpha2 * bBatch;
-                t[ i + 3 ] += alpha3 * bBatch;
-            }
+            t[ i ] = xsimd::fma( alpha0, bBatch, t[ i ] );
+            t[ i + 1 ] = xsimd::fma( alpha1, bBatch, t[ i + 1 ] );
+            t[ i + 2 ] = xsimd::fma( alpha2, bBatch, t[ i + 2 ] );
+            t[ i + 3 ] = xsimd::fma( alpha3, bBatch, t[ i + 3 ] );
         }
     }
 
@@ -175,30 +165,44 @@ void MatmulImpl( const Tensor<T>& A, const Tensor<T>& B, Tensor<T>& R )
     const int32_t Bw = transposeB ? B.h : B.w;
     EML_ASSERT( Aw == Bh && R.h == Ah && R.w == Bw, "Invalid dimensions" );
 
-    /*
-    constexpr auto simdValues = xsimd::simd_type<T>::size == 0 ? 2 : static_cast<int32_t>( xsimd::simd_type<T>::size );
+    constexpr auto simdValues = xsimd::simd_type<T>::size == 0 ? 2 : xsimd::batch<T>::size;
 
     const int32_t stepsA = Ah - ( Ah % simdValues );
     const int32_t stepsB = Bw - ( Bw % simdValues );
 
     for( int x = 0; x < stepsA; x += simdValues )
         for( int y = 0; y < stepsB; y += simdValues )
-            impl::Kernel<T, simdValues, transposeA, transposeB>( A, B, R, x, y, 0, R.w );
-
-    */
+            impl::Kernel<T, simdValues, transposeA, transposeB>( A, B, R, x, y, 0, Aw );
 
     for( int32_t h = 0; h < Ah; ++h )
     {
-        for( int32_t w = 0; w < Bw; ++w )
+        if( h >= stepsA )
         {
-            T sum = T( 0 );
-            for( int32_t k = 0; k < Aw; ++k )
+            for( int32_t w = 0; w < Bw; ++w )
             {
-                const auto valA = transposeA ? A[ k * A.h + h ] : A[ h * A.w + k ];
-                const auto valB = transposeB ? B[ w * B.w + k ] : B[ k * B.w + w ];
-                sum += valA * valB;
+                T sum = T( 0 );
+                for( int32_t k = 0; k < Aw; ++k )
+                {
+                    const auto valA = transposeA ? A[ k * A.w + h ] : A[ h * A.w + k ];
+                    const auto valB = transposeB ? B[ w * B.w + k ] : B[ k * B.w + w ];
+                    sum += valA * valB;
+                }
+                R[ h * R.w + w ] = sum;
             }
-            R[ h * R.w + w ] = sum;
+        }
+        else
+        {
+            for( int32_t w = stepsB; w < Bw; ++w )
+            {
+                T sum = T( 0 );
+                for( int32_t k = 0; k < Aw; ++k )
+                {
+                    const auto valA = transposeA ? A[ k * A.w + h ] : A[ h * A.w + k ];
+                    const auto valB = transposeB ? B[ w * B.w + k ] : B[ k * B.w + w ];
+                    sum += valA * valB;
+                }
+                R[ h * R.w + w ] = sum;
+            }
         }
     }
 }

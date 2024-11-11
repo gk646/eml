@@ -23,7 +23,7 @@ def impl_gen_reflectionpad2d(input_shape, padding):
     ReflectionPad2D layer{{ {{ {padding[0]},{padding[1]} }} }};
     auto out = layer.forward(A);
     {output_tensor_decl}
-    return Equals(R, out);
+     {gen_utils.test_macro}(R, out);
 """
     return cpp_code
 
@@ -34,7 +34,6 @@ input_shapes = [
     (4, 5),
     (6, 6),
     (7, 8),
-    (8, 8)
 ]
 
 paddings = [

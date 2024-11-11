@@ -1,15 +1,15 @@
 #ifndef EML_LAYERS_CONV2D_H
 #define EML_LAYERS_CONV2D_H
 
-#include <eml/math/Tensor.h>
 #include <eml/math/TensorOps.h>
-#include <eml/nn/Layer.h>
+#include <eml/nn/LayerUtil.h>
 #include <eml/nn/layers/ReflectionPad2D.h>
 #include <eml/nn/layers/ZeroPad2D.h>
+#include <eml/math/MathUtil.h>
 
-// ----------------------------------------------------------------
+// ================================================================
 // Conv2D
-// ----------------------------------------------------------------
+// ================================================================
 // ................................................................
 // Does not support groups or dilation
 // ................................................................
@@ -20,7 +20,7 @@ namespace eml::nn
 {
 
 template <typename T>
-struct Conv2D final : Layer
+struct Conv2D final
 {
 
     // Creates a new Conv2D layer with the given parameters
@@ -37,26 +37,20 @@ struct Conv2D final : Layer
     //      - padding: dimensions of the kernel
     Conv2D( int32_t inC, int32_t outC, Pair kernel );
 
-    // ------------ Inference ------------
+    // ============ Inference ============
 
-    // Returns an allocated tensor with shape (in, out)
+    // Returns an allocated tensor with shape (*, outC, outH, outW)
     Tensor<T> forward( const Tensor<T>& input );
 
-    // Expects a correctly shaped and sufficiently allocated output tensor (in, out)
+    // Expects a correctly shaped and sufficiently allocated output tensor with shape: (*, outC, outH, outW)
     void forward( const Tensor<T>& input, Tensor<T>& output );
 
-    // ------------ Info ------------
+    // ============ Info ============
 
     // Returns the shape of the output tensor given a certain input tensor
     [[nodiscard]] Tuple getOutShape( const Tuple& input ) const;
 
-    // see nn/Layer.h
-    [[nodiscard]] int32_t getWeights() const override;
-
-    // see nn/Layer.h
-    [[nodiscard]] int32_t getMults( const Tuple& shape ) const override;
-
-    // ------------ Access ------------
+    // ============ Access ============
 
     Tensor<T> weights; // Learnable weights of shape (kernelX, kernelY)
     Tensor<T> biases; // Learnable bias of the layer (out)
@@ -234,6 +228,7 @@ void Conv2D<T>::forward( const Tensor<T>& __restrict input, Tensor<T>& __restric
     EML_ASSERT( output.shape() == getOutShape( input.shape() ), "Output Tensor has wrong dimensions!" );
     EML_ASSERT( output.isAllocated() || output.isAllocatedCustom(), "Output Tensor is not allocated!" );
     EML_ASSERT( input.isAllocated() || input.isAllocatedCustom(), "Input Tensor is not allocated!" );
+    EML_ASSERT( input.shape().second == inChannels, "Input Tensor has wrong dimensions" );
 
     Tensor<T> paddedInput = input;
     if( padding.first != 0 || padding.second != 0 ) // Don't copy if there's no padding
@@ -312,22 +307,6 @@ Tuple Conv2D<T>::getOutShape( const Tuple& input ) const
     const int32_t outWidth = ( simpleWidth / stride.second ) + 1;
 
     return { input.first, outChannels, outHeight, outWidth };
-}
-
-template <typename T>
-int32_t Conv2D<T>::getWeights() const
-{
-    return useBias ? weights.size + biases.size : weights.size;
-}
-
-template <typename T>
-int32_t Conv2D<T>::getMults( const Tuple& shape ) const
-{
-    // A single filter operation is output shape times kernel multiplications: (x * y) * (kx * ky) = m
-    // This is done for each input channel for each output channel: m * input * output
-    // This is then done for each batch
-    const auto outShape = getOutShape( shape );
-    return shape.first * outChannels * shape.second * outShape.third * outShape.fourth * kernel.first * kernel.second;
 }
 
 } // namespace eml::nn

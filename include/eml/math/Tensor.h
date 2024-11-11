@@ -1,15 +1,11 @@
 #ifndef EML_TENSOR_H
 #define EML_TENSOR_H
 
-#include <cstring>
-#include <type_traits>
+#include <eml/util/Types.h>
 
-#include <eml/config.h>
-#include <eml/math/MathUtil.h>
-
-// ----------------------------------------------------------------
+// ================================================================
 // Tensor
-// ----------------------------------------------------------------
+// ================================================================
 // ................................................................
 // Class implements a 4 dimensional tensor - for data operations see math/TensorOps.h
 // If not specified batch and channel are 1 - as in the tensor has 1 batch and 1 channel per default
@@ -50,7 +46,7 @@ struct Tensor final
     T& operator[]( int32_t idx );
     const T& operator[]( int32_t idx ) const;
 
-    // ------------ Memory ------------
+    // ============ Memory ============
 
     // Allocates memory according to the current size ONLY when data is nullptr - uses PlatformAlloc
     void allocate();
@@ -73,7 +69,7 @@ struct Tensor final
     // Returns a copy of the tensor using allocate() - equal to Tensor(shape()), allocate() and memcpy()
     Tensor<T> copyTensor() const;
 
-    // ------------ Shape ------------
+    // ============ Shape ============
 
     // Returns a tuple that contains this vectors dimensions in the form {n, c, h, w}
     [[nodiscard]] Tuple shape() const;
@@ -81,12 +77,16 @@ struct Tensor final
     // Transposes the tensor inplace
     void transpose();
 
-    // ------------ Misc ------------
+    // Reshapes the tensor to the given shape
+    // If already allocated, only works if the new shape fits into existing memory
+    void reshape( const Tuple& shape );
+
+    // ============ Misc ============
 
     // Prints the tensor with PlatformPrint()
     void print( const char* name = "Tensor" ) const;
 
-    // ------------ Data ------------
+    // ============ Data ============
 
     T* ptr = nullptr; // Data pointer
     int32_t capacity = 0; // Allocated size
@@ -100,7 +100,7 @@ struct Tensor final
     int32_t hw = 0; // Channel stride
     int32_t chw = 0; // Batch stride
 
-    // ------------ Metadata ------------
+    // ============ Metadata ============
 
     int32_t scale = 1; // Scale for quantized values
     bool customAllocated = false;
@@ -275,6 +275,11 @@ void Tensor<T>::transpose()
     const int32_t tmp = h;
     h = w;
     w = tmp;
+}
+
+template <typename T>
+void Tensor<T>::reshape( const Tuple& shape )
+{
 }
 
 template <typename T>

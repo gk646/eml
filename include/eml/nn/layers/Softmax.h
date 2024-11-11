@@ -1,11 +1,11 @@
 #ifndef EML_LAYERS_SOFTMAX_H
 #define EML_LAYERS_SOFTMAX_H
 
-#include <eml/nn/Layer.h>
 
-// ----------------------------------------------------------------
+
+// ================================================================
 // Softmax
-// ----------------------------------------------------------------
+// ================================================================
 // ................................................................
 // ................................................................
 // Doc: https://pytorch.org/docs/stable/generated/torch.nn.Softmax.html
@@ -14,7 +14,7 @@
 namespace eml::nn
 {
 
-struct Softmax final : Layer
+struct Softmax final
 {
 
     // Allocates a tensor of size (input.h + padding.first * 2, input.w + padding.second * 2)

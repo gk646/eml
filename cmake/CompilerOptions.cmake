@@ -1,6 +1,6 @@
-# ----------------------------------------------------------------------
+# ======================================================================
 # Compiler Options
-# ----------------------------------------------------------------------
+# ======================================================================
 
 # Ensure the project name is defined
 if (NOT TARGET ${TARGET_NAME})
@@ -31,7 +31,8 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
 
         # For both release and debug
         target_compile_options(${TARGET_NAME} PRIVATE
-                -Wall -Wextra -fno-exceptions -fno-rtti -march=native -flto
+                -Wall -Wextra -fno-exceptions -fno-rtti -march=native -flto -ffunction-sections -fdata-sections
+                -Wdouble-promotion
         )
         target_compile_options(${TARGET_NAME} PRIVATE
                 $<$<CONFIG:Debug>: -O0 -g>
@@ -40,8 +41,8 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
 
         # Set link options for Release configuration
         target_link_options(${TARGET_NAME} PRIVATE
-                $<$<CONFIG:Debug>:-flto -Wl,-Map=output.map >
-                $<$<CONFIG:Release>:-flto>
+                $<$<CONFIG:Debug>:-flto -Wl,-Map=output.map>
+                $<$<CONFIG:Release>:-flto -Wl,--gc-sections>
         )
 
         # Insert test coverage flags if EML_TEST is set

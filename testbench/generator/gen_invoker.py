@@ -44,7 +44,7 @@ class HeaderGenerator:
             content += f"\t{self.test_macro}( test{file_name}Case{i} );\n"
             if i == self.tiny_guard_limit:
                 content += f"#ifndef {self.tiny_guard_name}\n"
-        if num_tests >= self.tiny_guard_limit:
+        if num_tests > self.tiny_guard_limit:
             content += "#endif"
         content += "\n}"
 
@@ -67,12 +67,14 @@ class HeaderGenerator:
 header_gen = HeaderGenerator(75, 25, "EML_RUN_TEST")
 
 import test_conv2d
+import test_conv1d
 import test_linear
 import test_matmul
 import test_reflectionpad2d
 import test_zeropad2d
 
 header_gen.create_header("nn/layers", "Conv2D", test_conv2d.gen_function)
+header_gen.create_header("nn/layers", "Conv1D", test_conv1d.gen_function)
 header_gen.create_header("nn/layers", "Linear", test_linear.gen_function)
 header_gen.create_header("math", "MatMul", test_matmul.gen_function)
 header_gen.create_header("nn/layers", "ReflectionPad2D", test_reflectionpad2d.gen_function)

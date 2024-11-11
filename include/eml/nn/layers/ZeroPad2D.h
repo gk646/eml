@@ -1,11 +1,11 @@
 #ifndef EML_NN_LAYERS_ZEROPAD2D_H
 #define EML_NN_LAYERS_ZEROPAD2D_H
 
-#include <eml/nn/Layer.h>
 
-// ----------------------------------------------------------------
+
+// ================================================================
 // ReflectionPad2D
-// ----------------------------------------------------------------
+// ================================================================
 // ................................................................
 // ................................................................
 // Doc: https://pytorch.org/docs/stable/generated/torch.nn.ZeroPad2d.html
@@ -14,7 +14,7 @@
 namespace eml::nn
 {
 
-struct ZeroPad2D final : Layer
+struct ZeroPad2D final
 {
 
     explicit ZeroPad2D( Pair padding );

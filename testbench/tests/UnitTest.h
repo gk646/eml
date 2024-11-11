@@ -3,9 +3,9 @@
 
 #include <eml/platform.h>
 
-//-----------------------------------------------
+//==============================================-
 // Test
-//-----------------------------------------------
+//==============================================-
 // ................................................................................
 // A small testing framework that handles different results and prints out stats with a clean run macro
 // eml does not use frameworks that handle compiling and running the test because:
@@ -31,6 +31,24 @@ enum TestResult : int
 };
 
 inline TestContext TEST_CONTEXT{};
+
+inline void PrintTestStats()
+{
+    PlatformPrint( " =========================================\n"
+                   "|............... S T A T S ...............|\n"
+                   " =========================================\n"
+                   "| %-7s : %3d                           |\n"
+                   "| %-7s : %3d (%3d%%)                    |\n"
+                   "| %-7s : %3d (%3d%%)                    |\n"
+                   "| %-7s : %3d                           |\n"
+                   "| %-7s : %3d                           |\n"
+                   "==========================================-\n\n",
+                   "Total", TEST_CONTEXT.currentTest, "Passed", TEST_CONTEXT.passedTest,
+                   (int)( (float)TEST_CONTEXT.passedTest / (float)TEST_CONTEXT.currentTest * 100.0F ), "Failed",
+                   TEST_CONTEXT.failedTest,
+                   (int)( (float)TEST_CONTEXT.failedTest / (float)TEST_CONTEXT.currentTest * 100.0F ), "Skipped",
+                   TEST_CONTEXT.skippedTest, "Unknown", TEST_CONTEXT.unknownTest );
+}
 
 #define EML_RUN_TEST( func, ... )                                                                                      \
     {                                                                                                                  \
@@ -62,22 +80,15 @@ inline TestContext TEST_CONTEXT{};
         ++TEST_CONTEXT.currentTest;                                                                                    \
     }
 
-inline void PrintTestStats()
-{
-    PlatformPrint( " =========================================\n"
-                   "|............... S T A T S ...............|\n"
-                   " =========================================\n"
-                   "| %-7s : %3d                           |\n"
-                   "| %-7s : %3d (%3d%%)                    |\n"
-                   "| %-7s : %3d (%3d%%)                    |\n"
-                   "| %-7s : %3d                           |\n"
-                   "| %-7s : %3d                           |\n"
-                   "-------------------------------------------\n\n",
-                   "Total", TEST_CONTEXT.currentTest, "Passed", TEST_CONTEXT.passedTest,
-                   (int)( (float)TEST_CONTEXT.passedTest / (float)TEST_CONTEXT.currentTest * 100.0F ), "Failed",
-                   TEST_CONTEXT.failedTest,
-                   (int)( (float)TEST_CONTEXT.failedTest / (float)TEST_CONTEXT.currentTest * 100.0F ), "Skipped",
-                   TEST_CONTEXT.skippedTest, "Unknown", TEST_CONTEXT.unknownTest );
-}
+#define EML_ASSERT_TENSOR_EQUALS( expected, actual )                                                                   \
+    const auto res = ops::Equals( expected, actual );                                                                  \
+    if( !res )                                                                                                         \
+    {                                                                                                                  \
+        PlatformPrint( "Expected:\n" );                                                                                \
+        expected.print();                                                                                              \
+        PlatformPrint( "Actual:\n" );                                                                                  \
+        actual.print();                                                                                                \
+    }                                                                                                                  \
+    return res;
 
 #endif // EML_UNIT_TEST_H

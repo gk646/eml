@@ -1,6 +1,6 @@
-# ----------------------------------------------------------------------
+# ======================================================================
 # CMake Configuration
-# ----------------------------------------------------------------------
+# ======================================================================
 
 cmake_minimum_required(VERSION 3.21)
 project(eml
@@ -13,9 +13,9 @@ project(eml
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 set(CMAKE_CXX_STANDARD 17) # most recent C++ standard supported by IAR
 
-# ----------------------------------------------------------------------
+# ======================================================================
 # Configuration Options
-# ----------------------------------------------------------------------
+# ======================================================================
 # NOTE: WHEN USING CMAKE CACHE, CHANGES NEED A CACHE RESET TO APPLY!
 
 # Choose which platform file to compile with
@@ -52,9 +52,9 @@ set(EML_CORES 1 CACHE STRING "The amount of cores to optimize for")
 # If building with GCC or clang builds a coverage report in /testbench/artifacts
 option(EML_TEST "Enable building the tests" OFF)
 
-# ----------------------------------------------------------------------
+# ======================================================================
 # Build Library
-# ----------------------------------------------------------------------
+# ======================================================================
 
 # Builds the library
 include(cmake/BuildLibrary.cmake)

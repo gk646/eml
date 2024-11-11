@@ -1,8 +1,8 @@
-# ----------------------------------------------------------------------
+# ======================================================================
 # Print Build Options
-# ----------------------------------------------------------------------
+# ======================================================================
 
-message(STATUS "------------------ EML ------------------------")
+message(STATUS "================== EML ========================")
 message(STATUS "Building with platform:     ${EML_PLATFORM}")
 if (${EML_PLATFORM} STREQUAL "custom")
     message(WARNING "   Building with a custom platform. Make sure to compile with your platform_xxx.cpp ")
@@ -10,9 +10,9 @@ endif ()
 message(STATUS "Compiling for architecture: ${EML_ARCH}")
 message(STATUS "Using SIMD level:           ${EML_SIMD_LEVEL}")
 
-# ----------------------------------------------------------------------
+# ======================================================================
 # Add Library
-# ----------------------------------------------------------------------
+# ======================================================================
 
 # Get all source files
 file(GLOB_RECURSE SRC_FILES "src/*.cpp")
@@ -30,4 +30,4 @@ target_include_directories(eml PRIVATE src)
 # Adds correct definitions for the runtime
 include(cmake/AddDefines.cmake)
 
-message(STATUS "------------------------------------------------")
+message(STATUS "================================================")

@@ -1,9 +1,9 @@
-#ifndef EML_ACTIVATIONFUNCTIONS_H
-#define EML_ACTIVATIONFUNCTIONS_H
+#ifndef EML_MATH_FUNCTIONS_H
+#define EML_MATH_FUNCTIONS_H
 
 #include <eml/math/TensorOps.h>
 
-namespace eml::actf
+namespace eml
 {
 
 // https://en.wikipedia.org/wiki/Rectifier_(neural_networks)
@@ -23,7 +23,7 @@ void LeakyReLu( Tensor<T>& A );
 template <typename T>
 void LeakyReLu( T& t );
 
-} // namespace eml::actf
+} // namespace eml
 
 // IMPLEMENTATION
 //
@@ -42,7 +42,7 @@ void LeakyReLu( T& t );
 //
 //
 
-namespace eml::actf
+namespace eml
 {
 
 // Inplace operation
@@ -82,6 +82,6 @@ void LeakyReLu( T& t )
     t = 0.01F;
 }
 
-} // namespace eml::actf
+} // namespace eml
 
-#endif // EML_ACTIVATIONFUNCTIONS_H
+#endif // EML_MATH_FUNCTIONS_H

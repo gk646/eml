@@ -3,42 +3,18 @@
 
 #include <random>
 
-// ----------------------------------------------------------------
-// Softmax
-// ----------------------------------------------------------------
+// ================================================================
+// Math
+// ================================================================
 // ................................................................
 // ................................................................
-// Doc: https://pytorch.org/docs/stable/generated/torch.nn.Softmax.html
 // ................................................................
 
 
 namespace eml
 {
 
-enum class PaddingMode
-{
-    ZEROS,
-    REFLECT,
-    REPLICATE,
-    CIRCULAR
-};
 
-struct Pair
-{
-    int32_t first;
-    int32_t second;
-};
-
-struct Tuple
-{
-    int32_t first;
-    int32_t second;
-    int32_t third;
-    int32_t fourth;
-
-    bool operator==( const Tuple& rhs ) const;
-    bool operator!=( const Tuple& rhs ) const;
-};
 
 // Returns a random float between min and max (inclusive)
 float GetRandomFloat( float min, float max );
@@ -75,16 +51,6 @@ T Exp( const T& val );
 namespace eml
 {
 
-inline bool Tuple::operator==( const Tuple& rhs ) const
-{
-    return first == rhs.first && second == rhs.second && third == rhs.third && fourth == rhs.fourth;
-}
-
-inline bool Tuple::operator!=( const Tuple& rhs ) const
-{
-    return !( *this == rhs );
-}
-
 inline float GetRandomFloat( float min, float max )
 {
 
@@ -107,6 +73,11 @@ T Clamp( const T val, const T min, const T max )
     if( val > max )
         return max;
     return val;
+}
+
+template <typename T>
+T Exp( const T& val )
+{
 }
 
 } // namespace eml

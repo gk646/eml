@@ -1,12 +1,12 @@
 #ifndef EML_LAYERS_REFLECTIONPAD1D_H
 #define EML_LAYERS_REFLECTIONPAD1D_H
 
-#include <eml/nn/Layer.h>
 
 
-// ----------------------------------------------------------------
+
+// ================================================================
 // ReflectionPad1D
-// ----------------------------------------------------------------
+// ================================================================
 // ................................................................
 // ................................................................
 // Doc: https://pytorch.org/docs/stable/generated/torch.nn.ReflectionPad1d.html
@@ -16,7 +16,7 @@
 namespace eml::nn
 {
 
-struct ReflectionPad1D final : Layer
+struct ReflectionPad1D final
 {
 
     /// @brief Applies padding by using the reflection of the input on the input boundaries

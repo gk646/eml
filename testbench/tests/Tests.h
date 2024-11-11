@@ -2,6 +2,7 @@
 #define EML_TEST_TESTS_H
 
 #include <eml/math/TensorOps.h>
+#include <eml/nn/layers/Conv1D.h>
 #include <eml/nn/layers/Conv2D.h>
 #include <eml/nn/layers/Linear.h>
 #include <eml/nn/layers/ReflectionPad2D.h>
@@ -16,6 +17,7 @@ using namespace eml::ops;
 #include "math/TensorOps.h"
 
 // Layers
+#include "nn/layers/Conv1D.h"
 #include "nn/layers/Conv2D.h"
 #include "nn/layers/Linear.h"
 #include "nn/layers/ReflectionPad2D.h"
@@ -30,7 +32,6 @@ inline void RunTests()
     PlatformPrint( " =========================================\n"
                    "|............... T E S T S ...............|\n"
                    " =========================================\n" );
-
     // Math
     TestTensorOps();
     TestMATHMatMul();
@@ -40,6 +41,7 @@ inline void RunTests()
     TestNNConv2D();
     TestNNReflectionPad2D();
     TestNNZeroPad2D();
+    TestNNConv1D();
 
     // Models
     TestNNCustom();
