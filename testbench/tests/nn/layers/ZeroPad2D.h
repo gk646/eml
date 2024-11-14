@@ -7,7 +7,7 @@ inline int testZeroPad2DCase0()
     qint32_t A_data[20]{} ;
 	Tensor<qint32_t> A{ 5, 4 };
 	A.allocateCustom(A_data, 20);
-	Arange(A,  1);
+	arange(A,  1);
 
     ZeroPad2D layer{ { 2,3 } };
     auto out = layer.forward(A);
@@ -22,7 +22,7 @@ inline int testZeroPad2DCase1()
     qint32_t A_data[20]{} ;
 	Tensor<qint32_t> A{ 4, 5 };
 	A.allocateCustom(A_data, 20);
-	Arange(A,  1);
+	arange(A,  1);
 
     ZeroPad2D layer{ { 2,2 } };
     auto out = layer.forward(A);
@@ -37,7 +37,7 @@ inline int testZeroPad2DCase2()
     qint32_t A_data[20]{} ;
 	Tensor<qint32_t> A{ 5, 4 };
 	A.allocateCustom(A_data, 20);
-	Arange(A,  1);
+	arange(A,  1);
 
     ZeroPad2D layer{ { 1,0 } };
     auto out = layer.forward(A);
@@ -52,7 +52,7 @@ inline int testZeroPad2DCase3()
     qint32_t A_data[56]{} ;
 	Tensor<qint32_t> A{ 7, 8 };
 	A.allocateCustom(A_data, 56);
-	Arange(A,  1);
+	arange(A,  1);
 
     ZeroPad2D layer{ { 2,2 } };
     auto out = layer.forward(A);
@@ -67,7 +67,7 @@ inline int testZeroPad2DCase4()
     qint32_t A_data[20]{} ;
 	Tensor<qint32_t> A{ 4, 5 };
 	A.allocateCustom(A_data, 20);
-	Arange(A,  1);
+	arange(A,  1);
 
     ZeroPad2D layer{ { 1,0 } };
     auto out = layer.forward(A);
@@ -82,7 +82,7 @@ inline int testZeroPad2DCase5()
     qint32_t A_data[20]{} ;
 	Tensor<qint32_t> A{ 5, 4 };
 	A.allocateCustom(A_data, 20);
-	Arange(A,  1);
+	arange(A,  1);
 
     ZeroPad2D layer{ { 1,0 } };
     auto out = layer.forward(A);
@@ -97,7 +97,7 @@ inline int testZeroPad2DCase6()
     qint32_t A_data[56]{} ;
 	Tensor<qint32_t> A{ 7, 8 };
 	A.allocateCustom(A_data, 56);
-	Arange(A,  1);
+	arange(A,  1);
 
     ZeroPad2D layer{ { 1,1 } };
     auto out = layer.forward(A);
@@ -112,7 +112,7 @@ inline int testZeroPad2DCase7()
     qint32_t A_data[20]{} ;
 	Tensor<qint32_t> A{ 4, 5 };
 	A.allocateCustom(A_data, 20);
-	Arange(A,  1);
+	arange(A,  1);
 
     ZeroPad2D layer{ { 1,0 } };
     auto out = layer.forward(A);
@@ -127,7 +127,7 @@ inline int testZeroPad2DCase8()
     qint32_t A_data[36]{} ;
 	Tensor<qint32_t> A{ 6, 6 };
 	A.allocateCustom(A_data, 36);
-	Arange(A,  1);
+	arange(A,  1);
 
     ZeroPad2D layer{ { 2,2 } };
     auto out = layer.forward(A);
@@ -142,7 +142,7 @@ inline int testZeroPad2DCase9()
     qint32_t A_data[20]{} ;
 	Tensor<qint32_t> A{ 4, 5 };
 	A.allocateCustom(A_data, 20);
-	Arange(A,  1);
+	arange(A,  1);
 
     ZeroPad2D layer{ { 1,0 } };
     auto out = layer.forward(A);
@@ -157,7 +157,7 @@ inline int testZeroPad2DCase10()
     qint32_t A_data[20]{} ;
 	Tensor<qint32_t> A{ 4, 5 };
 	A.allocateCustom(A_data, 20);
-	Arange(A,  1);
+	arange(A,  1);
 
     ZeroPad2D layer{ { 2,2 } };
     auto out = layer.forward(A);
@@ -172,7 +172,7 @@ inline int testZeroPad2DCase11()
     qint32_t A_data[56]{} ;
 	Tensor<qint32_t> A{ 7, 8 };
 	A.allocateCustom(A_data, 56);
-	Arange(A,  1);
+	arange(A,  1);
 
     ZeroPad2D layer{ { 2,2 } };
     auto out = layer.forward(A);
@@ -187,7 +187,7 @@ inline int testZeroPad2DCase12()
     qint32_t A_data[20]{} ;
 	Tensor<qint32_t> A{ 5, 4 };
 	A.allocateCustom(A_data, 20);
-	Arange(A,  1);
+	arange(A,  1);
 
     ZeroPad2D layer{ { 1,1 } };
     auto out = layer.forward(A);
@@ -202,7 +202,7 @@ inline int testZeroPad2DCase13()
     qint32_t A_data[20]{} ;
 	Tensor<qint32_t> A{ 4, 5 };
 	A.allocateCustom(A_data, 20);
-	Arange(A,  1);
+	arange(A,  1);
 
     ZeroPad2D layer{ { 1,1 } };
     auto out = layer.forward(A);
@@ -217,7 +217,7 @@ inline int testZeroPad2DCase14()
     qint32_t A_data[36]{} ;
 	Tensor<qint32_t> A{ 6, 6 };
 	A.allocateCustom(A_data, 36);
-	Arange(A,  1);
+	arange(A,  1);
 
     ZeroPad2D layer{ { 1,0 } };
     auto out = layer.forward(A);
@@ -232,7 +232,7 @@ inline int testZeroPad2DCase15()
     qint32_t A_data[56]{} ;
 	Tensor<qint32_t> A{ 7, 8 };
 	A.allocateCustom(A_data, 56);
-	Arange(A,  1);
+	arange(A,  1);
 
     ZeroPad2D layer{ { 1,1 } };
     auto out = layer.forward(A);
@@ -264,4 +264,3 @@ inline void TestNNZeroPad2D()
 }
 
 #endif // EML_TEST_NN_LAYERS_ZEROPAD2D_H
-    

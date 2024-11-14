@@ -10,7 +10,6 @@
 #include <eml/nn/layers/ReflectionPad2D.h>
 
 using namespace eml::nn;
-using namespace eml::ops;
 
 #include "UnitTest.h"
 

@@ -2,6 +2,7 @@
 #define EML_TENSOR_H
 
 #include <cstring>
+#include <eml/nn/AutoGrad.h>
 #include <eml/util/Types.h>
 
 // ================================================================
@@ -41,6 +42,7 @@ struct Tensor final
     //      - W: Horizontal size
     explicit Tensor( int32_t W );
 
+    // Constructs the tensor from the given shape
     explicit Tensor( const Tuple& shape );
 
     // Access via flattened array index
@@ -49,7 +51,7 @@ struct Tensor final
 
     // ============ Memory ============
 
-    // Allocates memory according to the current size ONLY when data is nullptr - uses PlatformAlloc
+    // Allocates memory according to the current size ONLY when data is nullptr - uses PlatformAlloc()
     void allocate();
 
     // Frees the memory and sets data to nullptr
@@ -102,9 +104,14 @@ struct Tensor final
     int32_t hw = 0; // Channel stride
     int32_t chw = 0; // Batch stride
 
+    Tensor<T>* grad;
+    bool requiresGrad = false;
+    Operation operation;
+
     // ============ Metadata ============
 
     int32_t scale = 1; // Scale for quantized values
+
     bool customAllocated = false;
 
 #ifdef EML_DEBUG

@@ -1,11 +1,11 @@
 #ifndef EML_LAYERS_CONV2D_H
 #define EML_LAYERS_CONV2D_H
 
+#include <eml/math/MathUtil.h>
 #include <eml/math/TensorOps.h>
 #include <eml/nn/LayerUtil.h>
 #include <eml/nn/layers/ReflectionPad2D.h>
 #include <eml/nn/layers/ZeroPad2D.h>
-#include <eml/math/MathUtil.h>
 
 // ================================================================
 // Conv2D
@@ -40,10 +40,10 @@ struct Conv2D final
     // ============ Inference ============
 
     // Returns an allocated tensor with shape (*, outC, outH, outW)
-    Tensor<T> forward( const Tensor<T>& input );
+    [[nodiscard]] Tensor<T> forward( const Tensor<T>& input );
 
     // Expects a correctly shaped and sufficiently allocated output tensor with shape: (*, outC, outH, outW)
-    void forward( const Tensor<T>& input, Tensor<T>& output );
+    void forwardI( const Tensor<T>& input, Tensor<T>& output );
 
     // ============ Info ============
 
@@ -95,13 +95,13 @@ Conv2D<T>::Conv2D( int32_t inC, int32_t outC, Pair kernel, Pair stride, Pair pad
     weights.allocate();
     if( useBias )
     {
-        ops::Random( biases, T( -1.0 ), T( 1.0 ) );
+        rand( biases, T( -1.0 ), T( 1.0 ) );
     }
     else
     {
-        ops::Zero( biases );
+        zero( biases );
     }
-    ops::Random( weights, T( -1.0 ), T( 1.0 ) );
+    rand( weights, T( -1.0 ), T( 1.0 ) );
 }
 
 template <typename T>
@@ -218,12 +218,12 @@ Tensor<T> Conv2D<T>::forward( const Tensor<T>& input )
     EML_ASSERT( input.isAllocated() || input.isAllocatedCustom(), "Input Tensor is not allocated!" );
     Tensor<T> out{ getOutShape( input.shape() ) };
     out.allocate();
-    forward( input, out );
+    forwardI( input, out );
     return out;
 }
 
 template <typename T>
-void Conv2D<T>::forward( const Tensor<T>& __restrict input, Tensor<T>& __restrict output )
+void Conv2D<T>::forwardI( const Tensor<T>& __restrict input, Tensor<T>& __restrict output )
 {
     EML_ASSERT( output.shape() == getOutShape( input.shape() ), "Output Tensor has wrong dimensions!" );
     EML_ASSERT( output.isAllocated() || output.isAllocatedCustom(), "Output Tensor is not allocated!" );
@@ -254,7 +254,7 @@ void Conv2D<T>::forward( const Tensor<T>& __restrict input, Tensor<T>& __restric
     {
         for( int32_t i = 0; i < outChannels; i++ )
         {
-            ops::FillDim( output, biases[ i ], 0, i );
+            fillDim( output, biases[ i ], 0, i );
         }
     }
 

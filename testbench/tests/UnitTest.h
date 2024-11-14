@@ -41,7 +41,7 @@ inline void PrintTestStats()
 #define EML_RUN_TEST( func, ... ) func( __VA_ARGS__ );
 
 #define EML_ASSERT_TENSOR_EQUALS( expected, actual )                                                                   \
-    const auto res = ops::Equals( expected, actual );                                                                  \
+    const auto res =Equals( expected, actual );                                                                  \
     if( !res )                                                                                                         \
     {                                                                                                                  \
         PlatformPrint( "[Test] (%d) %s :%s:%d\n     -> %s\n", TEST_CONTEXT.currentTest, __FUNCTION__, __FILE__,        \

@@ -40,9 +40,9 @@ def generate_decl_tensor_range(name: str, shape: tuple, dtype="qint32_t", start 
     string += f"{generate_stack_array(name + "_data", size, dtype)}"
     string += f"\tTensor<{dtype}> {name}{{ {shape_str} }};\n\t{name}.allocateCustom({name + "_data"}, {size});"
     if dtype == "float":
-        string += f"\n\tArange({name}, {start:.1f}F);\n"
+        string += f"\n\tarange({name}, {start:.1f}F);\n"
     else:
-        string += f"\n\tArange({name},  {start});\n"
+        string += f"\n\tarange({name},  {start});\n"
     return string
 
 

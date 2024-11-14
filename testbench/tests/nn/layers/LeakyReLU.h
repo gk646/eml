@@ -7,7 +7,7 @@ inline int testLeakyReLUCase0()
     float A_data[120]{} ;
 	Tensor<float> A{ 2, 3, 5, 4 };
 	A.allocateCustom(A_data, 120);
-	Arange(A, -10.0F);
+	arange(A, -10.0F);
 
     LeakyReLU layer{0.001F};
     auto out = layer.forward(A);
@@ -22,7 +22,7 @@ inline int testLeakyReLUCase1()
     float A_data[20]{} ;
 	Tensor<float> A{ 1, 1, 4, 5 };
 	A.allocateCustom(A_data, 20);
-	Arange(A, -10.0F);
+	arange(A, -10.0F);
 
     LeakyReLU layer{0.1F};
     auto out = layer.forward(A);
@@ -37,7 +37,7 @@ inline int testLeakyReLUCase2()
     float A_data[216]{} ;
 	Tensor<float> A{ 2, 3, 6, 6 };
 	A.allocateCustom(A_data, 216);
-	Arange(A, -10.0F);
+	arange(A, -10.0F);
 
     LeakyReLU layer{-2.4F};
     auto out = layer.forward(A);
@@ -52,7 +52,7 @@ inline int testLeakyReLUCase3()
     float A_data[72]{} ;
 	Tensor<float> A{ 1, 1, 9, 8 };
 	A.allocateCustom(A_data, 72);
-	Arange(A, -10.0F);
+	arange(A, -10.0F);
 
     LeakyReLU layer{1.1F};
     auto out = layer.forward(A);

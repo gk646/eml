@@ -32,11 +32,13 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         # For both release and debug
         target_compile_options(${TARGET_NAME} PRIVATE
                 -Wall -Wextra -fno-exceptions -fno-rtti -march=native -flto -ffunction-sections -fdata-sections
-
         )
+
         target_compile_options(${TARGET_NAME} PRIVATE
                 $<$<CONFIG:Debug>: -O0 -g>
-                $<$<CONFIG:Release>: -DNDEBUG -Ofast -funroll-loops>
+                $<$<CONFIG:Release>: -DNDEBUG -Os -s -ffast-math -fno-math-errno -fdelete-null-pointer-checks
+                -fno-threadsafe-statics
+                >
         )
 
         # Set link options for Release configuration

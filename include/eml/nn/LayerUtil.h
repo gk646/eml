@@ -19,7 +19,7 @@ namespace eml::nn
 template <typename Layer>
 int32_t GetLayerWeights( const Layer& layer );
 
-// Returns the number of multiplications needed in this layer to forwards the given shape a single time
+// Returns the number of multiplications needed in this layer to forward the given shape a single time
 template <typename Layer>
 int32_t GetLayerOps( const Layer& layer, const Tuple& shape );
 

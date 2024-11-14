@@ -18,7 +18,7 @@ void benchMatmulImpl()
     Tensor<float> C{ size, size };
     C.allocate();
 
-    EML_BENCHMARK_FLOPS( T, ops::Matmul, count, size * size * size, A, B, C );
+    EML_BENCHMARK_FLOPS( T,matmul, count, size * size * size, A, B, C );
 }
 
 inline void BenchTensorOps()

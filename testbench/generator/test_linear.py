@@ -26,8 +26,8 @@ def impl_gen_linear(input_size, output_size, use_bias):
     cpp_code = f"""
     {input_tensor_decl}
     {linear_layer_decl}
-    Fill(layer.weights, 1);
-    {"Fill(layer.biases, 1);" if use_bias else ""}
+    fill(layer.weights, 1);
+    {"fill(layer.biases, 1);" if use_bias else ""}
     const auto out = layer.forward(A);
     
     {output_tensor_decl}

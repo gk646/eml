@@ -17,11 +17,11 @@ struct ReLU final
 
     // Returns an allocated tensor with the same shape as the input with the ReLU applied to all elements
     template <typename T>
-    [[nodiscard( "Allocates output tensor" )]] static Tensor<T> forward( const Tensor<T>& input );
+    [[nodiscard]] static Tensor<T> forward( const Tensor<T>& input );
 
     // Applies the ReLU inplace
     template <typename T>
-    static void forward( Tensor<T>&& input );
+    static void forwardI( Tensor<T>& input );
 };
 
 } // namespace eml::nn
@@ -50,12 +50,12 @@ template <typename T>
 Tensor<T> ReLU::forward( const Tensor<T>& input )
 {
     Tensor<T> output = input.copyTensor();
-    forward( std::move( output ) );
+    forwardI(  output );
     return output;
 }
 
 template <typename T>
-void ReLU::forward( Tensor<T>&& input )
+void ReLU::forwardI( Tensor<T>& input )
 {
     constexpr auto simdSize = static_cast<int32_t>( xsimd::batch<T>::size );
 

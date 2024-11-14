@@ -17,13 +17,13 @@ inline int testEquals()
     Tensor<float> B{ 3, 2 };
     B.allocateCustom( bData, 6 );
 
-    const bool first = ops::Equals( A, B ) == false;
+    const bool first =Equals( A, B ) == false;
 
     float cData[] = { 7, 8, 9, 10, 11, 12 };
     Tensor<float> C{ 3, 2 };
     C.allocateCustom( cData, 6 );
 
-    return first && ops::Equals( B, C );
+    return first &&Equals( B, C );
 }
 
 inline void TestTensorOps()

@@ -7,11 +7,11 @@ inline int testLinearCase0()
     qint32_t A_data[4]{} ;
 	Tensor<qint32_t> A{ 1, 4 };
 	A.allocateCustom(A_data, 4);
-	Arange(A,  1);
+	arange(A,  1);
 
     Linear<qint32_t> layer{ 4, 2, true };
-    Fill(layer.weights, 1);
-    Fill(layer.biases, 1);
+    fill(layer.weights, 1);
+    fill(layer.biases, 1);
     const auto out = layer.forward(A);
     
     qint32_t R_data[] = { 11, 11 };
@@ -25,10 +25,10 @@ inline int testLinearCase1()
     qint32_t A_data[8]{} ;
 	Tensor<qint32_t> A{ 1, 8 };
 	A.allocateCustom(A_data, 8);
-	Arange(A,  1);
+	arange(A,  1);
 
     Linear<qint32_t> layer{ 8, 8, false };
-    Fill(layer.weights, 1);
+    fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
     
@@ -43,11 +43,11 @@ inline int testLinearCase2()
     qint32_t A_data[4]{} ;
 	Tensor<qint32_t> A{ 1, 4 };
 	A.allocateCustom(A_data, 4);
-	Arange(A,  1);
+	arange(A,  1);
 
     Linear<qint32_t> layer{ 4, 2, true };
-    Fill(layer.weights, 1);
-    Fill(layer.biases, 1);
+    fill(layer.weights, 1);
+    fill(layer.biases, 1);
     const auto out = layer.forward(A);
     
     qint32_t R_data[] = { 11, 11 };
@@ -61,10 +61,10 @@ inline int testLinearCase3()
     qint32_t A_data[4]{} ;
 	Tensor<qint32_t> A{ 1, 4 };
 	A.allocateCustom(A_data, 4);
-	Arange(A,  1);
+	arange(A,  1);
 
     Linear<qint32_t> layer{ 4, 2, false };
-    Fill(layer.weights, 1);
+    fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
     
@@ -79,11 +79,11 @@ inline int testLinearCase4()
     qint32_t A_data[16]{} ;
 	Tensor<qint32_t> A{ 1, 16 };
 	A.allocateCustom(A_data, 16);
-	Arange(A,  1);
+	arange(A,  1);
 
     Linear<qint32_t> layer{ 16, 20, true };
-    Fill(layer.weights, 1);
-    Fill(layer.biases, 1);
+    fill(layer.weights, 1);
+    fill(layer.biases, 1);
     const auto out = layer.forward(A);
     
     qint32_t R_data[] = { 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137 };
@@ -97,10 +97,10 @@ inline int testLinearCase5()
     qint32_t A_data[4]{} ;
 	Tensor<qint32_t> A{ 1, 4 };
 	A.allocateCustom(A_data, 4);
-	Arange(A,  1);
+	arange(A,  1);
 
     Linear<qint32_t> layer{ 4, 8, false };
-    Fill(layer.weights, 1);
+    fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
     
@@ -115,11 +115,11 @@ inline int testLinearCase6()
     qint32_t A_data[8]{} ;
 	Tensor<qint32_t> A{ 1, 8 };
 	A.allocateCustom(A_data, 8);
-	Arange(A,  1);
+	arange(A,  1);
 
     Linear<qint32_t> layer{ 8, 20, true };
-    Fill(layer.weights, 1);
-    Fill(layer.biases, 1);
+    fill(layer.weights, 1);
+    fill(layer.biases, 1);
     const auto out = layer.forward(A);
     
     qint32_t R_data[] = { 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37 };
@@ -133,10 +133,10 @@ inline int testLinearCase7()
     qint32_t A_data[8]{} ;
 	Tensor<qint32_t> A{ 1, 8 };
 	A.allocateCustom(A_data, 8);
-	Arange(A,  1);
+	arange(A,  1);
 
     Linear<qint32_t> layer{ 8, 20, false };
-    Fill(layer.weights, 1);
+    fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
     
@@ -151,11 +151,11 @@ inline int testLinearCase8()
     qint32_t A_data[4]{} ;
 	Tensor<qint32_t> A{ 1, 4 };
 	A.allocateCustom(A_data, 4);
-	Arange(A,  1);
+	arange(A,  1);
 
     Linear<qint32_t> layer{ 4, 8, true };
-    Fill(layer.weights, 1);
-    Fill(layer.biases, 1);
+    fill(layer.weights, 1);
+    fill(layer.biases, 1);
     const auto out = layer.forward(A);
     
     qint32_t R_data[] = { 11, 11, 11, 11, 11, 11, 11, 11 };
@@ -169,10 +169,10 @@ inline int testLinearCase9()
     qint32_t A_data[8]{} ;
 	Tensor<qint32_t> A{ 1, 8 };
 	A.allocateCustom(A_data, 8);
-	Arange(A,  1);
+	arange(A,  1);
 
     Linear<qint32_t> layer{ 8, 8, false };
-    Fill(layer.weights, 1);
+    fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
     
@@ -187,11 +187,11 @@ inline int testLinearCase10()
     qint32_t A_data[16]{} ;
 	Tensor<qint32_t> A{ 1, 16 };
 	A.allocateCustom(A_data, 16);
-	Arange(A,  1);
+	arange(A,  1);
 
     Linear<qint32_t> layer{ 16, 20, true };
-    Fill(layer.weights, 1);
-    Fill(layer.biases, 1);
+    fill(layer.weights, 1);
+    fill(layer.biases, 1);
     const auto out = layer.forward(A);
     
     qint32_t R_data[] = { 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137 };
@@ -205,10 +205,10 @@ inline int testLinearCase11()
     qint32_t A_data[8]{} ;
 	Tensor<qint32_t> A{ 1, 8 };
 	A.allocateCustom(A_data, 8);
-	Arange(A,  1);
+	arange(A,  1);
 
     Linear<qint32_t> layer{ 8, 8, false };
-    Fill(layer.weights, 1);
+    fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
     
@@ -223,11 +223,11 @@ inline int testLinearCase12()
     qint32_t A_data[16]{} ;
 	Tensor<qint32_t> A{ 1, 16 };
 	A.allocateCustom(A_data, 16);
-	Arange(A,  1);
+	arange(A,  1);
 
     Linear<qint32_t> layer{ 16, 8, true };
-    Fill(layer.weights, 1);
-    Fill(layer.biases, 1);
+    fill(layer.weights, 1);
+    fill(layer.biases, 1);
     const auto out = layer.forward(A);
     
     qint32_t R_data[] = { 137, 137, 137, 137, 137, 137, 137, 137 };
@@ -241,10 +241,10 @@ inline int testLinearCase13()
     qint32_t A_data[8]{} ;
 	Tensor<qint32_t> A{ 1, 8 };
 	A.allocateCustom(A_data, 8);
-	Arange(A,  1);
+	arange(A,  1);
 
     Linear<qint32_t> layer{ 8, 2, false };
-    Fill(layer.weights, 1);
+    fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
     
@@ -259,11 +259,11 @@ inline int testLinearCase14()
     qint32_t A_data[8]{} ;
 	Tensor<qint32_t> A{ 1, 8 };
 	A.allocateCustom(A_data, 8);
-	Arange(A,  1);
+	arange(A,  1);
 
     Linear<qint32_t> layer{ 8, 2, true };
-    Fill(layer.weights, 1);
-    Fill(layer.biases, 1);
+    fill(layer.weights, 1);
+    fill(layer.biases, 1);
     const auto out = layer.forward(A);
     
     qint32_t R_data[] = { 37, 37 };
@@ -277,10 +277,10 @@ inline int testLinearCase15()
     qint32_t A_data[8]{} ;
 	Tensor<qint32_t> A{ 1, 8 };
 	A.allocateCustom(A_data, 8);
-	Arange(A,  1);
+	arange(A,  1);
 
     Linear<qint32_t> layer{ 8, 8, false };
-    Fill(layer.weights, 1);
+    fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
     
@@ -295,11 +295,11 @@ inline int testLinearCase16()
     qint32_t A_data[16]{} ;
 	Tensor<qint32_t> A{ 1, 16 };
 	A.allocateCustom(A_data, 16);
-	Arange(A,  1);
+	arange(A,  1);
 
     Linear<qint32_t> layer{ 16, 20, true };
-    Fill(layer.weights, 1);
-    Fill(layer.biases, 1);
+    fill(layer.weights, 1);
+    fill(layer.biases, 1);
     const auto out = layer.forward(A);
     
     qint32_t R_data[] = { 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137 };
@@ -313,10 +313,10 @@ inline int testLinearCase17()
     qint32_t A_data[4]{} ;
 	Tensor<qint32_t> A{ 1, 4 };
 	A.allocateCustom(A_data, 4);
-	Arange(A,  1);
+	arange(A,  1);
 
     Linear<qint32_t> layer{ 4, 2, false };
-    Fill(layer.weights, 1);
+    fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
     
@@ -331,11 +331,11 @@ inline int testLinearCase18()
     qint32_t A_data[4]{} ;
 	Tensor<qint32_t> A{ 1, 4 };
 	A.allocateCustom(A_data, 4);
-	Arange(A,  1);
+	arange(A,  1);
 
     Linear<qint32_t> layer{ 4, 2, true };
-    Fill(layer.weights, 1);
-    Fill(layer.biases, 1);
+    fill(layer.weights, 1);
+    fill(layer.biases, 1);
     const auto out = layer.forward(A);
     
     qint32_t R_data[] = { 11, 11 };
@@ -349,10 +349,10 @@ inline int testLinearCase19()
     qint32_t A_data[4]{} ;
 	Tensor<qint32_t> A{ 1, 4 };
 	A.allocateCustom(A_data, 4);
-	Arange(A,  1);
+	arange(A,  1);
 
     Linear<qint32_t> layer{ 4, 20, false };
-    Fill(layer.weights, 1);
+    fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
     
@@ -367,11 +367,11 @@ inline int testLinearCase20()
     qint32_t A_data[16]{} ;
 	Tensor<qint32_t> A{ 1, 16 };
 	A.allocateCustom(A_data, 16);
-	Arange(A,  1);
+	arange(A,  1);
 
     Linear<qint32_t> layer{ 16, 2, true };
-    Fill(layer.weights, 1);
-    Fill(layer.biases, 1);
+    fill(layer.weights, 1);
+    fill(layer.biases, 1);
     const auto out = layer.forward(A);
     
     qint32_t R_data[] = { 137, 137 };
@@ -385,10 +385,10 @@ inline int testLinearCase21()
     qint32_t A_data[16]{} ;
 	Tensor<qint32_t> A{ 1, 16 };
 	A.allocateCustom(A_data, 16);
-	Arange(A,  1);
+	arange(A,  1);
 
     Linear<qint32_t> layer{ 16, 8, false };
-    Fill(layer.weights, 1);
+    fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
     
@@ -403,11 +403,11 @@ inline int testLinearCase22()
     qint32_t A_data[16]{} ;
 	Tensor<qint32_t> A{ 1, 16 };
 	A.allocateCustom(A_data, 16);
-	Arange(A,  1);
+	arange(A,  1);
 
     Linear<qint32_t> layer{ 16, 20, true };
-    Fill(layer.weights, 1);
-    Fill(layer.biases, 1);
+    fill(layer.weights, 1);
+    fill(layer.biases, 1);
     const auto out = layer.forward(A);
     
     qint32_t R_data[] = { 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137 };
@@ -421,10 +421,10 @@ inline int testLinearCase23()
     qint32_t A_data[16]{} ;
 	Tensor<qint32_t> A{ 1, 16 };
 	A.allocateCustom(A_data, 16);
-	Arange(A,  1);
+	arange(A,  1);
 
     Linear<qint32_t> layer{ 16, 8, false };
-    Fill(layer.weights, 1);
+    fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
     
@@ -439,11 +439,11 @@ inline int testLinearCase24()
     qint32_t A_data[16]{} ;
 	Tensor<qint32_t> A{ 1, 16 };
 	A.allocateCustom(A_data, 16);
-	Arange(A,  1);
+	arange(A,  1);
 
     Linear<qint32_t> layer{ 16, 8, true };
-    Fill(layer.weights, 1);
-    Fill(layer.biases, 1);
+    fill(layer.weights, 1);
+    fill(layer.biases, 1);
     const auto out = layer.forward(A);
     
     qint32_t R_data[] = { 137, 137, 137, 137, 137, 137, 137, 137 };
@@ -457,10 +457,10 @@ inline int testLinearCase25()
     qint32_t A_data[16]{} ;
 	Tensor<qint32_t> A{ 1, 16 };
 	A.allocateCustom(A_data, 16);
-	Arange(A,  1);
+	arange(A,  1);
 
     Linear<qint32_t> layer{ 16, 8, false };
-    Fill(layer.weights, 1);
+    fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
     
@@ -503,4 +503,3 @@ inline void TestNNLinear()
 }
 
 #endif // EML_TEST_NN_LAYERS_LINEAR_H
-    

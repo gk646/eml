@@ -6,7 +6,7 @@ Attributes:
 - more than just NN
     - also Regression, Trees...
 - Strong compile options
-- Support model imports (pytroch, tensorflow)
+- Support model imports (pytorch, tensorflow)
 - Models are defined at runtime
     - Types for activation and weights are templates (quantization)
 - Support quantization
@@ -34,3 +34,9 @@ Style Guide:
 `cmake ..`
 
 `cmake . coverage `
+
+
+tinytorch
+
+minimize binary size
+- conv2d forward 10kib

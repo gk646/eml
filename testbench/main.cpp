@@ -10,24 +10,26 @@
 
 int main()
 {
-    PlatformPrint( "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\n"
-                   "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM'.XMMMMM\n"
-                   "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM. XMMMMM\n"
-                   "MMMMMMMMNkoookNMMMMMxOMKxooxKMMKxoodKMMMMM. XMMMMM\n"
-                   "MMMMMMN; :xkx; :WMMM  'cxkd, ,':dkx, ,MMMM. XMMMMM\n"
-                   "MMMMMM, kMMMMM: lMMM  kMMMMM. dMMMMM. KMMM. XMMMMM\n"
-                   "MMMMMW  ''''''..cMMM  WMMMMM. XMMMMM' KMMM. XMMMMM\n"
-                   "MMMMMM. KMMMMMMMMMMM  WMMMMM. XMMMMM' KMMM. XMMMMM\n"
-                   "MMMMMM0..dXWWNKkWMMM  WMMMMM. XMMMMM' KMMM. XMMMMM\n"
-                   "MMMMMMMWk:,..';lWMMM;,WMMMMMc,NMMMMMl,XMMM:,NMMMMM\n"
-                   "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\n"
-                   " ===============================================\n"
-                   "|          embeddable machine learning          |\n"
-                   "|                Version: %-17s    |\n"
-                   " ===============================================\n\n",
+
+    PlatformPrint( R"(MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM'.XMMMMM
+MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM. XMMMMM
+MMMMMMMMNkoookNMMMMMxOMKxooxKMMKxoodKMMMMM. XMMMMM
+MMMMMMN; :xkx; :WMMM  'cxkd, ,':dkx, ,MMMM. XMMMMM
+MMMMMM, kMMMMM: lMMM  kMMMMM. dMMMMM. KMMM. XMMMMM
+MMMMMW  ''''''..cMMM  WMMMMM. XMMMMM' KMMM. XMMMMM
+MMMMMM. KMMMMMMMMMMM  WMMMMM. XMMMMM' KMMM. XMMMMM
+MMMMMM0..dXWWNKkWMMM  WMMMMM. XMMMMM' KMMM. XMMMMM
+MMMMMMMWk:,..';lWMMM;,WMMMMMc,NMMMMMl,XMMM:,NMMMMM
+MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+ ===============================================
+|          embeddable machine learning          |
+|                Version: %-17s     |
+ ===============================================
+)",
                    EML_VERSION );
 
-      // =========== //
+    // =========== //
     const uint32_t start = PlatformClock();
     // =========== //
     RunTests();
@@ -38,6 +40,6 @@ int main()
     // =========== //
     const uint32_t end = PlatformClock();
     // =========== //
-    printf( "\nTestbench took: %.2f seconds\n", ( (float)( end - start ) / 1'000 ) / 1'000.0F );
+    printf( "\nTestbench took: %.2f seconds", ( (float)( end - start ) / 1'000 ) / 1'000.0F );
     return 0;
 }

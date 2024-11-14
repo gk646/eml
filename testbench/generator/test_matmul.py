@@ -25,7 +25,7 @@ def impl_gen_matmul(A_shape, B_shape, transpose_A=False, transpose_B=False):
     B_tensor_decl = gen_utils.generate_decl_tensor_range("B", B_shape)
     C_tensor_decl = gen_utils.generate_tensor_empty("C", output_tensor.shape, len(output_data))
 
-    matmul_decl = f"Matmul{'ATrans' if transpose_A else ''}{'BTrans' if transpose_B else ''}"
+    matmul_decl = f"matmul{'ATrans' if transpose_A else ''}{'BTrans' if transpose_B else ''}"
 
     cpp_code = f"""
     {A_tensor_decl}

@@ -99,13 +99,13 @@ Conv1D<T>::Conv1D( int32_t inC, int32_t outC, int32_t kernel, int32_t stride, in
     weights.allocate();
     if( useBias )
     {
-        ops::Random( biases, T( -1.0 ), T( 1.0 ) );
+       rand( biases, T( -1.0 ), T( 1.0 ) );
     }
     else
     {
-        ops::Zero( biases );
+       zero( biases );
     }
-    ops::Random( weights, T( -1.0 ), T( 1.0 ) );
+   rand( weights, T( -1.0 ), T( 1.0 ) );
 }
 
 template <typename T>
@@ -145,7 +145,7 @@ void Conv1D<T>::forward( const Tensor<T>& __restrict input, Tensor<T>& __restric
         {
             for( int32_t c = 0; c < outChannels; ++c )
             {
-                ops::FillDim( output, biases[ n ], n, c );
+               fillDim( output, biases[ n ], n, c );
             }
         }
     }

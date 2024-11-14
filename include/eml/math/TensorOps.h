@@ -12,40 +12,37 @@
 // Various operations performed on tensors
 // ................................................................
 
-namespace eml::ops
+namespace eml
 {
 
 // Matrix multiplication of A and B into R
 template <typename T>
-void Matmul( const Tensor<T>& A, const Tensor<T>& B, Tensor<T>& R );
+void matmul( const Tensor<T>& A, const Tensor<T>& B, Tensor<T>& R );
 
 // Matrix multiplication of A and B into R with A being handled like its transposed
 template <typename T>
-void MatmulATrans( const Tensor<T>& A, const Tensor<T>& B, Tensor<T>& R );
+void matmulATrans( const Tensor<T>& A, const Tensor<T>& B, Tensor<T>& R );
 
 // Matrix multiplication of A and B into R with B being handled like its transposed
 template <typename T>
-void MatmulBTrans( const Tensor<T>& A, const Tensor<T>& B, Tensor<T>& R );
-
-template <typename AT, typename BT>
-bool Equals( const Tensor<AT>& A, const Tensor<BT>& B );
+void matmulBTrans( const Tensor<T>& A, const Tensor<T>& B, Tensor<T>& R );
 
 // Sets all values to zero
 template <typename T>
-void Zero( Tensor<T>& A );
+void zero( Tensor<T>& A );
 
 // Sets all values to random values withing the given range (inclusive)
 template <typename T>
-void Random( Tensor<T>& A, T min, T max );
+void rand( Tensor<T>& A, T min, T max );
 
 // Sets all values in the tensor to the given val
 template <typename T>
-void Fill( Tensor<T>& A, T val );
+void fill( Tensor<T>& A, T val );
 
 // Fills the given dimension(s) with the given value - 0-based indexing
-// Fills all unspecified dimensions with the given offset - if no offset given is equal to Fill()
+// Fills all unspecified dimensions with the given offset - if no offset given is equal to fill()
 template <typename T>
-void FillDim( Tensor<T>& A, T val, int32_t n = -1, int32_t c = -1, int32_t h = -1 );
+void fillDim( Tensor<T>& A, T val, int32_t n = -1, int32_t c = -1, int32_t h = -1 );
 
 // Returns the value of the greatest element
 template <typename T>
@@ -61,9 +58,9 @@ void ElemOp( Tensor<T>& A, void ( *op )( T& ) );
 
 // Fills the Tensor
 template <typename T>
-void Arange( Tensor<T>& A, T start, T step = T( 1 ) );
+void arange( Tensor<T>& A, T start, T step = T( 1 ) );
 
-} // namespace eml::ops
+} // namespace eml
 
 // IMPLEMENTATION
 //
@@ -82,7 +79,7 @@ void Arange( Tensor<T>& A, T start, T step = T( 1 ) );
 //
 //
 
-namespace eml::ops
+namespace eml
 {
 
 namespace impl
@@ -92,7 +89,7 @@ namespace impl
 // https://en.algorithmica.org/hpc/algorithms/matmul/
 
 template <typename T, int size, bool transposeA, bool transposeB>
-void Kernel( const Tensor<T>& __restrict__ A, const Tensor<T>& __restrict__ B, Tensor<T>& __restrict__ R, const int x,
+void matmulKernel( const Tensor<T>& __restrict__ A, const Tensor<T>& __restrict__ B, Tensor<T>& __restrict__ R, const int x,
              const int y, const int l, const int r )
 {
     if constexpr( size == 2 )
@@ -175,7 +172,7 @@ void Kernel( const Tensor<T>& __restrict__ A, const Tensor<T>& __restrict__ B, T
 }
 
 template <typename T, bool transposeA, bool transposeB>
-void MatmulImpl( const Tensor<T>& A, const Tensor<T>& B, Tensor<T>& R )
+void matmulImpl( const Tensor<T>& A, const Tensor<T>& B, Tensor<T>& R )
 {
     const int32_t Ah = transposeA ? A.w : A.h;
     const int32_t Aw = transposeA ? A.h : A.w;
@@ -192,7 +189,7 @@ void MatmulImpl( const Tensor<T>& A, const Tensor<T>& B, Tensor<T>& R )
 
     for( int x = 0; x < stepsA; x += simdValues )
         for( int y = 0; y < stepsB; y += simdValues )
-            impl::Kernel<T, simdValues, transposeA, transposeB>( A, B, R, x, y, 0, Aw );
+            impl::matmulKernel<T, simdValues, transposeA, transposeB>( A, B, R, x, y, 0, Aw );
 
     for( int32_t h = 0; h < Ah; ++h )
     {
@@ -230,21 +227,21 @@ void MatmulImpl( const Tensor<T>& A, const Tensor<T>& B, Tensor<T>& R )
 } // namespace impl
 
 template <typename T>
-void Matmul( const Tensor<T>& A, const Tensor<T>& B, Tensor<T>& R )
+void matmul( const Tensor<T>& A, const Tensor<T>& B, Tensor<T>& R )
 {
-    impl::MatmulImpl<T, false, false>( A, B, R );
+    impl::matmulImpl<T, false, false>( A, B, R );
 }
 
 template <typename T>
-void MatmulATrans( const Tensor<T>& A, const Tensor<T>& B, Tensor<T>& R )
+void matmulATrans( const Tensor<T>& A, const Tensor<T>& B, Tensor<T>& R )
 {
-    impl::MatmulImpl<T, true, false>( A, B, R );
+    impl::matmulImpl<T, true, false>( A, B, R );
 }
 
 template <typename T>
-void MatmulBTrans( const Tensor<T>& A, const Tensor<T>& B, Tensor<T>& R )
+void matmulBTrans( const Tensor<T>& A, const Tensor<T>& B, Tensor<T>& R )
 {
-    impl::MatmulImpl<T, false, true>( A, B, R );
+    impl::matmulImpl<T, false, true>( A, B, R );
 }
 
 template <typename AT, typename BT>
@@ -275,7 +272,7 @@ bool Equals( const Tensor<AT>& A, const Tensor<BT>& B )
 }
 
 template <typename T>
-void Fill( Tensor<T>& A, T val )
+void fill( Tensor<T>& A, T val )
 {
     for( int32_t i = 0; i < A.size; ++i )
     {
@@ -284,9 +281,9 @@ void Fill( Tensor<T>& A, T val )
 }
 
 template <typename T>
-void FillDim( Tensor<T>& A, T val, int32_t n, int32_t c, int32_t h )
+void fillDim( Tensor<T>& A, T val, int32_t n, int32_t c, int32_t h )
 {
-    if( n != -1 && c != -1 && h != -1 ) // Fill a single row (width)
+    if( n != -1 && c != -1 && h != -1 ) // fill a single row (width)
     {
         const int32_t offset = n * A.chw + c * A.hw + h * A.w;
         for( int32_t i = 0; i < A.w; ++i )
@@ -294,7 +291,7 @@ void FillDim( Tensor<T>& A, T val, int32_t n, int32_t c, int32_t h )
             A[ offset + i ] = val;
         }
     }
-    else if( n != -1 && c != -1 ) // Fill an entire matrix (H x W)
+    else if( n != -1 && c != -1 ) // fill an entire matrix (H x W)
     {
         int32_t offset = n * A.chw + c * A.hw;
         for( int32_t i = 0; i < A.h; ++i )
@@ -306,7 +303,7 @@ void FillDim( Tensor<T>& A, T val, int32_t n, int32_t c, int32_t h )
             offset += A.w;
         }
     }
-    else if( n != -1 ) // Fill an entire batch (C x H x W)
+    else if( n != -1 ) // fill an entire batch (C x H x W)
     {
         int32_t offset = n * A.chw;
         for( int32_t i = 0; i < A.c; ++i )
@@ -325,7 +322,7 @@ void FillDim( Tensor<T>& A, T val, int32_t n, int32_t c, int32_t h )
     }
     else
     {
-        Fill( A, val );
+        fill( A, val );
     }
 }
 
@@ -356,7 +353,7 @@ T Min( const Tensor<T>& A )
 }
 
 template <typename T>
-void Zero( Tensor<T>& A )
+void zero( Tensor<T>& A )
 {
     for( int32_t i = 0; i < A.size; ++i )
     {
@@ -365,7 +362,7 @@ void Zero( Tensor<T>& A )
 }
 
 template <typename T>
-void Random( Tensor<T>& A, T min, T max )
+void rand( Tensor<T>& A, T min, T max )
 {
     if constexpr( std::is_same_v<T, float> )
     {
@@ -386,7 +383,7 @@ void ElemOp( Tensor<T>& A, void ( *op )( T& ) )
 }
 
 template <typename T>
-void Arange( Tensor<T>& A, T start, T step )
+void arange( Tensor<T>& A, T start, T step )
 {
     for( int32_t i = 0; i < A.size; ++i )
     {
@@ -394,6 +391,6 @@ void Arange( Tensor<T>& A, T start, T step )
     }
 }
 
-} // namespace eml::ops
+} // namespace eml
 
 #endif // EML_TENSOR_OPS_H
