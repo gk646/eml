@@ -31,5 +31,8 @@ add_custom_target(coverage
 
         COMMENT "Running ${TARGET_NAME} and generating coverage report with gcovr"
 
+
+        # COMMAND bloaty -d symbols eml-testbench
+
         DEPENDS ${TARGET_NAME}
 )

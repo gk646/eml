@@ -3,7 +3,8 @@
 
 #include <eml/math/MathUtil.h>
 #include <eml/math/TensorOps.h>
-#include <eml/nn/LayerUtil.h>
+#include <eml/nn/Layer.h>
+#include <eml/nn/Model.h>
 #include <eml/nn/layers/ReflectionPad2D.h>
 #include <eml/nn/layers/ZeroPad2D.h>
 
@@ -22,20 +23,22 @@ namespace eml::nn
 template <typename T>
 struct Conv2D final
 {
+    // Creates a new Conv2D layer with the given parameters
+    //      - inC:     amount of input channels
+    //      - outC:    amount of output channels
+    //      - kernel:  dimensions of the kernel
+    //      - padding: dimensions of the kernel
+    //      - model:   the model this layer is part of (if any)
+    Conv2D( int32_t inC, int32_t outC, Pair kernel, Pair stride, Pair padding, bool bias, PaddingMode pMode,
+            Model* model = nullptr );
 
     // Creates a new Conv2D layer with the given parameters
     //      - inC:     amount of input channels
     //      - outC:    amount of output channels
     //      - kernel:  dimensions of the kernel
     //      - padding: dimensions of the kernel
-    Conv2D( int32_t inC, int32_t outC, Pair kernel, Pair stride, Pair padding, bool bias, PaddingMode pMode );
-
-    // Creates a new Conv2D layer with the given parameters
-    //      - inC:     amount of input channels
-    //      - outC:    amount of output channels
-    //      - kernel:  dimensions of the kernel
-    //      - padding: dimensions of the kernel
-    Conv2D( int32_t inC, int32_t outC, Pair kernel );
+    //      - model:   the model this layer is part of (if any)
+    Conv2D( int32_t inC, int32_t outC, Pair kernel, Model* model = nullptr );
 
     // ============ Inference ============
 
@@ -50,17 +53,18 @@ struct Conv2D final
     // Returns the shape of the output tensor given a certain input tensor
     [[nodiscard]] Tuple getOutShape( const Tuple& input ) const;
 
-    // ============ Access ============
+    // ============ Variables ============
 
-    Tensor<T> weights; // Learnable weights of shape (kernelX, kernelY)
-    Tensor<T> biases; // Learnable bias of the layer (out)
-    Pair kernel;
-    Pair stride = { 1, 1 };
-    Pair padding = { 0, 0 };
-    int32_t inChannels;
-    int32_t outChannels;
-    PaddingMode pMode;
-    bool useBias = true;
+    Tensor<T> weights;       // Learnable weights of shape (kernelX, kernelY)
+    Tensor<T> biases;        // Learnable bias of the layer (out)
+    Pair kernel;             // (height, width) of the kernel
+    Pair stride = { 1, 1 };  // (height, width) of the stride
+    Pair padding = { 0, 0 }; // (height, width) of the padding
+    Model* model;            // the model this layer is part of
+    int32_t inChannels;      // number of channels
+    int32_t outChannels;     // number of channels
+    PaddingMode pMode;       // Which padding mode
+    bool useBias = true;     // use a bias vector per out channel
 };
 
 } // namespace eml::nn
@@ -86,10 +90,10 @@ namespace eml::nn
 {
 
 template <typename T>
-Conv2D<T>::Conv2D( int32_t inC, int32_t outC, Pair kernel, Pair stride, Pair padding, const bool bias,
-                   PaddingMode pMode )
-    : weights( outC, inC, kernel.first, kernel.second ), biases( outC ), kernel( kernel ), stride( stride ),
-      padding( padding ), inChannels( inC ), outChannels( outC ), pMode( pMode ), useBias( bias )
+Conv2D<T>::Conv2D( const int32_t inC, const int32_t outC, const Pair kernel, const Pair stride, const Pair padding,
+                   const bool bias, const PaddingMode pMode, Model* model )
+    :  weights( outC, inC, kernel.first, kernel.second ), biases( outC ), kernel( kernel ), stride( stride ),
+      padding( padding ), model( model ), inChannels( inC ), outChannels( outC ), pMode( pMode ), useBias( bias )
 {
     biases.allocate();
     weights.allocate();
@@ -105,36 +109,30 @@ Conv2D<T>::Conv2D( int32_t inC, int32_t outC, Pair kernel, Pair stride, Pair pad
 }
 
 template <typename T>
-Conv2D<T>::Conv2D( int32_t inC, int32_t outC, Pair kernel )
-    : Conv2D( inC, outC, kernel, { 1, 1 }, { 0, 0 }, true, PaddingMode::ZEROS )
+Conv2D<T>::Conv2D( int32_t inC, int32_t outC, Pair kernel, Model* model )
+    : Conv2D( inC, outC, kernel, { 1, 1 }, { 0, 0 }, true, PaddingMode::ZEROS, model )
 {
 }
 
 namespace impl
 {
 
-int reflectIndex( int index, int size )
-{
-    if( size == 1 )
-        return 0; // The only valid index is 0
-
-    int period = 2 * size - 2;
-    int i_mod = index % period;
-    if( i_mod < 0 )
-        i_mod += period; // Ensure positive modulus
-
-    if( i_mod >= size )
-        return period - i_mod;
-    else
-        return i_mod;
-}
-
 template <typename T, PaddingMode pMode>
 Tensor<T> Conv2DApplyPadding( const Tensor<T>& input, const Pair padding )
 {
     EML_ASSERT( padding.first != padding.second || padding.first != 0, "No padding case is filtered" );
-    if constexpr( pMode == PaddingMode::REFLECT )
-        EML_ASSERT( input.w > padding.second, "Cannot use reflect padding when input is smaller than padding!" );
+
+    if( pMode == PaddingMode::REFLECT )
+    {
+
+        ReflectionPad2D pad{ padding };
+        return pad.forward( input );
+    }
+    if( pMode == PaddingMode::ZEROS )
+    {
+        ZeroPad2D pad{ padding };
+        return pad.forward( input );
+    }
 
     Tensor<T> inputCopy{ input.n, input.c, input.h + 2 * padding.first, input.w + 2 * padding.second };
     inputCopy.allocate();
@@ -157,18 +155,7 @@ Tensor<T> Conv2DApplyPadding( const Tensor<T>& input, const Pair padding )
                     const bool inPaddingW = w < padding.second || w >= padding.second + input.w;
                     if( inPaddingH || inPaddingW ) [[unlikely]]
                     {
-                        if constexpr( pMode == PaddingMode::ZEROS )
-                        {
-                            inputCopy[ padMatrixOff + h * inputCopy.w + w ] = T( 0 );
-                        }
-                        else if constexpr( pMode == PaddingMode::REFLECT )
-                        {
-                            int y = reflectIndex( h - padding.first, input.h );
-                            int x = reflectIndex( w - padding.second, input.w );
-
-                            inputCopy[ padMatrixOff + h * inputCopy.w + w ] = input[ inMatrixOff + y * input.w + x ];
-                        }
-                        else if constexpr( pMode == PaddingMode::REPLICATE )
+                        if constexpr( pMode == PaddingMode::REPLICATE )
                         {
                             int inputH = clampt( h - padding.first, 0, input.h - 1 );
                             int inputW = clampt( w - padding.second, 0, input.w - 1 );
@@ -229,6 +216,7 @@ void Conv2D<T>::forwardI( const Tensor<T>& __restrict input, Tensor<T>& __restri
     EML_ASSERT( output.isAllocated() || output.isAllocatedCustom(), "Output Tensor is not allocated!" );
     EML_ASSERT( input.isAllocated() || input.isAllocatedCustom(), "Input Tensor is not allocated!" );
     EML_ASSERT( input.shape().second == inChannels, "Input Tensor has wrong dimensions" );
+    EML_ASSERT( ( !input.requiresGrad ) || ( model != nullptr ), "Layer must be part of a model to enable autograd!" );
 
     Tensor<T> paddedInput = input;
     if( padding.first != 0 || padding.second != 0 ) // Don't copy if there's no padding

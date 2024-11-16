@@ -17,11 +17,11 @@ namespace eml
 
 // Matrix multiplication of A and B into R
 template <typename T>
-void matmul( const Tensor<T>& A, const Tensor<T>& B, Tensor<T>& R );
+void matmul( const Tensor<T>& A, const Tensor<T>& B, Tensor<T>& R);
 
 // Matrix multiplication of A and B into R with A being handled like its transposed
 template <typename T>
-void matmulATrans( const Tensor<T>& A, const Tensor<T>& B, Tensor<T>& R );
+void matmulATrans( const Tensor<T>& A, const Tensor<T>& B, Tensor<T>& R);
 
 // Matrix multiplication of A and B into R with B being handled like its transposed
 template <typename T>
@@ -89,8 +89,8 @@ namespace impl
 // https://en.algorithmica.org/hpc/algorithms/matmul/
 
 template <typename T, int size, bool transposeA, bool transposeB>
-void matmulKernel( const Tensor<T>& __restrict__ A, const Tensor<T>& __restrict__ B, Tensor<T>& __restrict__ R, const int x,
-             const int y, const int l, const int r )
+void matmulKernel( const Tensor<T>& __restrict__ A, const Tensor<T>& __restrict__ B, Tensor<T>& __restrict__ R,
+                   const int x, const int y, const int l, const int r )
 {
     if constexpr( size == 2 )
     {
@@ -125,35 +125,18 @@ void matmulKernel( const Tensor<T>& __restrict__ A, const Tensor<T>& __restrict_
 
     for( int k = l; k < r; k++ )
     {
-        xsimd::batch<T> bBatch;
-        if( !transposeB )
+        const auto bBatch = xsimd::load_unaligned(  &B[ k * B.w + y ] );
+        for( int i = 0; i < size; i += 4 )
         {
-            bBatch = xsimd::load_unaligned( &B[ k * B.w + y ] );
-        }
-        else
-        {
-            T bVals[ size ];
-            for( int idx = 0; idx < size; ++idx )
-            {
-                bVals[ idx ] = B[ ( y + idx ) * B.w + k ];
-            }
-            bBatch = xsimd::load_unaligned( bVals );
-        }
+            xsimd::batch<T> alpha0{ A[ ( x + i ) * A.w + k ] };
+            xsimd::batch<T> alpha1{ A[ ( x + i + 1 ) * A.w + k ] };
+            xsimd::batch<T> alpha2{ A[ ( x + i + 2 ) * A.w + k ] };
+            xsimd::batch<T> alpha3{ A[ ( x + i + 3 ) * A.w + k ] };
 
-        for( int i = 0; i < size; ++i )
-        {
-            T aVal;
-            if( !transposeA )
-            {
-                aVal = A[ ( x + i ) * A.w + k ];
-            }
-            else
-            {
-                aVal = A[ k * A.w + x + i ];
-            }
-            xsimd::batch<T> alpha = xsimd::batch<T>::broadcast( aVal );
-
-            t[ i ] += alpha * bBatch;
+            t[ i ] = xsimd::fma( alpha0, bBatch, t[ i ] );
+            t[ i + 1 ] = xsimd::fma( alpha1, bBatch, t[ i + 1 ] );
+            t[ i + 2 ] = xsimd::fma( alpha2, bBatch, t[ i + 2 ] );
+            t[ i + 3 ] = xsimd::fma( alpha3, bBatch, t[ i + 3 ] );
         }
     }
 
@@ -172,7 +155,7 @@ void matmulKernel( const Tensor<T>& __restrict__ A, const Tensor<T>& __restrict_
 }
 
 template <typename T, bool transposeA, bool transposeB>
-void matmulImpl( const Tensor<T>& A, const Tensor<T>& B, Tensor<T>& R )
+void matmulImpl( const Tensor<T>& __restrict__ A, const Tensor<T>&__restrict__  B, Tensor<T>& __restrict__ R )
 {
     const int32_t Ah = transposeA ? A.w : A.h;
     const int32_t Aw = transposeA ? A.h : A.w;
@@ -291,7 +274,7 @@ void fillDim( Tensor<T>& A, T val, int32_t n, int32_t c, int32_t h )
             A[ offset + i ] = val;
         }
     }
-    else if( n != -1 && c != -1 ) // fill an entire matrix (H x W)
+    else if( n != -1 && c != -1 )       // fill an entire matrix (H x W)
     {
         int32_t offset = n * A.chw + c * A.hw;
         for( int32_t i = 0; i < A.h; ++i )

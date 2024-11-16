@@ -28,8 +28,6 @@ namespace eml
 namespace eml
 {
 
-
-
 } // namespace eml
 
 #endif // EML_MATH_FUNCTIONS_H

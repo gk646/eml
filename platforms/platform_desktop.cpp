@@ -50,7 +50,7 @@ uint32_t PlatformCycleCount()
 uint32_t PlatformClock()
 {
     using namespace std::chrono;
-    return std::chrono::duration_cast<microseconds>( steady_clock::now().time_since_epoch() ).count();
+    return (uint32_t)std::chrono::duration_cast<microseconds>( steady_clock::now().time_since_epoch() ).count();
 }
 
 void* PlatformAlloc( uint32_t size )

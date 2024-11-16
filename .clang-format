@@ -2,7 +2,6 @@ BasedOnStyle: LLVM
 IndentWidth: 4
 UseTab: Never
 TabWidth: 4
-
 BraceWrapping:
   AfterClass: true
   AfterControlStatement: true
@@ -16,7 +15,6 @@ BraceWrapping:
   SplitEmptyRecord: true
 
 BreakBeforeBraces: Allman
-
 SpaceBeforeParens: Never
 SpacesInParentheses: true
 SpaceInEmptyParentheses: false
@@ -34,9 +32,12 @@ IndentGotoLabels: false
 
 AlignConsecutiveAssignments: false
 AlignConsecutiveDeclarations: false
-AlignTrailingComments: false
+AlignTrailingComments:
+  Kind: Always
+  OverEmptyLines: 10
 
 PointerAlignment: Left
 AlwaysBreakTemplateDeclarations: Yes
 SpaceAfterTemplateKeyword: true
 ColumnLimit: 120
+ReflowComments: true

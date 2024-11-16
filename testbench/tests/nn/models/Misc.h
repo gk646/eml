@@ -3,10 +3,7 @@
 
 using namespace eml;
 
-struct Model
-{
 
-};
 
 inline void TestModelsCustom()
 {

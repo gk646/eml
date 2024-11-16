@@ -18,20 +18,21 @@ namespace eml::nn
 template <typename T>
 struct Linear final
 {
-    Linear( int32_t in, int32_t out, bool bias = true );
+    Linear( int32_t in, int32_t out, bool bias = true, Model* model = nullptr );
 
     // Returns an allocated tensor with shape (input.nch, out)
     Tensor<T> forward( Tensor<T>& input );
 
     // Expects a correctly shaped and sufficiently allocated output tensor (input.nch, out)
-    void forward( Tensor<T>& input, Tensor<T>& output );
+    void forwardI( Tensor<T>& input, Tensor<T>& output );
 
     // ============ Info ============
 
+    Tensor<T> weights; // Learnable weights of shape (out, in)
+    Tensor<T> biases;  // Learnable bias of the layer (out)
+    Model* model;
     int32_t inputSize;
     int32_t outputSize;
-    Tensor<T> weights; // Learnable weights of shape (out, in)
-    Tensor<T> biases; // Learnable bias of the layer (out)
     bool useBias = true;
 };
 
@@ -56,9 +57,10 @@ struct Linear final
 
 namespace eml::nn
 {
+
 template <typename T>
-Linear<T>::Linear( const int32_t in, const int32_t out, const bool bias )
-    : inputSize( in ), outputSize( out ), weights( out, in ), biases( out ), useBias( bias )
+Linear<T>::Linear( const int32_t in, const int32_t out, const bool bias, Model* model )
+    : weights( out, in ), biases( out ), model( model ), inputSize( in ), outputSize( out ), useBias( bias )
 {
     weights.allocate();
     biases.allocate();
@@ -70,16 +72,20 @@ Tensor<T> Linear<T>::forward( Tensor<T>& input )
     // Weights are in shape (out,in) so whe need weights.h to get out
     Tensor<T> output{ input.h, weights.h };
     output.allocate();
-    forward( input, output );
+    forwardI( input, output );
     return output;
 }
 
 template <typename T>
-void Linear<T>::forward( Tensor<T>& input, Tensor<T>& output )
+void Linear<T>::forwardI( Tensor<T>& input, Tensor<T>& output )
 {
     EML_ASSERT( input.w == inputSize, "Invalid input shape" );
+    EML_ASSERT( output.isAllocated() || output.isAllocatedCustom(), "Output Tensor is not allocated!" );
+    EML_ASSERT( input.isAllocated() || input.isAllocatedCustom(), "Input Tensor is not allocated!" );
+    EML_ASSERT( ( !input.requiresGrad ) || ( model != nullptr ), "Layer must be part of a model to enable autograd!" );
+
     // Multiplied as if b is transposed to match the dims (1, in), (out,in)
-   matmulBTrans( input, weights, output );
+    matmulBTrans( input, weights, output );
 
     if( useBias )
     {

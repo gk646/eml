@@ -1,6 +1,5 @@
 import os
 
-
 class HeaderGenerator:
     def __init__(self, test_per_file, tiny_guard_limit, test_macro):
         self.base_path = f"{os.getcwd()}/../tests/"

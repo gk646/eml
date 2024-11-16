@@ -36,7 +36,7 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
 
         target_compile_options(${TARGET_NAME} PRIVATE
                 $<$<CONFIG:Debug>: -O0 -g>
-                $<$<CONFIG:Release>: -DNDEBUG -Os -s -ffast-math -fno-math-errno -fdelete-null-pointer-checks
+                $<$<CONFIG:Release>: -DNDEBUG -Ofast -s -funroll-loops -ffast-math -fno-math-errno -fdelete-null-pointer-checks
                 -fno-threadsafe-statics
                 >
         )

@@ -27,7 +27,7 @@ MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
 |                Version: %-17s     |
  ===============================================
 )",
-                   EML_VERSION );
+                   EML_VERSION_STRING );
 
     // =========== //
     const uint32_t start = PlatformClock();

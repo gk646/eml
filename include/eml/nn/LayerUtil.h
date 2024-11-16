@@ -1,5 +1,5 @@
-#ifndef EML_LAYERUTIL_H
-#define EML_LAYERUTIL_H
+#ifndef EML_NN_LAYERUTIL_H
+#define EML_NN_LAYERUTIL_H
 
 #include <eml/nn/layers/Conv2D.h>
 #include <eml/nn/layers/Linear.h>
@@ -86,4 +86,4 @@ int32_t GetLayerOps( const Layer& layer, const Tuple& shape )
 
 } // namespace eml::nn
 
-#endif // EML_LAYERUTIL_H
+#endif // EML_NN_LAYERUTIL_H

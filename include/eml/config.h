@@ -17,7 +17,6 @@ using qint32_t = int32_t;
 
 } // namespace eml
 
-
 #if !defined( NDEBUG )
 #define EML_DEBUG
 #endif
@@ -30,8 +29,16 @@ using qint32_t = int32_t;
 
 #define EML_LOG_INFO( msg ) PlatformLog( "[INFO]: %s:%d\n\t%s", __FILE__, __LINE__, msg )
 
-#define EML_VERSION "0.0.1"
+#define EML_VERSION_MAJOR 0
+#define EML_VERSION_MINOR 1
+#define EML_VERSION_PATCH 1
 
+#define EML_STRINGIFY_HELPER( x ) #x
+#define EML_STRINGIFY( x ) EML_STRINGIFY_HELPER( x )
 
+#define EML_VERSION_STRING                                                                                             \
+    EML_STRINGIFY( EML_VERSION_MAJOR ) "." EML_STRINGIFY( EML_VERSION_MINOR ) "." EML_STRINGIFY( EML_VERSION_PATCH )
+
+#define EML_VERSION ( EML_VERSION_MAJOR * 10000 + EML_VERSION_MINOR * 100 + EML_VERSION_PATCH )
 
 #endif // EML_CONFIG_H

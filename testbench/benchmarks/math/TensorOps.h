@@ -18,15 +18,15 @@ void benchMatmulImpl()
     Tensor<float> C{ size, size };
     C.allocate();
 
-    EML_BENCHMARK_FLOPS( T,matmul, count, size * size * size, A, B, C );
+    EML_BENCHMARK_FLOPS( T, matmul, count, size * size * size, A, B, C );
 }
 
 inline void BenchTensorOps()
 {
-    benchMatmulImpl<float>();
     benchMatmulImpl<qint8_t>();
     benchMatmulImpl<qint16_t>();
     benchMatmulImpl<qint32_t>();
+    benchMatmulImpl<float>();
 }
 
 #endif // EML_BENCHMARK_TENSOR_OPS_H
