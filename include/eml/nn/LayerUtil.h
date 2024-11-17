@@ -3,7 +3,6 @@
 
 #include <eml/nn/layers/Conv2D.h>
 #include <eml/nn/layers/Linear.h>
-#include <eml/util/Macros.h>
 
 // ================================================================
 // LayerUtil
@@ -16,11 +15,11 @@ namespace eml::nn
 {
 
 // Returns the number learnable parameters of this layer
-template <typename Layer>
+template <typename T>
 int32_t GetLayerWeights( const Layer& layer );
 
 // Returns the number of multiplications needed in this layer to forward the given shape a single time
-template <typename Layer>
+template <typename T>
 int32_t GetLayerOps( const Layer& layer, const Tuple& shape );
 
 } // namespace eml::nn
@@ -45,29 +44,37 @@ int32_t GetLayerOps( const Layer& layer, const Tuple& shape );
 namespace eml::nn
 {
 
-EML_DEFINE_IS_LAYER_TRAIT( is_conv2d, Conv2D );
-EML_DEFINE_IS_LAYER_TRAIT( is_linear, Linear );
-
-template <typename Layer>
-int32_t GetLayerWeights( const Layer& layer )
+template <typename T>
+int32_t GetLayerWeights( const Layer& base )
 {
-    if constexpr( is_conv2d<Layer>::value )
+    switch( base.type )
     {
+    case LayerType::CONV_2D:
+    {
+        Conv2D<T>& layer = layer;
         return layer.useBias ? layer.weights.size + layer.biases.size : layer.weights.size;
     }
-    else if constexpr( is_linear<Layer>::value )
+    case LayerType::LINEAR:
     {
+        Linear<T>& layer = layer;
         return layer.useBias ? layer.weights.size + layer.biases.size : layer.weights.size;
+    }
+    case LayerType::REFLECTION_PAD_2D:
+    case LayerType::RELU:
+    case LayerType::NO_LAYER:
+        break;
     }
     return 0;
 }
 
-template <typename Layer>
-int32_t GetLayerOps( const Layer& layer, const Tuple& shape )
+template <typename T>
+int32_t GetLayerOps( const Layer& base, const Tuple& shape )
 {
-
-    if constexpr( is_conv2d<Layer>::value )
+    switch( base.type )
     {
+    case LayerType::CONV_2D:
+    {
+        Conv2D<T>& layer = layer;
         // A single filter operation is output shape times kernel multiplications: (x * y) * (kx * ky) = m
         // This is done for each input channel for each output channel: m * input * output
         // This is then done for each batch
@@ -77,9 +84,15 @@ int32_t GetLayerOps( const Layer& layer, const Tuple& shape )
         int32_t perOutputChannel = shape.second * perInputChannel;
         return shape.first * layer.outChannels * perOutputChannel;
     }
-    else if constexpr( is_linear<Layer>::value )
+    case LayerType::LINEAR:
     {
+        Linear<T>& layer = layer;
         return shape.third * ( 1 * shape.fourth * layer.weights.h );
+    }
+    case LayerType::REFLECTION_PAD_2D:
+    case LayerType::RELU:
+    case LayerType::NO_LAYER:
+        break;
     }
     return 0;
 }

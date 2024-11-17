@@ -21,7 +21,7 @@ namespace eml::nn
 {
 
 template <typename T>
-struct Conv2D final
+struct Conv2D final : Layer
 {
     // Creates a new Conv2D layer with the given parameters
     //      - inC:     amount of input channels
@@ -30,7 +30,7 @@ struct Conv2D final
     //      - padding: dimensions of the kernel
     //      - model:   the model this layer is part of (if any)
     Conv2D( int32_t inC, int32_t outC, Pair kernel, Pair stride, Pair padding, bool bias, PaddingMode pMode,
-            Model* model = nullptr );
+            Model<T>* model = nullptr );
 
     // Creates a new Conv2D layer with the given parameters
     //      - inC:     amount of input channels
@@ -38,7 +38,7 @@ struct Conv2D final
     //      - kernel:  dimensions of the kernel
     //      - padding: dimensions of the kernel
     //      - model:   the model this layer is part of (if any)
-    Conv2D( int32_t inC, int32_t outC, Pair kernel, Model* model = nullptr );
+    Conv2D( int32_t inC, int32_t outC, Pair kernel, Model<T>* model = nullptr );
 
     // ============ Inference ============
 
@@ -60,7 +60,7 @@ struct Conv2D final
     Pair kernel;             // (height, width) of the kernel
     Pair stride = { 1, 1 };  // (height, width) of the stride
     Pair padding = { 0, 0 }; // (height, width) of the padding
-    Model* model;            // the model this layer is part of
+    Model<T>* model;         // the model this layer is part of
     int32_t inChannels;      // number of channels
     int32_t outChannels;     // number of channels
     PaddingMode pMode;       // Which padding mode
@@ -91,8 +91,8 @@ namespace eml::nn
 
 template <typename T>
 Conv2D<T>::Conv2D( const int32_t inC, const int32_t outC, const Pair kernel, const Pair stride, const Pair padding,
-                   const bool bias, const PaddingMode pMode, Model* model )
-    :  weights( outC, inC, kernel.first, kernel.second ), biases( outC ), kernel( kernel ), stride( stride ),
+                   const bool bias, const PaddingMode pMode, Model<T>* model )
+    : Layer(), weights( outC, inC, kernel.first, kernel.second ), biases( outC ), kernel( kernel ), stride( stride ),
       padding( padding ), model( model ), inChannels( inC ), outChannels( outC ), pMode( pMode ), useBias( bias )
 {
     biases.allocate();
@@ -109,7 +109,7 @@ Conv2D<T>::Conv2D( const int32_t inC, const int32_t outC, const Pair kernel, con
 }
 
 template <typename T>
-Conv2D<T>::Conv2D( int32_t inC, int32_t outC, Pair kernel, Model* model )
+Conv2D<T>::Conv2D( int32_t inC, int32_t outC, Pair kernel, Model<T>* model )
     : Conv2D( inC, outC, kernel, { 1, 1 }, { 0, 0 }, true, PaddingMode::ZEROS, model )
 {
 }
@@ -200,7 +200,7 @@ Tensor<T> Conv2DApplyPadding( const Tensor<T>& input, const Pair padding )
 } // namespace impl
 
 template <typename T>
-Tensor<T> Conv2D<T>::forward( const Tensor<T>& input )
+Tensor<T> Conv2D<T>::forward( const Tensor<T>& restrict input )
 {
     EML_ASSERT( input.isAllocated() || input.isAllocatedCustom(), "Input Tensor is not allocated!" );
     Tensor<T> out{ getOutShape( input.shape() ) };
@@ -210,7 +210,7 @@ Tensor<T> Conv2D<T>::forward( const Tensor<T>& input )
 }
 
 template <typename T>
-void Conv2D<T>::forwardI( const Tensor<T>& __restrict input, Tensor<T>& __restrict output )
+void Conv2D<T>::forwardI( const Tensor<T>& restrict input, Tensor<T>& restrict output )
 {
     EML_ASSERT( output.shape() == getOutShape( input.shape() ), "Output Tensor has wrong dimensions!" );
     EML_ASSERT( output.isAllocated() || output.isAllocatedCustom(), "Output Tensor is not allocated!" );
@@ -224,11 +224,18 @@ void Conv2D<T>::forwardI( const Tensor<T>& __restrict input, Tensor<T>& __restri
         switch( pMode )
         {
         case PaddingMode::ZEROS:
-            paddedInput = impl::Conv2DApplyPadding<T, PaddingMode::ZEROS>( input, padding );
-            break;
+        {
+            ZeroPad2D pad{ padding };
+            paddedInput = pad.forward( input );
+        }
+
+        break;
         case PaddingMode::REFLECT:
-            paddedInput = impl::Conv2DApplyPadding<T, PaddingMode::REFLECT>( input, padding );
-            break;
+        {
+            ReflectionPad2D pad{ padding };
+            paddedInput = pad.forward( input );
+        }
+        break;
         case PaddingMode::REPLICATE:
             paddedInput = impl::Conv2DApplyPadding<T, PaddingMode::REPLICATE>( input, padding );
             break;

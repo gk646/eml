@@ -18,7 +18,7 @@ def impl_gen_relu(input_shape):
     # Generate the C++ function call
     cpp_code = f"""
     {input_tensor_decl}
-    auto out = ReLU::forward(A);
+    auto out = ReLU<float>{{}}.forward(A);
     {output_tensor_decl}
     {gen_utils.test_macro}(R, out);
 """

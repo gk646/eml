@@ -16,9 +16,9 @@
 
 struct TestContext final
 {
-    int passedTests = 0;
-    int failedTest = 0;
-    int currentTest = 0;
+    int32_t passedTests = 0;
+    int32_t failedTest = 0;
+    int32_t currentTest = 0;
     const char* currentFile = nullptr;
 
     bool isNewFile( const char* newFile ) const
@@ -49,9 +49,9 @@ inline void PrintTestStats()
                    "| %-7s : %3d (%3d%%)                    |\n"
                    "===========================================\n\n",
                    "Total", TEST_CONTEXT.currentTest, "Passed", TEST_CONTEXT.passedTests,
-                   (int)( (float)TEST_CONTEXT.passedTests / (float)TEST_CONTEXT.currentTest * 100.0F ), "Failed",
+                   (int32_t)( (float)TEST_CONTEXT.passedTests / (float)TEST_CONTEXT.currentTest * 100.0F ), "Failed",
                    TEST_CONTEXT.failedTest,
-                   (int)( (float)TEST_CONTEXT.failedTest / (float)TEST_CONTEXT.currentTest * 100.0F ) );
+                   (int32_t)( (float)TEST_CONTEXT.failedTest / (float)TEST_CONTEXT.currentTest * 100.0F ) );
 }
 
 #define EML_RUN_TEST( func, ... ) func( __VA_ARGS__ );

@@ -23,12 +23,12 @@ MMMMMM0..dXWWNKkWMMM  WMMMMM. XMMMMM' KMMM. XMMMMM
 MMMMMMMWk:,..';lWMMM;,WMMMMMc,NMMMMMl,XMMM:,NMMMMM
 MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
  ===============================================
-|          embeddable machine learning          |
-|                Version: %-17s     |
+|       embeddable machine learning %-8s    |
+|          Copyright (c) 2024 gk646             |
+|              Platform: %-18s     |
  ===============================================
 )",
-                   EML_VERSION_STRING );
-
+                   EML_VERSION_STRING, PlatformName() );
     // =========== //
     const uint32_t start = PlatformClock();
     // =========== //

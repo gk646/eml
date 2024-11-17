@@ -3,6 +3,7 @@
 
 #include <eml/math/MathUtil.h>
 #include <eml/math/Tensor.h>
+#include <eml/util/Macros.h>
 #include <xsimd/xsimd.hpp>
 
 // ================================================================
@@ -15,17 +16,16 @@
 namespace eml
 {
 
-// Matrix multiplication of A and B into R
 template <typename T>
-void matmul( const Tensor<T>& A, const Tensor<T>& B, Tensor<T>& R);
+void matmul( const Tensor<T>& A, const Tensor<T>& B, Tensor<T>& R, nn::Model<T>* model = nullptr );
 
 // Matrix multiplication of A and B into R with A being handled like its transposed
 template <typename T>
-void matmulATrans( const Tensor<T>& A, const Tensor<T>& B, Tensor<T>& R);
+void matmulATrans( const Tensor<T>& A, const Tensor<T>& B, Tensor<T>& R, nn::Model<T>* model = nullptr );
 
 // Matrix multiplication of A and B into R with B being handled like its transposed
 template <typename T>
-void matmulBTrans( const Tensor<T>& A, const Tensor<T>& B, Tensor<T>& R );
+void matmulBTrans( const Tensor<T>& A, const Tensor<T>& B, Tensor<T>& R, nn::Model<T>* model = nullptr );
 
 // Sets all values to zero
 template <typename T>
@@ -46,11 +46,11 @@ void fillDim( Tensor<T>& A, T val, int32_t n = -1, int32_t c = -1, int32_t h = -
 
 // Returns the value of the greatest element
 template <typename T>
-T Max( const Tensor<T>& A );
+T max( const Tensor<T>& A );
 
 // Returns the value of the smallest element
 template <typename T>
-T Min( const Tensor<T>& A );
+T min( const Tensor<T>& A );
 
 // Calls the given operation with every tensor element
 template <typename T>
@@ -88,15 +88,15 @@ namespace impl
 // Heavily inspired by:
 // https://en.algorithmica.org/hpc/algorithms/matmul/
 
-template <typename T, int size, bool transposeA, bool transposeB>
-void matmulKernel( const Tensor<T>& __restrict__ A, const Tensor<T>& __restrict__ B, Tensor<T>& __restrict__ R,
-                   const int x, const int y, const int l, const int r )
+template <typename T, int32_t size, bool transposeA, bool transposeB>
+void matmulKernel( const Tensor<T>& restrict A, const Tensor<T>& restrict B, Tensor<T>& restrict R, const int32_t x,
+                   const int32_t y, const int32_t l, const int32_t r )
 {
     if constexpr( size == 2 )
     {
         T c00 = 0, c01 = 0, c10 = 0, c11 = 0;
 
-        for( int k = l; k < r; k++ )
+        for( int32_t k = l; k < r; k++ )
         {
 
             T a0 = transposeA ? A[ k * A.w + x ] : A[ x * A.w + k ];
@@ -123,24 +123,49 @@ void matmulKernel( const Tensor<T>& __restrict__ A, const Tensor<T>& __restrict_
 
     xsimd::batch<T> t[ size ]{};
 
-    for( int k = l; k < r; k++ )
+    for( int32_t k = l; k < r; k++ )
     {
-        const auto bBatch = xsimd::load_unaligned(  &B[ k * B.w + y ] );
-        for( int i = 0; i < size; i += 4 )
+        xsimd::batch<T> bBatch;
+        if constexpr( !transposeB )
         {
-            xsimd::batch<T> alpha0{ A[ ( x + i ) * A.w + k ] };
-            xsimd::batch<T> alpha1{ A[ ( x + i + 1 ) * A.w + k ] };
-            xsimd::batch<T> alpha2{ A[ ( x + i + 2 ) * A.w + k ] };
-            xsimd::batch<T> alpha3{ A[ ( x + i + 3 ) * A.w + k ] };
+            bBatch = xsimd::load_unaligned( &B[ k * B.w + y ] );
+        }
+        else
+        {
+            T bVals[ size ];
+            for( int32_t idx = 0; idx < size; ++idx )
+            {
+                bVals[ idx ] = B[ ( y + idx ) * B.w + k ];
+            }
+            bBatch = xsimd::load_unaligned( bVals );
+        }
 
-            t[ i ] = xsimd::fma( alpha0, bBatch, t[ i ] );
-            t[ i + 1 ] = xsimd::fma( alpha1, bBatch, t[ i + 1 ] );
-            t[ i + 2 ] = xsimd::fma( alpha2, bBatch, t[ i + 2 ] );
-            t[ i + 3 ] = xsimd::fma( alpha3, bBatch, t[ i + 3 ] );
+        if constexpr( transposeA )
+        {
+            for( int32_t i = 0; i < size; ++i )
+            {
+                xsimd::batch<T> alpha = xsimd::batch<T>::broadcast( A[ k * A.w + x + i ] );
+                t[ i ] = xsimd::fma( alpha, bBatch, t[ i ] );
+            }
+        }
+        else
+        {
+            for( int32_t i = 0; i < size; i += 4 )
+            {
+                xsimd::batch<T> alpha0{ A[ ( x + i ) * A.w + k ] };
+                xsimd::batch<T> alpha1{ A[ ( x + i + 1 ) * A.w + k ] };
+                xsimd::batch<T> alpha2{ A[ ( x + i + 2 ) * A.w + k ] };
+                xsimd::batch<T> alpha3{ A[ ( x + i + 3 ) * A.w + k ] };
+
+                t[ i ] = xsimd::fma( alpha0, bBatch, t[ i ] );
+                t[ i + 1 ] = xsimd::fma( alpha1, bBatch, t[ i + 1 ] );
+                t[ i + 2 ] = xsimd::fma( alpha2, bBatch, t[ i + 2 ] );
+                t[ i + 3 ] = xsimd::fma( alpha3, bBatch, t[ i + 3 ] );
+            }
         }
     }
 
-    for( int i = 0; i < size; i += 4 )
+    for( int32_t i = 0; i < size; i += 4 )
     {
         const auto res0 = xsimd::load_unaligned( &R[ ( x + i ) * R.w + y ] ) + t[ i ];
         const auto res1 = xsimd::load_unaligned( &R[ ( x + i + 1 ) * R.w + y ] ) + t[ i + 1 ];
@@ -155,7 +180,7 @@ void matmulKernel( const Tensor<T>& __restrict__ A, const Tensor<T>& __restrict_
 }
 
 template <typename T, bool transposeA, bool transposeB>
-void matmulImpl( const Tensor<T>& __restrict__ A, const Tensor<T>&__restrict__  B, Tensor<T>& __restrict__ R )
+void matmulImpl( const Tensor<T>& restrict A, const Tensor<T>& restrict B, Tensor<T>& restrict R )
 {
     const int32_t Ah = transposeA ? A.w : A.h;
     const int32_t Aw = transposeA ? A.h : A.w;
@@ -170,8 +195,8 @@ void matmulImpl( const Tensor<T>& __restrict__ A, const Tensor<T>&__restrict__  
     const int32_t stepsA = Ah - ( Ah % simdValues );
     const int32_t stepsB = Bw - ( Bw % simdValues );
 
-    for( int x = 0; x < stepsA; x += simdValues )
-        for( int y = 0; y < stepsB; y += simdValues )
+    for( int32_t x = 0; x < stepsA; x += simdValues )
+        for( int32_t y = 0; y < stepsB; y += simdValues )
             impl::matmulKernel<T, simdValues, transposeA, transposeB>( A, B, R, x, y, 0, Aw );
 
     for( int32_t h = 0; h < Ah; ++h )
@@ -210,19 +235,21 @@ void matmulImpl( const Tensor<T>& __restrict__ A, const Tensor<T>&__restrict__  
 } // namespace impl
 
 template <typename T>
-void matmul( const Tensor<T>& A, const Tensor<T>& B, Tensor<T>& R )
+void matmul( const Tensor<T>& restrict A, const Tensor<T>& restrict B, Tensor<T>& restrict R, nn::Model<T>* model )
 {
     impl::matmulImpl<T, false, false>( A, B, R );
 }
 
 template <typename T>
-void matmulATrans( const Tensor<T>& A, const Tensor<T>& B, Tensor<T>& R )
+void matmulATrans( const Tensor<T>& restrict A, const Tensor<T>& restrict B, Tensor<T>& restrict R,
+                   nn::Model<T>* model )
 {
     impl::matmulImpl<T, true, false>( A, B, R );
 }
 
 template <typename T>
-void matmulBTrans( const Tensor<T>& A, const Tensor<T>& B, Tensor<T>& R )
+void matmulBTrans( const Tensor<T>& restrict A, const Tensor<T>& restrict B, Tensor<T>& restrict R,
+                   nn::Model<T>* model )
 {
     impl::matmulImpl<T, false, true>( A, B, R );
 }
@@ -310,7 +337,7 @@ void fillDim( Tensor<T>& A, T val, int32_t n, int32_t c, int32_t h )
 }
 
 template <typename T>
-T Max( const Tensor<T>& A )
+T max( const Tensor<T>& A )
 {
     EML_ASSERT( A.size > 0, "Cannot determine max of empty tensor!" );
     T max = A[ 0 ];
@@ -323,7 +350,7 @@ T Max( const Tensor<T>& A )
 }
 
 template <typename T>
-T Min( const Tensor<T>& A )
+T min( const Tensor<T>& A )
 {
     EML_ASSERT( A.size > 0, "Cannot determine min of empty tensor!" );
     T min = A[ 0 ];
@@ -345,7 +372,7 @@ void zero( Tensor<T>& A )
 }
 
 template <typename T>
-void rand( Tensor<T>& A, T min, T max )
+void rand( Tensor<T>& restrict A, T min, T max )
 {
     if constexpr( std::is_same_v<T, float> )
     {
@@ -357,7 +384,7 @@ void rand( Tensor<T>& A, T min, T max )
 }
 
 template <typename T>
-void ElemOp( Tensor<T>& A, void ( *op )( T& ) )
+void ElemOp( Tensor<T>& restrict A, void ( *op )( T& ) )
 {
     for( int32_t i = 0; i < A.size; ++i )
     {
@@ -366,7 +393,7 @@ void ElemOp( Tensor<T>& A, void ( *op )( T& ) )
 }
 
 template <typename T>
-void arange( Tensor<T>& A, T start, T step )
+void arange( Tensor<T>& restrict A, T start, T step )
 {
     for( int32_t i = 0; i < A.size; ++i )
     {

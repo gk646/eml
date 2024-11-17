@@ -31,6 +31,9 @@ struct Tuple
     bool operator!=( const Tuple& rhs ) const;
 
     void print( const char* name = nullptr ) const;
+
+    // Returns all values multiplied in a row
+    [[nodiscard]] int32_t magnitude() const;
 };
 
 } // namespace eml
@@ -68,6 +71,11 @@ inline bool Tuple::operator!=( const Tuple& rhs ) const
 inline void Tuple::print( const char* name ) const
 {
     PlatformPrint( "%s: [%3d, %3d, %3d, %3d]", name ? name : "Tuple", first, second, third, fourth );
+}
+
+inline int32_t Tuple::magnitude() const
+{
+    return first * second * third * fourth;
 }
 
 } // namespace eml

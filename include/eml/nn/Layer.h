@@ -15,10 +15,14 @@
 
 enum class LayerType : uint8_t
 {
+    NO_LAYER,
+
+    // FLOAT
     CONV_2D,
     REFLECTION_PAD_2D,
     RELU,
     LINEAR,
+
 };
 
 struct Layer

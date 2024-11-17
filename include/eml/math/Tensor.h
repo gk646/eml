@@ -17,6 +17,7 @@
 
 namespace eml
 {
+
 template <typename T>
 struct Tensor final
 {
@@ -58,8 +59,8 @@ struct Tensor final
     void free();
 
     // Initializes the tensor with user managed memory
-    // IMPORTANT: you need to zero initialized empty stack memory (e.g. int buf[25]{} // With {} init)
-    void allocateCustom( void* memory, int count );
+    // IMPORTANT: you need to zero initialized empty stack memory (e.g. int buff[25]{} // With {} init)
+    void allocateCustom( void* memory, int32_t count );
 
     // Sets the data to nullptr and returns the memory
     void* freeCustom();
@@ -92,27 +93,24 @@ struct Tensor final
 
     // ============ Data ============
 
-    T* ptr = nullptr; // Data pointer
+    T* ptr = nullptr;     // Data pointer
     int32_t capacity = 0; // Allocated size
-    int32_t size = 0; // Maximum elements
+    int32_t size = 0;     // Maximum elements
 
-    int32_t n = 0; // Batch
-    int32_t c = 0; // Channels
-    int32_t h = 0; // Height / Rows
-    int32_t w = 0; // Width / Columns
+    int32_t n = 0;        // Batch
+    int32_t c = 0;        // Channels
+    int32_t h = 0;        // Height / Rows
+    int32_t w = 0;        // Width / Columns
 
-    int32_t hw = 0; // Channel stride
-    int32_t chw = 0; // Batch stride
-
-    Tensor<T>* grad;
-    bool requiresGrad = false;
-    Operation operation;
+    int32_t hw = 0;       // Channel stride
+    int32_t chw = 0;      // Batch stride
 
     // ============ Metadata ============
 
-    int32_t scale = 1; // Scale for quantized values
-
-    bool customAllocated = false;
+    int32_t scale = 1;            // Scale for quantized values
+    bool requiresGrad = false;    // If gradients should be computed for this tensor
+    bool customAllocated = false; // If this tensor is NOT allocated with PlatformAllocate()
+    Tensor<T>* grad = nullptr;    // Pointer to the grad tensor
 
 #ifdef EML_DEBUG
     ~Tensor();

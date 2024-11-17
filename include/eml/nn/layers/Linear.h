@@ -16,24 +16,26 @@
 namespace eml::nn
 {
 template <typename T>
-struct Linear final
+struct Linear final : Layer
 {
-    Linear( int32_t in, int32_t out, bool bias = true, Model* model = nullptr );
+    Linear( int32_t in, int32_t out, bool bias = true, Model<T>* model = nullptr );
 
-    // Returns an allocated tensor with shape (input.nch, out)
-    Tensor<T> forward( Tensor<T>& input );
+    // Returns an allocated tensor with shape (*,*,*, out)
+    Tensor<T> forward( const Tensor<T>& input );
 
-    // Expects a correctly shaped and sufficiently allocated output tensor (input.nch, out)
-    void forwardI( Tensor<T>& input, Tensor<T>& output );
+    // Expects a correctly shaped and sufficiently allocated output tensor (*,*,*, out)
+    void forwardI( const Tensor<T>& input, Tensor<T>& output );
 
     // ============ Info ============
 
     Tensor<T> weights; // Learnable weights of shape (out, in)
     Tensor<T> biases;  // Learnable bias of the layer (out)
-    Model* model;
+    Model<T>* model = nullptr;
     int32_t inputSize;
     int32_t outputSize;
     bool useBias = true;
+
+    EML_CHECK_TYPE_SUPPORTED();
 };
 
 } // namespace eml::nn
@@ -59,25 +61,44 @@ namespace eml::nn
 {
 
 template <typename T>
-Linear<T>::Linear( const int32_t in, const int32_t out, const bool bias, Model* model )
-    : weights( out, in ), biases( out ), model( model ), inputSize( in ), outputSize( out ), useBias( bias )
+Linear<T>::Linear( const int32_t in, const int32_t out, const bool bias, Model<T>* model )
+    : Layer(), weights( out, in ), biases( out ), model( model ), inputSize( in ), outputSize( out ), useBias( bias )
 {
-    weights.allocate();
-    biases.allocate();
+    if( model ) // Part of a model
+    {
+        printf( "Layer\n" );
+        EML_MODEL_ALLOCATE( weights );
+        if( bias )
+        {
+            EML_MODEL_ALLOCATE( biases );
+        }
+    }
+    else
+    {
+        weights.allocate();
+        biases.allocate();
+    }
 }
 
 template <typename T>
-Tensor<T> Linear<T>::forward( Tensor<T>& input )
+Tensor<T> Linear<T>::forward( const Tensor<T>& input )
 {
     // Weights are in shape (out,in) so whe need weights.h to get out
-    Tensor<T> output{ input.h, weights.h };
-    output.allocate();
+    Tensor<T> output{ input.n, input.c, input.h, weights.h };
+    if( model )
+    {
+
+    }
+    else
+    {
+        output.allocate();
+    }
     forwardI( input, output );
     return output;
 }
 
 template <typename T>
-void Linear<T>::forwardI( Tensor<T>& input, Tensor<T>& output )
+void Linear<T>::forwardI( const Tensor<T>& restrict input, Tensor<T>& restrict output )
 {
     EML_ASSERT( input.w == inputSize, "Invalid input shape" );
     EML_ASSERT( output.isAllocated() || output.isAllocatedCustom(), "Output Tensor is not allocated!" );

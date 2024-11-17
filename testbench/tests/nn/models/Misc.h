@@ -3,7 +3,48 @@
 
 using namespace eml;
 
+struct MyModel final : Model<float>
+{
+    Linear<float> linear{ 2, 2, true, this };
+    ReLU<float> relu{ this };
+    Linear<float> linear2{ 2, 1, true, this };
 
+    MyModel( void* memory, int size ) : Model( 1, memory, size, true )
+    {
+        printf( "Model Derived\n" );
+        printf( "Total:%d\n", getMemorySize() );
+    }
+
+    Tensor<float> forward( Tensor<float>& x ) override
+    {
+        x = linear.forward( x );
+        x = relu.forward( x );
+        x = linear2.forward( x );
+        x = relu.forward( x );
+        return x;
+    }
+};
+
+inline void func()
+{
+    int buff[ 250 ];
+    MyModel model{ buff, 250 * sizeof( int ) };
+
+    Tensor<float> A{ 2 };
+    A.allocate();
+    arange( A, 0.0F );
+
+    // for( int32_t i = 0; i < 10; ++i )
+    {
+        auto out = model.forward( A );
+        model.backward( out );
+        //model.step();
+        model.zeroGrad();
+    }
+
+    auto out = model.forward( A );
+    out.print();
+}
 
 inline void TestModelsCustom()
 {
@@ -23,7 +64,7 @@ inline void TestModelsCustom()
     matmulBTrans( input, weights, output ); // output = z
 
     // Step 4: Forward pass - ReLU activation
-    Tensor<float> reluOut = ReLU::forward( output ); // reluOut = ReLU(z)
+    Tensor<float> reluOut = ReLU<float>{}.forward( output ); // reluOut = ReLU(z)
 
     // Step 5: Compute loss
     Tensor<float> target{ 1 };
@@ -59,6 +100,7 @@ inline void TestModelsCustom()
 inline void TestNNCustom()
 {
     TestModelsCustom();
+    func();
 }
 
 #endif // EML_TESTS_MODELS_HANDMADE_H

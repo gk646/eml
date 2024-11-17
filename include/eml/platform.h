@@ -28,9 +28,6 @@ void PlatformAssert( char const* expr, const char* msg, char const* file, unsign
 // Used as stdout
 void PlatformPrint( const char* format, ... );
 
-// Logs a string
-void PlatformLog( const char* format, ... );
-
 //================= MEASURE =================//
 
 // Returns the current cpu clock count
@@ -50,10 +47,10 @@ void PlatformFree( void* ptr );
 //================= MULTICORE =================//
 
 // Executes the given method on the specified core
-void PlatformCoreExecute( int core, void* method );
+void PlatformCoreExecute( int32_t core, void* method );
 
 // Sends data from core 'from' to core 'to'
-void PlatformCoreSendData( int from, int to, void* data );
+void PlatformCoreSendData( int32_t from, int32_t to, void* data );
 
 //================= MISC =================//
 

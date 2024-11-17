@@ -12,16 +12,19 @@
 namespace eml::nn
 {
 
+template <typename T>
 struct ReLU final
 {
 
+    explicit ReLU( Model<T>* = nullptr );
+
     // Returns an allocated tensor with the same shape as the input with the ReLU applied to all elements
-    template <typename T>
-    [[nodiscard]] static Tensor<T> forward( const Tensor<T>& input );
+    [[nodiscard]] Tensor<T> forward( const Tensor<T>& input );
 
     // Applies the ReLU inplace
-    template <typename T>
-    static void forwardI( Tensor<T>& input );
+    void forwardI( Tensor<T>& input );
+
+    Model<T>* model;
 };
 
 } // namespace eml::nn
@@ -47,15 +50,20 @@ namespace eml::nn
 {
 
 template <typename T>
-Tensor<T> ReLU::forward( const Tensor<T>& input )
+ReLU<T>::ReLU( Model<T>* model ) : model( model )
+{
+}
+
+template <typename T>
+Tensor<T> ReLU<T>::forward( const Tensor<T>& input )
 {
     Tensor<T> output = input.copyTensor();
-    forwardI(  output );
+    forwardI( output );
     return output;
 }
 
 template <typename T>
-void ReLU::forwardI( Tensor<T>& input )
+void ReLU<T>::forwardI( Tensor<T>& input )
 {
     constexpr auto simdSize = static_cast<int32_t>( xsimd::batch<T>::size );
 

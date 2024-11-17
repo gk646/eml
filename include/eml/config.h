@@ -7,6 +7,8 @@
 // Note: this is only used for internal temporary allocations
 #define EML_CONFIG_ALIGNMENT 4
 
+
+
 // Quantized datatypes
 namespace eml
 {

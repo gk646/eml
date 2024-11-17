@@ -126,7 +126,7 @@ Tensor<T> Conv1D<T>::forward( const Tensor<T>& input )
 }
 
 template <typename T>
-void Conv1D<T>::forward( const Tensor<T>& __restrict input, Tensor<T>& __restrict output )
+void Conv1D<T>::forward( const Tensor<T>& restrict input, Tensor<T>& restrict output )
 {
     EML_ASSERT( output.shape() == getOutShape( input.shape() ), "Output Tensor has wrong dimensions!" );
     EML_ASSERT( output.isAllocated() || output.isAllocatedCustom(), "Output Tensor is not allocated!" );
