@@ -45,15 +45,15 @@ struct AutoGradNode final
 // Initialization order for classes is:
 //      - members first then constructor
 //      - base class before derived class
-// So we don't know number of layers beforehand which is annoying
-// 2 Steps
 
-struct GradTable final
-{
-    static constexpr uint8_t MAX_GRADS = 255;
-
-    GradIndex grads[ MAX_GRADS ];
-};
+/* Data layout
+ *|----------------------------------------------------------------------------------------------------------|
+ *|/////////////////////////////////////|////////////////////|//////////////////////////|////////////////////|
+ *|//////////// Layer Data /////////////|// Local Tensors ///|///// Autograd Nodes /////|// Layer Pointers //|
+ *|/////////////////////////////////////|////////////////////|//////////////////////////|////////////////////|
+ *|----------------------------------------------------------------------------------------------------------|
+ * -> ...                               |reserved at register|layerCount * sizeof(Node) |               ... <-
+ */
 
 struct ModelContext
 {
@@ -63,7 +63,9 @@ struct ModelContext
 
     // ============ Info ============
 
-    int32_t currOff = 0;
+    int32_t layerOff = 0;
+    int32_t pointerOff = 0; // Beginning of the: 'Layer Pointers' partition
+    int32_t tempTensors = 0; // Size of the: 'Local Tensor' partition
 
     ModelContext( void* memory, const int32_t size, const int32_t batchSize )
         : mem( (unsigned char*)memory ), memCnt( size ), batches( batchSize )
@@ -71,19 +73,27 @@ struct ModelContext
 
     }
 
-    void* requestConsistentMemory( const int32_t cnt, const int32_t size )
+    void* requestLayerMemory( const int32_t cnt, const int32_t size )
     {
         const int32_t requested = cnt * size;
 #ifdef EML_DEBUG
-        if( currOff + requested >= memCnt )
+        if( layerOff + requested >= memCnt )
         {
-            PlatformPrint( "Model memory not sufficient! At least needed: %d", currOff + requested + 1 );
+            PlatformPrint( "Model memory not sufficient! At least needed: %d", layerOff + requested + 1 );
             EML_ASSERT( false, "Model memory not sufficient!" );
         }
 #endif
-        const auto ret = ( mem + currOff );
-        currOff += requested;
+        const auto ret = ( mem + layerOff );
+        layerOff += requested;
         return ret;
+    }
+
+    void registerLayer( Layer& layer )
+    {
+        if(layerOff >( memCnt -  pointerOff))
+        {
+
+        }
     }
 
 

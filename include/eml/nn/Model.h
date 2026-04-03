@@ -56,10 +56,10 @@ struct Model
     // Returns the total amount of bytes needed for this model - only available after the model is constructed
     [[nodiscard]] int32_t getMemorySize() const;
 
-    int32_t getWeightCount() const;
+    [[nodiscard]] int32_t getWeightCount() const;
 
     // Returns the amount of multiplications needed for a single forward pass
-    int32_t getMultsCount() const;
+    [[nodiscard]] int32_t getMultsCount() const;
 
   private:
     ModelContext context;      // Internal data
@@ -104,7 +104,6 @@ namespace eml::nn
  *          - Computation Graph Nodes
  *          - Grad data for each weight and bias tensor for each batch
  *      - Indexing Data
- *
  */
 
 template <typename T>
@@ -125,11 +124,16 @@ void Model<T>::setAutograd( const bool value )
 template <typename T>
 int32_t Model<T>::getMemorySize() const
 {
-    return context.currOff;
+    return context.layerOff;
 }
 
 template <typename T>
 int32_t Model<T>::getWeightCount() const
+{
+}
+
+template <typename T>
+int32_t Model<T>::getMultsCount() const
 {
 }
 

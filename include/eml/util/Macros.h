@@ -12,13 +12,13 @@
     friend struct ReLU<T>;
 
 #define EML_MODEL_ALLOCATE( tensor )                                                                                   \
-    auto* tensor##Memory = model->context.requestConsistentMemory( tensor.size, sizeof( T ) );                                   \
+    auto* tensor##Memory = model->context.requestLayerMemory( tensor.size, sizeof( T ) );                                   \
     tensor.allocateCustom( tensor##Memory, tensor.size );                                                              \
     if( model->withTraining )                                                                                          \
     {                                                                                                                  \
-        tensor.grad = (Tensor<T>*)model->context.requestConsistentMemory( 1, sizeof( Tensor<T> ) );                              \
+        tensor.grad = (Tensor<T>*)model->context.requestLayerMemory( 1, sizeof( Tensor<T> ) );                              \
         *tensor.grad = Tensor<T>{ model->batches, tensor.c, tensor.h, tensor.w };                                      \
-        auto* gradMemory = model->context.requestConsistentMemory( tensor.grad->size, sizeof( T ) );                             \
+        auto* gradMemory = model->context.requestLayerMemory( tensor.grad->size, sizeof( T ) );                             \
         tensor.grad->allocateCustom( gradMemory, tensor.grad->size );                                                  \
     }
 
