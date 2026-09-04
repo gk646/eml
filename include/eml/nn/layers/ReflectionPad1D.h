@@ -1,9 +1,6 @@
 #ifndef EML_LAYERS_REFLECTIONPAD1D_H
 #define EML_LAYERS_REFLECTIONPAD1D_H
 
-
-
-
 // ================================================================
 // ReflectionPad1D
 // ================================================================

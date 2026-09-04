@@ -3,14 +3,14 @@
 
 #include <eml/nn/Optim.h>
 
-namespace eml::nn::optim {
+namespace eml::nn::optim
+{
 
+struct SGD final : Optimizer
+{
 
-    struct SGD final : Optimizer {
+};
 
+} // namespace eml::nn::optim
 
-        };
-
-}
-
-#endif //EML_NN_OPTIM_SGD_H
+#endif // EML_NN_OPTIM_SGD_H

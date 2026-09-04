@@ -9,13 +9,13 @@ struct MyModel final : Model<float>
     ReLU<float> relu{ this };
     Linear<float> linear2{ 2, 1, true, this };
 
-    MyModel( void* memory, int size ) : Model( 1, memory, size, true )
+    MyModel(  ) : Model( 1, false )
     {
         printf( "Model Derived\n" );
-        printf( "Total:%d\n", getMemorySize() );
+        printf( "Total:%lu\n", getMemorySize() );
     }
 
-    Tensor<float> forward( Tensor<float>& x ) override
+    Tensor<float> forward( Tensor<float>& x )
     {
         x = linear.forward( x );
         x = relu.forward( x );
@@ -28,7 +28,7 @@ struct MyModel final : Model<float>
 inline void func()
 {
     int buff[ 250 ];
-    MyModel model{ buff, 250 * sizeof( int ) };
+    MyModel model{ };
 
     Tensor<float> A{ 2 };
     A.allocate();
@@ -37,8 +37,7 @@ inline void func()
     // for( int32_t i = 0; i < 10; ++i )
     {
         auto out = model.forward( A );
-        model.backward( out );
-        //model.step();
+        // model.step();
         model.zeroGrad();
     }
 
@@ -100,7 +99,6 @@ inline void TestModelsCustom()
 inline void TestNNCustom()
 {
     TestModelsCustom();
-    func();
 }
 
 #endif // EML_TESTS_MODELS_HANDMADE_H

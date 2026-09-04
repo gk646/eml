@@ -1,10 +1,7 @@
 #ifndef EML_LAYERS_CONV2D_H
 #define EML_LAYERS_CONV2D_H
 
-#include <eml/math/MathUtil.h>
-#include <eml/math/TensorOps.h>
 #include <eml/nn/Layer.h>
-#include <eml/nn/Model.h>
 #include <eml/nn/layers/ReflectionPad2D.h>
 #include <eml/nn/layers/ZeroPad2D.h>
 
@@ -21,7 +18,7 @@ namespace eml::nn
 {
 
 template <typename T>
-struct Conv2D final : Layer
+struct Conv2D final
 {
     // Creates a new Conv2D layer with the given parameters
     //      - inC:     amount of input channels
@@ -92,7 +89,7 @@ namespace eml::nn
 template <typename T>
 Conv2D<T>::Conv2D( const int32_t inC, const int32_t outC, const Pair kernel, const Pair stride, const Pair padding,
                    const bool bias, const PaddingMode pMode, Model<T>* model )
-    : Layer(), weights( outC, inC, kernel.first, kernel.second ), biases( outC ), kernel( kernel ), stride( stride ),
+    :  weights( outC, inC, kernel.first, kernel.second ), biases( outC ), kernel( kernel ), stride( stride ),
       padding( padding ), model( model ), inChannels( inC ), outChannels( outC ), pMode( pMode ), useBias( bias )
 {
     biases.allocate();
@@ -110,7 +107,7 @@ Conv2D<T>::Conv2D( const int32_t inC, const int32_t outC, const Pair kernel, con
 
 template <typename T>
 Conv2D<T>::Conv2D( int32_t inC, int32_t outC, Pair kernel, Model<T>* model )
-    : Conv2D( inC, outC, kernel, { 1, 1 }, { 0, 0 }, true, PaddingMode::ZEROS, model )
+    : Conv2D( inC, outC, kernel, { 1, 1 }, { 0, 0 }, true, PaddingMode::Zeros, model )
 {
 }
 
@@ -122,13 +119,13 @@ Tensor<T> Conv2DApplyPadding( const Tensor<T>& input, const Pair padding )
 {
     EML_ASSERT( padding.first != padding.second || padding.first != 0, "No padding case is filtered" );
 
-    if( pMode == PaddingMode::REFLECT )
+    if( pMode == PaddingMode::Reflect )
     {
 
         ReflectionPad2D pad{ padding };
         return pad.forward( input );
     }
-    if( pMode == PaddingMode::ZEROS )
+    if( pMode == PaddingMode::Zeros )
     {
         ZeroPad2D pad{ padding };
         return pad.forward( input );
@@ -155,15 +152,15 @@ Tensor<T> Conv2DApplyPadding( const Tensor<T>& input, const Pair padding )
                     const bool inPaddingW = w < padding.second || w >= padding.second + input.w;
                     if( inPaddingH || inPaddingW ) [[unlikely]]
                     {
-                        if constexpr( pMode == PaddingMode::REPLICATE )
+                        if constexpr( pMode == PaddingMode::Replicate )
                         {
-                            int inputH = clampt( h - padding.first, 0, input.h - 1 );
-                            int inputW = clampt( w - padding.second, 0, input.w - 1 );
+                            int inputH = std::clamp( h - padding.first, 0, input.h - 1 );
+                            int inputW = std::clamp( w - padding.second, 0, input.w - 1 );
 
                             inputCopy[ padMatrixOff + h * inputCopy.w + w ] =
                                 input[ inMatrixOff + inputH * input.w + inputW ];
                         }
-                        else if constexpr( pMode == PaddingMode::CIRCULAR )
+                        else if constexpr( pMode == PaddingMode::Circular )
                         {
                             int inputW = w - padding.second;
                             if( inputW < 0 )
@@ -223,24 +220,24 @@ void Conv2D<T>::forwardI( const Tensor<T>& restrict input, Tensor<T>& restrict o
     {
         switch( pMode )
         {
-        case PaddingMode::ZEROS:
+        case PaddingMode::Zeros:
         {
             ZeroPad2D pad{ padding };
             paddedInput = pad.forward( input );
         }
 
         break;
-        case PaddingMode::REFLECT:
+        case PaddingMode::Reflect:
         {
             ReflectionPad2D pad{ padding };
             paddedInput = pad.forward( input );
         }
         break;
-        case PaddingMode::REPLICATE:
-            paddedInput = impl::Conv2DApplyPadding<T, PaddingMode::REPLICATE>( input, padding );
+        case PaddingMode::Replicate:
+            paddedInput = impl::Conv2DApplyPadding<T, PaddingMode::Replicate>( input, padding );
             break;
-        case PaddingMode::CIRCULAR:
-            paddedInput = impl::Conv2DApplyPadding<T, PaddingMode::CIRCULAR>( input, padding );
+        case PaddingMode::Circular:
+            paddedInput = impl::Conv2DApplyPadding<T, PaddingMode::Circular>( input, padding );
             break;
         }
     }

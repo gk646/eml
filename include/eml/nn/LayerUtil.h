@@ -70,14 +70,11 @@ int32_t GetLayerWeights( const Layer& base )
     return 0;
 }
 
-template <typename T>
-int32_t GetLayerOps( const Layer& base, const Tuple& shape )
+template <typename T, typename Layer>
+int32_t GetLayerOps( const Layer& layer, const Tuple& shape )
 {
-    switch( base.type )
+    if(std::is_same_v<Conv2D<float>, Layer>)
     {
-    case LayerType::CONV_2D:
-    {
-        Conv2D<T>& layer = layer;
         // A single filter operation is output shape times kernel multiplications: (x * y) * (kx * ky) = m
         // This is done for each input channel for each output channel: m * input * output
         // This is then done for each batch
@@ -87,16 +84,12 @@ int32_t GetLayerOps( const Layer& base, const Tuple& shape )
         const int32_t perOutputChannel = shape.second * perInputChannel;
         return shape.first * layer.outChannels * perOutputChannel;
     }
-    case LayerType::LINEAR:
+
+    if(std::is_same_v<Linear<float>, Layer>)
     {
-        Linear<T>& layer = layer;
         return shape.third * ( 1 * shape.fourth * layer.weights.h );
     }
-    case LayerType::REFLECTION_PAD_2D:
-    case LayerType::RELU:
-    case LayerType::NO_LAYER:
-        break;
-    }
+
     return 0;
 }
 

@@ -9,7 +9,7 @@ inline int testConv1DCase0()
 	A.allocateCustom(A_data, 4);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 1, 1, 1, 3, 0, true, PaddingMode::REFLECT };
+    Conv1D<qint32_t> layer{ 1, 1, 1, 3, 0, true, PaddingMode::Reflect };
     fill(layer.weights, 1);
     fill(layer.biases, 1);
     const auto out = layer.forward(A);
@@ -27,7 +27,7 @@ inline int testConv1DCase1()
 	A.allocateCustom(A_data, 15);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 3, 1, 1, 1, 0, false, PaddingMode::CIRCULAR };
+    Conv1D<qint32_t> layer{ 3, 1, 1, 1, 0, false, PaddingMode::Circular };
     fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
@@ -45,7 +45,7 @@ inline int testConv1DCase2()
 	A.allocateCustom(A_data, 5);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 1, 3, 2, 3, 0, true, PaddingMode::REPLICATE };
+    Conv1D<qint32_t> layer{ 1, 3, 2, 3, 0, true, PaddingMode::Replicate };
     fill(layer.weights, 1);
     fill(layer.biases, 1);
     const auto out = layer.forward(A);
@@ -63,7 +63,7 @@ inline int testConv1DCase3()
 	A.allocateCustom(A_data, 4);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 1, 3, 1, 2, 0, false, PaddingMode::REFLECT };
+    Conv1D<qint32_t> layer{ 1, 3, 1, 2, 0, false, PaddingMode::Reflect };
     fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
@@ -81,7 +81,7 @@ inline int testConv1DCase4()
 	A.allocateCustom(A_data, 15);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 3, 1, 3, 2, 0, true, PaddingMode::CIRCULAR };
+    Conv1D<qint32_t> layer{ 3, 1, 3, 2, 0, true, PaddingMode::Circular };
     fill(layer.weights, 1);
     fill(layer.biases, 1);
     const auto out = layer.forward(A);
@@ -99,7 +99,7 @@ inline int testConv1DCase5()
 	A.allocateCustom(A_data, 18);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 3, 1, 2, 3, 0, false, PaddingMode::REFLECT };
+    Conv1D<qint32_t> layer{ 3, 1, 2, 3, 0, false, PaddingMode::Reflect };
     fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
@@ -117,7 +117,7 @@ inline int testConv1DCase6()
 	A.allocateCustom(A_data, 5);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 1, 3, 1, 2, 0, true, PaddingMode::CIRCULAR };
+    Conv1D<qint32_t> layer{ 1, 3, 1, 2, 0, true, PaddingMode::Circular };
     fill(layer.weights, 1);
     fill(layer.biases, 1);
     const auto out = layer.forward(A);
@@ -135,7 +135,7 @@ inline int testConv1DCase7()
 	A.allocateCustom(A_data, 6);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 1, 3, 2, 1, 0, false, PaddingMode::REPLICATE };
+    Conv1D<qint32_t> layer{ 1, 3, 2, 1, 0, false, PaddingMode::Replicate };
     fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
@@ -153,7 +153,7 @@ inline int testConv1DCase8()
 	A.allocateCustom(A_data, 18);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 3, 1, 3, 1, 0, true, PaddingMode::ZEROS };
+    Conv1D<qint32_t> layer{ 3, 1, 3, 1, 0, true, PaddingMode::Zeros };
     fill(layer.weights, 1);
     fill(layer.biases, 1);
     const auto out = layer.forward(A);
@@ -171,7 +171,7 @@ inline int testConv1DCase9()
 	A.allocateCustom(A_data, 4);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 1, 1, 1, 2, 0, false, PaddingMode::CIRCULAR };
+    Conv1D<qint32_t> layer{ 1, 1, 1, 2, 0, false, PaddingMode::Circular };
     fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
@@ -189,7 +189,7 @@ inline int testConv1DCase10()
 	A.allocateCustom(A_data, 12);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 3, 1, 3, 2, 0, true, PaddingMode::REFLECT };
+    Conv1D<qint32_t> layer{ 3, 1, 3, 2, 0, true, PaddingMode::Reflect };
     fill(layer.weights, 1);
     fill(layer.biases, 1);
     const auto out = layer.forward(A);
@@ -207,7 +207,7 @@ inline int testConv1DCase11()
 	A.allocateCustom(A_data, 12);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 3, 1, 3, 2, 0, false, PaddingMode::CIRCULAR };
+    Conv1D<qint32_t> layer{ 3, 1, 3, 2, 0, false, PaddingMode::Circular };
     fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
@@ -225,7 +225,7 @@ inline int testConv1DCase12()
 	A.allocateCustom(A_data, 5);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 1, 1, 3, 2, 0, true, PaddingMode::REFLECT };
+    Conv1D<qint32_t> layer{ 1, 1, 3, 2, 0, true, PaddingMode::Reflect };
     fill(layer.weights, 1);
     fill(layer.biases, 1);
     const auto out = layer.forward(A);
@@ -243,7 +243,7 @@ inline int testConv1DCase13()
 	A.allocateCustom(A_data, 4);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 1, 3, 3, 2, 0, false, PaddingMode::REPLICATE };
+    Conv1D<qint32_t> layer{ 1, 3, 3, 2, 0, false, PaddingMode::Replicate };
     fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
@@ -261,7 +261,7 @@ inline int testConv1DCase14()
 	A.allocateCustom(A_data, 18);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 3, 1, 1, 2, 0, true, PaddingMode::REPLICATE };
+    Conv1D<qint32_t> layer{ 3, 1, 1, 2, 0, true, PaddingMode::Replicate };
     fill(layer.weights, 1);
     fill(layer.biases, 1);
     const auto out = layer.forward(A);
@@ -279,7 +279,7 @@ inline int testConv1DCase15()
 	A.allocateCustom(A_data, 6);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 1, 1, 3, 1, 0, false, PaddingMode::ZEROS };
+    Conv1D<qint32_t> layer{ 1, 1, 3, 1, 0, false, PaddingMode::Zeros };
     fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
@@ -297,7 +297,7 @@ inline int testConv1DCase16()
 	A.allocateCustom(A_data, 5);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 1, 3, 2, 3, 0, true, PaddingMode::REFLECT };
+    Conv1D<qint32_t> layer{ 1, 3, 2, 3, 0, true, PaddingMode::Reflect };
     fill(layer.weights, 1);
     fill(layer.biases, 1);
     const auto out = layer.forward(A);
@@ -315,7 +315,7 @@ inline int testConv1DCase17()
 	A.allocateCustom(A_data, 6);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 1, 1, 2, 3, 0, false, PaddingMode::ZEROS };
+    Conv1D<qint32_t> layer{ 1, 1, 2, 3, 0, false, PaddingMode::Zeros };
     fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
@@ -333,7 +333,7 @@ inline int testConv1DCase18()
 	A.allocateCustom(A_data, 5);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 1, 3, 3, 1, 0, true, PaddingMode::ZEROS };
+    Conv1D<qint32_t> layer{ 1, 3, 3, 1, 0, true, PaddingMode::Zeros };
     fill(layer.weights, 1);
     fill(layer.biases, 1);
     const auto out = layer.forward(A);
@@ -351,7 +351,7 @@ inline int testConv1DCase19()
 	A.allocateCustom(A_data, 12);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 3, 1, 1, 3, 0, false, PaddingMode::REFLECT };
+    Conv1D<qint32_t> layer{ 3, 1, 1, 3, 0, false, PaddingMode::Reflect };
     fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
@@ -369,7 +369,7 @@ inline int testConv1DCase20()
 	A.allocateCustom(A_data, 5);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 1, 1, 2, 1, 0, true, PaddingMode::REPLICATE };
+    Conv1D<qint32_t> layer{ 1, 1, 2, 1, 0, true, PaddingMode::Replicate };
     fill(layer.weights, 1);
     fill(layer.biases, 1);
     const auto out = layer.forward(A);
@@ -387,7 +387,7 @@ inline int testConv1DCase21()
 	A.allocateCustom(A_data, 15);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 3, 1, 2, 2, 0, false, PaddingMode::CIRCULAR };
+    Conv1D<qint32_t> layer{ 3, 1, 2, 2, 0, false, PaddingMode::Circular };
     fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
@@ -405,7 +405,7 @@ inline int testConv1DCase22()
 	A.allocateCustom(A_data, 5);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 1, 1, 1, 2, 0, true, PaddingMode::REFLECT };
+    Conv1D<qint32_t> layer{ 1, 1, 1, 2, 0, true, PaddingMode::Reflect };
     fill(layer.weights, 1);
     fill(layer.biases, 1);
     const auto out = layer.forward(A);
@@ -423,7 +423,7 @@ inline int testConv1DCase23()
 	A.allocateCustom(A_data, 6);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 1, 1, 3, 2, 0, false, PaddingMode::ZEROS };
+    Conv1D<qint32_t> layer{ 1, 1, 3, 2, 0, false, PaddingMode::Zeros };
     fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
@@ -441,7 +441,7 @@ inline int testConv1DCase24()
 	A.allocateCustom(A_data, 6);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 1, 3, 2, 2, 0, true, PaddingMode::CIRCULAR };
+    Conv1D<qint32_t> layer{ 1, 3, 2, 2, 0, true, PaddingMode::Circular };
     fill(layer.weights, 1);
     fill(layer.biases, 1);
     const auto out = layer.forward(A);
@@ -459,7 +459,7 @@ inline int testConv1DCase25()
 	A.allocateCustom(A_data, 18);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 3, 1, 1, 3, 0, false, PaddingMode::CIRCULAR };
+    Conv1D<qint32_t> layer{ 3, 1, 1, 3, 0, false, PaddingMode::Circular };
     fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
@@ -477,7 +477,7 @@ inline int testConv1DCase26()
 	A.allocateCustom(A_data, 15);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 3, 1, 1, 2, 0, true, PaddingMode::ZEROS };
+    Conv1D<qint32_t> layer{ 3, 1, 1, 2, 0, true, PaddingMode::Zeros };
     fill(layer.weights, 1);
     fill(layer.biases, 1);
     const auto out = layer.forward(A);
@@ -495,7 +495,7 @@ inline int testConv1DCase27()
 	A.allocateCustom(A_data, 12);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 3, 1, 1, 2, 0, false, PaddingMode::CIRCULAR };
+    Conv1D<qint32_t> layer{ 3, 1, 1, 2, 0, false, PaddingMode::Circular };
     fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
@@ -513,7 +513,7 @@ inline int testConv1DCase28()
 	A.allocateCustom(A_data, 4);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 1, 3, 2, 1, 0, true, PaddingMode::CIRCULAR };
+    Conv1D<qint32_t> layer{ 1, 3, 2, 1, 0, true, PaddingMode::Circular };
     fill(layer.weights, 1);
     fill(layer.biases, 1);
     const auto out = layer.forward(A);
@@ -531,7 +531,7 @@ inline int testConv1DCase29()
 	A.allocateCustom(A_data, 4);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 1, 1, 3, 3, 0, false, PaddingMode::REPLICATE };
+    Conv1D<qint32_t> layer{ 1, 1, 3, 3, 0, false, PaddingMode::Replicate };
     fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
@@ -549,7 +549,7 @@ inline int testConv1DCase30()
 	A.allocateCustom(A_data, 5);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 1, 3, 3, 3, 0, true, PaddingMode::ZEROS };
+    Conv1D<qint32_t> layer{ 1, 3, 3, 3, 0, true, PaddingMode::Zeros };
     fill(layer.weights, 1);
     fill(layer.biases, 1);
     const auto out = layer.forward(A);
@@ -567,7 +567,7 @@ inline int testConv1DCase31()
 	A.allocateCustom(A_data, 6);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 1, 3, 3, 3, 0, false, PaddingMode::REPLICATE };
+    Conv1D<qint32_t> layer{ 1, 3, 3, 3, 0, false, PaddingMode::Replicate };
     fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
@@ -585,7 +585,7 @@ inline int testConv1DCase32()
 	A.allocateCustom(A_data, 15);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 3, 1, 2, 3, 0, true, PaddingMode::REPLICATE };
+    Conv1D<qint32_t> layer{ 3, 1, 2, 3, 0, true, PaddingMode::Replicate };
     fill(layer.weights, 1);
     fill(layer.biases, 1);
     const auto out = layer.forward(A);
@@ -603,7 +603,7 @@ inline int testConv1DCase33()
 	A.allocateCustom(A_data, 5);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 1, 1, 2, 3, 0, false, PaddingMode::CIRCULAR };
+    Conv1D<qint32_t> layer{ 1, 1, 2, 3, 0, false, PaddingMode::Circular };
     fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
@@ -621,7 +621,7 @@ inline int testConv1DCase34()
 	A.allocateCustom(A_data, 6);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 1, 3, 1, 1, 0, true, PaddingMode::CIRCULAR };
+    Conv1D<qint32_t> layer{ 1, 3, 1, 1, 0, true, PaddingMode::Circular };
     fill(layer.weights, 1);
     fill(layer.biases, 1);
     const auto out = layer.forward(A);
@@ -639,7 +639,7 @@ inline int testConv1DCase35()
 	A.allocateCustom(A_data, 6);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 1, 1, 1, 1, 0, false, PaddingMode::REFLECT };
+    Conv1D<qint32_t> layer{ 1, 1, 1, 1, 0, false, PaddingMode::Reflect };
     fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
@@ -657,7 +657,7 @@ inline int testConv1DCase36()
 	A.allocateCustom(A_data, 15);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 3, 1, 2, 2, 0, true, PaddingMode::ZEROS };
+    Conv1D<qint32_t> layer{ 3, 1, 2, 2, 0, true, PaddingMode::Zeros };
     fill(layer.weights, 1);
     fill(layer.biases, 1);
     const auto out = layer.forward(A);
@@ -675,7 +675,7 @@ inline int testConv1DCase37()
 	A.allocateCustom(A_data, 12);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 3, 1, 1, 3, 0, false, PaddingMode::REPLICATE };
+    Conv1D<qint32_t> layer{ 3, 1, 1, 3, 0, false, PaddingMode::Replicate };
     fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
@@ -693,7 +693,7 @@ inline int testConv1DCase38()
 	A.allocateCustom(A_data, 18);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 3, 1, 3, 2, 0, true, PaddingMode::REFLECT };
+    Conv1D<qint32_t> layer{ 3, 1, 3, 2, 0, true, PaddingMode::Reflect };
     fill(layer.weights, 1);
     fill(layer.biases, 1);
     const auto out = layer.forward(A);
@@ -711,7 +711,7 @@ inline int testConv1DCase39()
 	A.allocateCustom(A_data, 15);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 3, 1, 3, 3, 0, false, PaddingMode::ZEROS };
+    Conv1D<qint32_t> layer{ 3, 1, 3, 3, 0, false, PaddingMode::Zeros };
     fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
@@ -729,7 +729,7 @@ inline int testConv1DCase40()
 	A.allocateCustom(A_data, 5);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 1, 3, 1, 2, 0, true, PaddingMode::ZEROS };
+    Conv1D<qint32_t> layer{ 1, 3, 1, 2, 0, true, PaddingMode::Zeros };
     fill(layer.weights, 1);
     fill(layer.biases, 1);
     const auto out = layer.forward(A);
@@ -747,7 +747,7 @@ inline int testConv1DCase41()
 	A.allocateCustom(A_data, 5);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 1, 1, 2, 3, 0, false, PaddingMode::REPLICATE };
+    Conv1D<qint32_t> layer{ 1, 1, 2, 3, 0, false, PaddingMode::Replicate };
     fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
@@ -765,7 +765,7 @@ inline int testConv1DCase42()
 	A.allocateCustom(A_data, 5);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 1, 3, 1, 3, 0, true, PaddingMode::REPLICATE };
+    Conv1D<qint32_t> layer{ 1, 3, 1, 3, 0, true, PaddingMode::Replicate };
     fill(layer.weights, 1);
     fill(layer.biases, 1);
     const auto out = layer.forward(A);
@@ -783,7 +783,7 @@ inline int testConv1DCase43()
 	A.allocateCustom(A_data, 5);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 1, 1, 3, 2, 0, false, PaddingMode::ZEROS };
+    Conv1D<qint32_t> layer{ 1, 1, 3, 2, 0, false, PaddingMode::Zeros };
     fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
@@ -801,7 +801,7 @@ inline int testConv1DCase44()
 	A.allocateCustom(A_data, 18);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 3, 1, 2, 1, 0, true, PaddingMode::CIRCULAR };
+    Conv1D<qint32_t> layer{ 3, 1, 2, 1, 0, true, PaddingMode::Circular };
     fill(layer.weights, 1);
     fill(layer.biases, 1);
     const auto out = layer.forward(A);
@@ -819,7 +819,7 @@ inline int testConv1DCase45()
 	A.allocateCustom(A_data, 6);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 1, 1, 2, 2, 0, false, PaddingMode::CIRCULAR };
+    Conv1D<qint32_t> layer{ 1, 1, 2, 2, 0, false, PaddingMode::Circular };
     fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
@@ -837,7 +837,7 @@ inline int testConv1DCase46()
 	A.allocateCustom(A_data, 15);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 3, 1, 2, 3, 0, true, PaddingMode::REFLECT };
+    Conv1D<qint32_t> layer{ 3, 1, 2, 3, 0, true, PaddingMode::Reflect };
     fill(layer.weights, 1);
     fill(layer.biases, 1);
     const auto out = layer.forward(A);
@@ -855,7 +855,7 @@ inline int testConv1DCase47()
 	A.allocateCustom(A_data, 12);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 3, 1, 1, 1, 0, false, PaddingMode::REFLECT };
+    Conv1D<qint32_t> layer{ 3, 1, 1, 1, 0, false, PaddingMode::Reflect };
     fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
@@ -873,7 +873,7 @@ inline int testConv1DCase48()
 	A.allocateCustom(A_data, 18);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 3, 1, 2, 2, 0, true, PaddingMode::CIRCULAR };
+    Conv1D<qint32_t> layer{ 3, 1, 2, 2, 0, true, PaddingMode::Circular };
     fill(layer.weights, 1);
     fill(layer.biases, 1);
     const auto out = layer.forward(A);
@@ -891,7 +891,7 @@ inline int testConv1DCase49()
 	A.allocateCustom(A_data, 5);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 1, 1, 1, 1, 0, false, PaddingMode::REPLICATE };
+    Conv1D<qint32_t> layer{ 1, 1, 1, 1, 0, false, PaddingMode::Replicate };
     fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
@@ -909,7 +909,7 @@ inline int testConv1DCase50()
 	A.allocateCustom(A_data, 15);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 3, 1, 1, 2, 0, true, PaddingMode::REPLICATE };
+    Conv1D<qint32_t> layer{ 3, 1, 1, 2, 0, true, PaddingMode::Replicate };
     fill(layer.weights, 1);
     fill(layer.biases, 1);
     const auto out = layer.forward(A);
@@ -927,7 +927,7 @@ inline int testConv1DCase51()
 	A.allocateCustom(A_data, 5);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 1, 1, 3, 2, 0, false, PaddingMode::REFLECT };
+    Conv1D<qint32_t> layer{ 1, 1, 3, 2, 0, false, PaddingMode::Reflect };
     fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
@@ -945,7 +945,7 @@ inline int testConv1DCase52()
 	A.allocateCustom(A_data, 18);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 3, 1, 3, 2, 0, true, PaddingMode::REPLICATE };
+    Conv1D<qint32_t> layer{ 3, 1, 3, 2, 0, true, PaddingMode::Replicate };
     fill(layer.weights, 1);
     fill(layer.biases, 1);
     const auto out = layer.forward(A);
@@ -963,7 +963,7 @@ inline int testConv1DCase53()
 	A.allocateCustom(A_data, 12);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 3, 1, 3, 2, 0, false, PaddingMode::CIRCULAR };
+    Conv1D<qint32_t> layer{ 3, 1, 3, 2, 0, false, PaddingMode::Circular };
     fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
@@ -981,7 +981,7 @@ inline int testConv1DCase54()
 	A.allocateCustom(A_data, 4);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 1, 3, 2, 2, 0, true, PaddingMode::REPLICATE };
+    Conv1D<qint32_t> layer{ 1, 3, 2, 2, 0, true, PaddingMode::Replicate };
     fill(layer.weights, 1);
     fill(layer.biases, 1);
     const auto out = layer.forward(A);
@@ -999,7 +999,7 @@ inline int testConv1DCase55()
 	A.allocateCustom(A_data, 18);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 3, 1, 2, 2, 0, false, PaddingMode::REPLICATE };
+    Conv1D<qint32_t> layer{ 3, 1, 2, 2, 0, false, PaddingMode::Replicate };
     fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
@@ -1017,7 +1017,7 @@ inline int testConv1DCase56()
 	A.allocateCustom(A_data, 5);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 1, 1, 1, 1, 0, true, PaddingMode::ZEROS };
+    Conv1D<qint32_t> layer{ 1, 1, 1, 1, 0, true, PaddingMode::Zeros };
     fill(layer.weights, 1);
     fill(layer.biases, 1);
     const auto out = layer.forward(A);
@@ -1035,7 +1035,7 @@ inline int testConv1DCase57()
 	A.allocateCustom(A_data, 4);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 1, 3, 1, 1, 0, false, PaddingMode::REFLECT };
+    Conv1D<qint32_t> layer{ 1, 3, 1, 1, 0, false, PaddingMode::Reflect };
     fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
@@ -1053,7 +1053,7 @@ inline int testConv1DCase58()
 	A.allocateCustom(A_data, 4);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 1, 1, 3, 2, 0, true, PaddingMode::REFLECT };
+    Conv1D<qint32_t> layer{ 1, 1, 3, 2, 0, true, PaddingMode::Reflect };
     fill(layer.weights, 1);
     fill(layer.biases, 1);
     const auto out = layer.forward(A);
@@ -1071,7 +1071,7 @@ inline int testConv1DCase59()
 	A.allocateCustom(A_data, 5);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 1, 3, 3, 3, 0, false, PaddingMode::REFLECT };
+    Conv1D<qint32_t> layer{ 1, 3, 3, 3, 0, false, PaddingMode::Reflect };
     fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
@@ -1089,7 +1089,7 @@ inline int testConv1DCase60()
 	A.allocateCustom(A_data, 4);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 1, 1, 3, 2, 0, true, PaddingMode::REFLECT };
+    Conv1D<qint32_t> layer{ 1, 1, 3, 2, 0, true, PaddingMode::Reflect };
     fill(layer.weights, 1);
     fill(layer.biases, 1);
     const auto out = layer.forward(A);
@@ -1107,7 +1107,7 @@ inline int testConv1DCase61()
 	A.allocateCustom(A_data, 18);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 3, 1, 3, 3, 0, false, PaddingMode::REFLECT };
+    Conv1D<qint32_t> layer{ 3, 1, 3, 3, 0, false, PaddingMode::Reflect };
     fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
@@ -1125,7 +1125,7 @@ inline int testConv1DCase62()
 	A.allocateCustom(A_data, 18);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 3, 1, 1, 2, 0, true, PaddingMode::REPLICATE };
+    Conv1D<qint32_t> layer{ 3, 1, 1, 2, 0, true, PaddingMode::Replicate };
     fill(layer.weights, 1);
     fill(layer.biases, 1);
     const auto out = layer.forward(A);
@@ -1143,7 +1143,7 @@ inline int testConv1DCase63()
 	A.allocateCustom(A_data, 4);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 1, 1, 1, 1, 0, false, PaddingMode::REPLICATE };
+    Conv1D<qint32_t> layer{ 1, 1, 1, 1, 0, false, PaddingMode::Replicate };
     fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
@@ -1161,7 +1161,7 @@ inline int testConv1DCase64()
 	A.allocateCustom(A_data, 4);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 1, 1, 3, 2, 0, true, PaddingMode::REPLICATE };
+    Conv1D<qint32_t> layer{ 1, 1, 3, 2, 0, true, PaddingMode::Replicate };
     fill(layer.weights, 1);
     fill(layer.biases, 1);
     const auto out = layer.forward(A);
@@ -1179,7 +1179,7 @@ inline int testConv1DCase65()
 	A.allocateCustom(A_data, 5);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 1, 3, 2, 2, 0, false, PaddingMode::REPLICATE };
+    Conv1D<qint32_t> layer{ 1, 3, 2, 2, 0, false, PaddingMode::Replicate };
     fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
@@ -1197,7 +1197,7 @@ inline int testConv1DCase66()
 	A.allocateCustom(A_data, 6);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 1, 1, 2, 2, 0, true, PaddingMode::CIRCULAR };
+    Conv1D<qint32_t> layer{ 1, 1, 2, 2, 0, true, PaddingMode::Circular };
     fill(layer.weights, 1);
     fill(layer.biases, 1);
     const auto out = layer.forward(A);
@@ -1215,7 +1215,7 @@ inline int testConv1DCase67()
 	A.allocateCustom(A_data, 4);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 1, 1, 2, 3, 0, false, PaddingMode::REPLICATE };
+    Conv1D<qint32_t> layer{ 1, 1, 2, 3, 0, false, PaddingMode::Replicate };
     fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
@@ -1233,7 +1233,7 @@ inline int testConv1DCase68()
 	A.allocateCustom(A_data, 18);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 3, 1, 1, 2, 0, true, PaddingMode::REFLECT };
+    Conv1D<qint32_t> layer{ 3, 1, 1, 2, 0, true, PaddingMode::Reflect };
     fill(layer.weights, 1);
     fill(layer.biases, 1);
     const auto out = layer.forward(A);
@@ -1251,7 +1251,7 @@ inline int testConv1DCase69()
 	A.allocateCustom(A_data, 5);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 1, 3, 3, 3, 0, false, PaddingMode::REFLECT };
+    Conv1D<qint32_t> layer{ 1, 3, 3, 3, 0, false, PaddingMode::Reflect };
     fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
@@ -1269,7 +1269,7 @@ inline int testConv1DCase70()
 	A.allocateCustom(A_data, 12);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 3, 1, 1, 1, 0, true, PaddingMode::ZEROS };
+    Conv1D<qint32_t> layer{ 3, 1, 1, 1, 0, true, PaddingMode::Zeros };
     fill(layer.weights, 1);
     fill(layer.biases, 1);
     const auto out = layer.forward(A);
@@ -1287,7 +1287,7 @@ inline int testConv1DCase71()
 	A.allocateCustom(A_data, 12);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 3, 1, 3, 3, 0, false, PaddingMode::CIRCULAR };
+    Conv1D<qint32_t> layer{ 3, 1, 3, 3, 0, false, PaddingMode::Circular };
     fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
@@ -1305,7 +1305,7 @@ inline int testConv1DCase72()
 	A.allocateCustom(A_data, 18);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 3, 1, 1, 1, 0, true, PaddingMode::CIRCULAR };
+    Conv1D<qint32_t> layer{ 3, 1, 1, 1, 0, true, PaddingMode::Circular };
     fill(layer.weights, 1);
     fill(layer.biases, 1);
     const auto out = layer.forward(A);
@@ -1323,7 +1323,7 @@ inline int testConv1DCase73()
 	A.allocateCustom(A_data, 15);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 3, 1, 3, 3, 0, false, PaddingMode::REFLECT };
+    Conv1D<qint32_t> layer{ 3, 1, 3, 3, 0, false, PaddingMode::Reflect };
     fill(layer.weights, 1);
     
     const auto out = layer.forward(A);
@@ -1341,7 +1341,7 @@ inline int testConv1DCase74()
 	A.allocateCustom(A_data, 4);
 	arange(A,  1);
 
-    Conv1D<qint32_t> layer{ 1, 1, 1, 1, 0, true, PaddingMode::REFLECT };
+    Conv1D<qint32_t> layer{ 1, 1, 1, 1, 0, true, PaddingMode::Reflect };
     fill(layer.weights, 1);
     fill(layer.biases, 1);
     const auto out = layer.forward(A);

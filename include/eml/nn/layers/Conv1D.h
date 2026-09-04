@@ -1,11 +1,7 @@
 #ifndef EML_LAYERS_CONV1D_H
 #define EML_LAYERS_CONV1D_H
 
-#include <eml/math/MathUtil.h>
 #include <eml/math/TensorOps.h>
-#include <eml/nn/LayerUtil.h>
-#include <eml/nn/layers/ReflectionPad2D.h>
-#include <eml/nn/layers/ZeroPad2D.h>
 
 // ================================================================
 // Conv1D
@@ -89,8 +85,8 @@ namespace eml::nn
 template <typename T>
 Conv1D<T>::Conv1D( int32_t inC, int32_t outC, int32_t kernel, int32_t stride, int32_t padding, bool bias,
                    PaddingMode pMode )
-    : weights( outC, inC, kernel ), biases( outC ), kernel( kernel ), stride( stride ), padding( padding ),
-      inChannels( inC ), outChannels( outC ), pMode( pMode ), useBias( bias )
+    : weights( outC, inC, kernel ), biases( outC ), kernel( kernel ), stride( stride ),
+      padding( padding ), inChannels( inC ), outChannels( outC ), pMode( pMode ), useBias( bias )
 {
     EML_ASSERT( padding >= 0, "Invalid padding parameters" );
     EML_ASSERT( padding >= 0, "Invalid padding parameters" );
@@ -99,21 +95,20 @@ Conv1D<T>::Conv1D( int32_t inC, int32_t outC, int32_t kernel, int32_t stride, in
     weights.allocate();
     if( useBias )
     {
-       rand( biases, T( -1.0 ), T( 1.0 ) );
+        rand( biases, T( -1.0 ), T( 1.0 ) );
     }
     else
     {
-       zero( biases );
+        zero( biases );
     }
-   rand( weights, T( -1.0 ), T( 1.0 ) );
+    rand( weights, T( -1.0 ), T( 1.0 ) );
 }
 
 template <typename T>
 Conv1D<T>::Conv1D( int32_t inC, int32_t outC, int32_t kernel )
-    : Conv1D( inC, outC, kernel, 1, 0, true, PaddingMode::ZEROS )
+    : Conv1D( inC, outC, kernel, 1, 0, true, PaddingMode::Zeros )
 {
 }
-
 
 template <typename T>
 Tensor<T> Conv1D<T>::forward( const Tensor<T>& input )
@@ -145,7 +140,7 @@ void Conv1D<T>::forward( const Tensor<T>& restrict input, Tensor<T>& restrict ou
         {
             for( int32_t c = 0; c < outChannels; ++c )
             {
-               fillDim( output, biases[ n ], n, c );
+                fillDim( output, biases[ n ], n, c );
             }
         }
     }

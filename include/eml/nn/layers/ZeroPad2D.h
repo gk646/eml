@@ -14,7 +14,6 @@ namespace eml::nn
 
 struct ZeroPad2D final
 {
-
     explicit ZeroPad2D( Pair padding );
 
     // ============ Forward ============

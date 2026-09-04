@@ -40,6 +40,6 @@ MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
     // =========== //
     const uint32_t end = PlatformClock();
     // =========== //
-    printf( "\nTestbench took: %.2f seconds", ( (float)( end - start ) / 1'000 ) / 1'000.0F );
+    printf( "\nTestbench took: %.2f seconds", ( (float)( end - start ) / 1'000.0F ) / 1'000.0F );
     return 0;
 }

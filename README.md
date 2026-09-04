@@ -40,3 +40,9 @@ tinytorch
 
 minimize binary size
 - conv2d forward 10kib
+
+
+- linear regression
+- logical inference engine
+  - knowledge base
+- bayes net

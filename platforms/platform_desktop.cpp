@@ -34,16 +34,15 @@ void PlatformPrint( const char* format, ... )
     va_end( args );
 }
 
-
-uint32_t PlatformCycleCount()
+uint64_t PlatformCycleCount()
 {
     return __rdtsc();
 }
 
-uint32_t PlatformClock()
+uint64_t PlatformClock()
 {
     using namespace std::chrono;
-    return static_cast<uint32_t>( duration_cast<microseconds>( steady_clock::now().time_since_epoch() ).count() );
+    return static_cast<uint64_t>( duration_cast<microseconds>( steady_clock::now().time_since_epoch() ).count() );
 }
 
 void* PlatformAlloc( uint32_t size )

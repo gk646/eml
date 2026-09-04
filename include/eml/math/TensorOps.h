@@ -1,6 +1,7 @@
 #ifndef EML_TENSOR_OPS_H
 #define EML_TENSOR_OPS_H
 
+#include "eml/nn/Model.h"
 #include <eml/math/MathUtil.h>
 #include <eml/math/Tensor.h>
 #include <eml/util/Macros.h>
@@ -89,22 +90,23 @@ namespace impl
 // https://en.algorithmica.org/hpc/algorithms/matmul/
 
 template <typename T, int32_t size, bool transposeA, bool transposeB>
-void matmulKernel( const Tensor<T>& restrict A, const Tensor<T>& restrict B, Tensor<T>& restrict R, const int32_t x,
-                   const int32_t y, const int32_t l, const int32_t r )
+void matmulKernel( const Tensor<T>& AT, const Tensor<T>& BT, Tensor<T>& RT, const int32_t x, const int32_t y,
+                   const int32_t l, const int32_t r )
 {
+    const T* restrict A = AT.data();
+    const T* restrict B = BT.data();
+    T* restrict R = RT.data();
     if constexpr( size == 2 )
     {
         T c00 = 0, c01 = 0, c10 = 0, c11 = 0;
-
         for( int32_t k = l; k < r; k++ )
         {
-
-            T a0 = transposeA ? A[ k * A.w + x ] : A[ x * A.w + k ];
-            T a1 = transposeA ? A[ k * A.w + x + 1 ] : A[ ( x + 1 ) * A.w + k ];
+            T a0 = transposeA ? A[ k * AT.w + x ] : A[ x * AT.w + k ];
+            T a1 = transposeA ? A[ k * AT.w + x + 1 ] : A[ ( x + 1 ) * AT.w + k ];
 
             // read elements from B
-            T b0 = transposeB ? B[ y * B.w + k ] : B[ k * B.w + y ];
-            T b1 = transposeB ? B[ ( y + 1 ) * B.w + k ] : B[ k * B.w + y + 1 ];
+            T b0 = transposeB ? B[ y * BT.w + k ] : B[ k * BT.w + y ];
+            T b1 = transposeB ? B[ ( y + 1 ) * BT.w + k ] : B[ k * BT.w + y + 1 ];
 
             // update all combinations
             c00 += a0 * b0;
@@ -114,68 +116,68 @@ void matmulKernel( const Tensor<T>& restrict A, const Tensor<T>& restrict B, Ten
         }
 
         // write the results to C
-        R[ x * R.w + y ] = c00;
-        R[ x * R.w + y + 1 ] = c01;
-        R[ ( x + 1 ) * R.w + y ] = c10;
-        R[ ( x + 1 ) * R.w + y + 1 ] = c11;
-        return;
+        R[ x * RT.w + y ] = c00;
+        R[ x * RT.w + y + 1 ] = c01;
+        R[ ( x + 1 ) * RT.w + y ] = c10;
+        R[ ( x + 1 ) * RT.w + y + 1 ] = c11;
     }
-
-    xsimd::batch<T> t[ size ]{};
-
-    for( int32_t k = l; k < r; k++ )
+    else
     {
-        xsimd::batch<T> bBatch;
-        if constexpr( !transposeB )
+        xsimd::batch<T> t[ size ]{};
+        for( int32_t k = l; k < r; k++ )
         {
-            bBatch = xsimd::load_unaligned( &B[ k * B.w + y ] );
-        }
-        else
-        {
-            T bVals[ size ];
-            for( int32_t idx = 0; idx < size; ++idx )
+            xsimd::batch<T> bBatch;
+            if constexpr( !transposeB )
             {
-                bVals[ idx ] = B[ ( y + idx ) * B.w + k ];
+                bBatch = xsimd::load_unaligned( &B[ k * BT.w + y ] );
             }
-            bBatch = xsimd::load_unaligned( bVals );
-        }
-
-        if constexpr( transposeA )
-        {
-            for( int32_t i = 0; i < size; ++i )
+            else
             {
-                xsimd::batch<T> alpha = xsimd::batch<T>::broadcast( A[ k * A.w + x + i ] );
-                t[ i ] = xsimd::fma( alpha, bBatch, t[ i ] );
+                T bVals[ size ];
+                for( int32_t idx = 0; idx < size; ++idx )
+                {
+                    bVals[ idx ] = B[ ( y + idx ) * BT.w + k ];
+                }
+                bBatch = xsimd::load_unaligned( bVals );
             }
-        }
-        else
-        {
-            for( int32_t i = 0; i < size; i += 4 )
+
+            if constexpr( transposeA )
             {
-                xsimd::batch<T> alpha0{ A[ ( x + i ) * A.w + k ] };
-                xsimd::batch<T> alpha1{ A[ ( x + i + 1 ) * A.w + k ] };
-                xsimd::batch<T> alpha2{ A[ ( x + i + 2 ) * A.w + k ] };
-                xsimd::batch<T> alpha3{ A[ ( x + i + 3 ) * A.w + k ] };
+                for( int32_t i = 0; i < size; ++i )
+                {
+                    xsimd::batch<T> alpha = xsimd::batch<T>::broadcast( A[ k * AT.w + x + i ] );
+                    t[ i ] = xsimd::fma( alpha, bBatch, t[ i ] );
+                }
+            }
+            else
+            {
+                for( int32_t i = 0; i < size; i += 4 )
+                {
+                    xsimd::batch<T> alpha0{ A[ ( x + i ) * AT.w + k ] };
+                    xsimd::batch<T> alpha1{ A[ ( x + i + 1 ) * AT.w + k ] };
+                    xsimd::batch<T> alpha2{ A[ ( x + i + 2 ) * AT.w + k ] };
+                    xsimd::batch<T> alpha3{ A[ ( x + i + 3 ) * AT.w + k ] };
 
-                t[ i ] = xsimd::fma( alpha0, bBatch, t[ i ] );
-                t[ i + 1 ] = xsimd::fma( alpha1, bBatch, t[ i + 1 ] );
-                t[ i + 2 ] = xsimd::fma( alpha2, bBatch, t[ i + 2 ] );
-                t[ i + 3 ] = xsimd::fma( alpha3, bBatch, t[ i + 3 ] );
+                    t[ i ] = xsimd::fma( alpha0, bBatch, t[ i ] );
+                    t[ i + 1 ] = xsimd::fma( alpha1, bBatch, t[ i + 1 ] );
+                    t[ i + 2 ] = xsimd::fma( alpha2, bBatch, t[ i + 2 ] );
+                    t[ i + 3 ] = xsimd::fma( alpha3, bBatch, t[ i + 3 ] );
+                }
             }
         }
-    }
 
-    for( int32_t i = 0; i < size; i += 4 )
-    {
-        const auto res0 = xsimd::load_unaligned( &R[ ( x + i ) * R.w + y ] ) + t[ i ];
-        const auto res1 = xsimd::load_unaligned( &R[ ( x + i + 1 ) * R.w + y ] ) + t[ i + 1 ];
-        const auto res2 = xsimd::load_unaligned( &R[ ( x + i + 2 ) * R.w + y ] ) + t[ i + 2 ];
-        const auto res3 = xsimd::load_unaligned( &R[ ( x + i + 3 ) * R.w + y ] ) + t[ i + 3 ];
+        for( int32_t i = 0; i < size; i += 4 )
+        {
+            const auto res0 = xsimd::load_unaligned( &R[ ( x + i ) * RT.w + y ] ) + t[ i ];
+            const auto res1 = xsimd::load_unaligned( &R[ ( x + i + 1 ) * RT.w + y ] ) + t[ i + 1 ];
+            const auto res2 = xsimd::load_unaligned( &R[ ( x + i + 2 ) * RT.w + y ] ) + t[ i + 2 ];
+            const auto res3 = xsimd::load_unaligned( &R[ ( x + i + 3 ) * RT.w + y ] ) + t[ i + 3 ];
 
-        xsimd::store_unaligned( &R[ ( x + i ) * R.w + y ], res0 );
-        xsimd::store_unaligned( &R[ ( x + i + 1 ) * R.w + y ], res1 );
-        xsimd::store_unaligned( &R[ ( x + i + 2 ) * R.w + y ], res2 );
-        xsimd::store_unaligned( &R[ ( x + i + 3 ) * R.w + y ], res3 );
+            xsimd::store_unaligned( &R[ ( x + i ) * RT.w + y ], res0 );
+            xsimd::store_unaligned( &R[ ( x + i + 1 ) * RT.w + y ], res1 );
+            xsimd::store_unaligned( &R[ ( x + i + 2 ) * RT.w + y ], res2 );
+            xsimd::store_unaligned( &R[ ( x + i + 3 ) * RT.w + y ], res3 );
+        }
     }
 }
 
@@ -267,7 +269,7 @@ bool Equals( const Tensor<AT>& A, const Tensor<BT>& B )
     {
         if constexpr( std::is_same_v<float, AT> )
         {
-            if( abst( A[ i ] - B[ i ] ) > 0.0001F )
+            if( std::abs( A[ i ] - B[ i ] ) > 0.0001F )
             {
                 return false;
             }
@@ -363,11 +365,11 @@ T min( const Tensor<T>& A )
 }
 
 template <typename T>
-void zero( Tensor<T>& A )
+void zero( Tensor<T>& tensor )
 {
-    for( int32_t i = 0; i < A.size; ++i )
+    for( int32_t i = 0; i < tensor.size; ++i )
     {
-        A[ i ] = T( 0 );
+        tensor[ i ] = T( 0 );
     }
 }
 

@@ -41,7 +41,6 @@ set(EML_ARCH "amd64" CACHE STRING "The processing architecture")
 # - none
 set(EML_SIMD_LEVEL "auto" CACHE STRING "The SIMD level to optimize with")
 
-
 # Choose to specify the number of cores (multicore)
 # Currently supported:
 # - 1-4

@@ -8,10 +8,10 @@ namespace eml
 
 enum class PaddingMode
 {
-    ZEROS,
-    REFLECT,
-    REPLICATE,
-    CIRCULAR
+    Zeros,
+    Reflect,
+    Replicate,
+    Circular
 };
 
 struct Pair

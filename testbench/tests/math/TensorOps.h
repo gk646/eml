@@ -6,7 +6,6 @@
 
 using namespace eml;
 
-
 inline int testEquals()
 {
     float aData[] = { 1, 2, 3, 4, 5, 6 };
@@ -17,13 +16,13 @@ inline int testEquals()
     Tensor<float> B{ 3, 2 };
     B.allocateCustom( bData, 6 );
 
-    const bool first =Equals( A, B ) == false;
+    const bool first = Equals( A, B ) == false;
 
     float cData[] = { 7, 8, 9, 10, 11, 12 };
     Tensor<float> C{ 3, 2 };
     C.allocateCustom( cData, 6 );
 
-    return first &&Equals( B, C );
+    return first && Equals( B, C );
 }
 
 inline void TestTensorOps()

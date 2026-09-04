@@ -22,7 +22,7 @@ void benchConv2DImpl()
     Tensor<T> C{ layer.getOutShape( A.shape() ) };
     C.allocate();
 
-    EML_BENCHMARK_FLOPS( T, layer.forwardI, count, GetLayerOps( layer, A.shape() ), A, C );
+    EML_BENCHMARK_FLOPS( T, layer.forwardI, count, GetLayerOps<T>( layer, A.shape() ), A, C );
 }
 
 inline void BenchLayersConv2D()

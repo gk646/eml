@@ -31,10 +31,10 @@ void PlatformPrint( const char* format, ... );
 //================= MEASURE =================//
 
 // Returns the current cpu clock count
-uint32_t PlatformCycleCount();
+uint64_t PlatformCycleCount();
 
 // Returns a steady clock value in microseconds
-uint32_t PlatformClock();
+uint64_t PlatformClock();
 
 //================= MEMORY =================//
 

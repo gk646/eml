@@ -41,34 +41,35 @@ constexpr const char* GetTypeString()
 } // namespace eml
 
 #define EML_BENCHMARK_FLOPS( type, func, iterations, ops, ... )                                                        \
-    const auto start = PlatformClock();                                                                                \
-    for( int32_t i = 0; i < iterations; ++i )                                                                          \
+    do                                                                                                                 \
     {                                                                                                                  \
-        func( __VA_ARGS__ );                                                                                           \
-    }                                                                                                                  \
-    const auto end = PlatformClock();                                                                                  \
-    const float elapsed = static_cast<float>( end - start ) / 1'000'000.0F;                                            \
-    const float totalOps = iterations * ops;                                                                           \
+        const auto startClock = PlatformClock();                                                                       \
+        const auto startCycle = PlatformCycleCount();                                                                  \
+        for( int32_t i = 0; i < iterations; ++i )                                                                      \
+        {                                                                                                              \
+            func( __VA_ARGS__ );                                                                                       \
+        }                                                                                                              \
+        const auto endCycle = PlatformCycleCount();                                                                    \
+        const auto endClock = PlatformClock();                                                                         \
                                                                                                                        \
-    const auto startCycle = PlatformCycleCount();                                                                      \
-    for( int32_t i = 0; i < iterations; ++i )                                                                          \
-    {                                                                                                                  \
-        func( __VA_ARGS__ );                                                                                           \
-    }                                                                                                                  \
-    const auto endCycle = PlatformCycleCount();                                                                        \
-    const auto elapsedCycles = endCycle - startCycle;                                                                  \
+        const auto elapsedCycles = endCycle > startCycle ? endCycle - startCycle : 0;                                  \
+        const auto elapsedClock = endClock > startClock ? endClock - startClock : 0;                                   \
                                                                                                                        \
-    if constexpr( std::is_floating_point<type>::value )                                                                \
-    {                                                                                                                  \
-        PlatformPrint( "[Benchmark]: %s:%s\n\t==> %4.1f ms : %4.1f (mults/cycle) : %4.1f (GFLOPS) \n", __FUNCTION__,   \
-                       GetTypeString<type>(), elapsed * 1000.0F, (float)totalOps / (float)elapsedCycles,               \
-                       ( totalOps / elapsed ) / 1'000'000'000.0F );                                                    \
-    }                                                                                                                  \
-    else                                                                                                               \
-    {                                                                                                                  \
-        PlatformPrint( "Benchmark]: %s:%s\n\t==> %4.1f ms : %4.1f (mults/cycle) : %4.1f (GIOPS) \n", __FUNCTION__,     \
-                       GetTypeString<type>(), elapsed * 1000.0F, (float)totalOps / (float)elapsedCycles,               \
-                       ( totalOps / elapsed ) / 1'000'000'000.0F );                                                    \
-    }
+        const double elapsedMs = static_cast<double>( elapsedClock ) / 1'000.0;                                        \
+        const double totalOps = static_cast<double>( iterations ) * ops;                                               \
+        const double multsPerCycle = elapsedCycles > 0 ? totalOps / static_cast<double>( elapsedCycles ) : 0.0;        \
+        const double gflops = elapsedMs > 0 ? ( totalOps / elapsedMs ) / 1'000'000.0 : 0.0;                            \
+                                                                                                                       \
+        if constexpr( std::is_floating_point<type>::value )                                                            \
+        {                                                                                                              \
+            PlatformPrint( "[Benchmark]: %s:%s\n\t==> %4.1f ms : %4.1f (mults/cycle) : %4.1f (GFLOPS) \n", __func__,   \
+                           GetTypeString<type>(), elapsedMs, multsPerCycle, gflops );                                  \
+        }                                                                                                              \
+        else                                                                                                           \
+        {                                                                                                              \
+            PlatformPrint( "[Benchmark]: %s:%s\n\t==> %4.1f ms : %4.1f (mults/cycle) : %4.1f (GIOPS) \n", __func__,    \
+                           GetTypeString<type>(), elapsedMs, multsPerCycle, gflops );                                  \
+        }                                                                                                              \
+    } while( 0 )
 
 #endif // EML_MICROBENCH_H

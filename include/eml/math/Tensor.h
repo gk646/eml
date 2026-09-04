@@ -1,9 +1,8 @@
 #ifndef EML_TENSOR_H
 #define EML_TENSOR_H
 
+#include "eml/util/Types.h"
 #include <cstring>
-#include <eml/nn/AutoGrad.h>
-#include <eml/util/Types.h>
 
 // ================================================================
 // Tensor
@@ -11,8 +10,6 @@
 // ................................................................
 // Class implements a 4 dimensional tensor - for data operations see math/TensorOps.h
 // If not specified batch and channel are 1 - as in the tensor has 1 batch and 1 channel per default
-// ................................................................
-// Misc:
 // ................................................................
 
 namespace eml
@@ -72,7 +69,17 @@ struct Tensor final
     [[nodiscard]] bool isAllocatedCustom() const;
 
     // Returns a copy of the tensor using allocate() - equal to Tensor(shape()), allocate() and memcpy()
-    Tensor<T> copyTensor() const;
+    Tensor copyTensor() const;
+
+    T* data()
+    {
+        return ptr;
+    }
+
+    const T* data() const
+    {
+        return ptr;
+    }
 
     // ============ Shape ============
 
@@ -236,10 +243,22 @@ void* Tensor<T>::freeCustom()
 {
     EML_ASSERT( customAllocated, "Calling freeCustom() on non-custom allocated tensor! Call free()" );
     EML_ASSERT( capacity > 0, "Calling free() on an empty tensor - likely a mistake" );
-    const auto* temp = ptr;
+    auto* temp = ptr;
     ptr = nullptr;
     capacity = 0;
     return temp;
+}
+
+template <typename T>
+bool Tensor<T>::isAllocated() const
+{
+    return ptr != nullptr;
+}
+
+template <typename T>
+bool Tensor<T>::isAllocatedCustom() const
+{
+    return isAllocated() && customAllocated;
 }
 
 template <typename T>
@@ -341,18 +360,6 @@ void Tensor<T>::print( const char* name ) const
         batchIndex += chw;
     }
     PlatformPrint( "\n" );
-}
-
-template <typename T>
-bool Tensor<T>::isAllocated() const
-{
-    return ptr != nullptr;
-}
-
-template <typename T>
-bool Tensor<T>::isAllocatedCustom() const
-{
-    return isAllocated() && customAllocated;
 }
 
 #ifdef EML_DEBUG

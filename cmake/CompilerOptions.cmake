@@ -36,7 +36,7 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
 
         target_compile_options(${TARGET_NAME} PRIVATE
                 $<$<CONFIG:Debug>: -O0 -g>
-                $<$<CONFIG:Release>: -DNDEBUG -Ofast -s -funroll-loops -ffast-math -fno-math-errno -fdelete-null-pointer-checks
+                $<$<CONFIG:Release>: -DNDEBUG -Ofast -s -march=native -funroll-loops -ffast-math -fno-math-errno -fdelete-null-pointer-checks
                 -fno-threadsafe-statics
                 >
         )
@@ -44,7 +44,7 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         # Set link options for Release configuration
         target_link_options(${TARGET_NAME} PRIVATE
                 $<$<CONFIG:Debug>:-flto -Wl,-Map=output.map>
-                $<$<CONFIG:Release>:-flto -Wl,--gc-sections>
+                $<$<CONFIG:Release>:-flto >
         )
 
         # Insert test coverage flags if EML_TEST is set
