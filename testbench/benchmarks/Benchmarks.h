@@ -9,6 +9,7 @@
 
 #include "math/TensorOps.h"
 #include "nn/layers/Conv2D.h"
+#include "nn/layers/Conv2DIm2Col.h"
 
 using namespace eml;
 
@@ -22,6 +23,7 @@ inline void RunBenchmarks()
 
     // Layers
     BenchLayersConv2D();
+    BenchLayersConv2DIm2Col();
 }
 
 #endif // EML_BENCHMARKS_BENCHMARKS_H

@@ -1,41 +1,33 @@
-#ifndef EML_LAYERS_CONV2D_H
-#define EML_LAYERS_CONV2D_H
+#ifndef EML_LAYERS_Conv2DIm2Col_H
+#define EML_LAYERS_Conv2DIm2Col_H
 
 #include <eml/nn/Layer.h>
 #include <eml/nn/layers/ReflectionPad2D.h>
 #include <eml/nn/layers/ZeroPad2D.h>
 
 // ================================================================
-// Conv2D
+// Conv2DIm2Col
 // ================================================================
 // ................................................................
 // Does not support groups or dilation
 // ................................................................
-// Doc: https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html
+// Doc: https://pytorch.org/docs/stable/generated/torch.nn.Conv2DIm2Col.html
 // ................................................................
 
 namespace eml::nn
 {
 
 template <typename T>
-struct Conv2D final
+struct Conv2DIm2Col final
 {
-    // Creates a new Conv2D layer with the given parameters
+    // Creates a new Conv2DIm2Col layer with the given parameters
     //      - inC:     amount of input channels
     //      - outC:    amount of output channels
     //      - kernel:  dimensions of the kernel
     //      - padding: dimensions of the kernel
     //      - model:   the model this layer is part of (if any)
-    Conv2D( int32_t inC, int32_t outC, Pair kernel, Pair stride, Pair padding, bool bias, PaddingMode pMode,
-            Model<T>* model = nullptr );
-
-    // Creates a new Conv2D layer with the given parameters
-    //      - inC:     amount of input channels
-    //      - outC:    amount of output channels
-    //      - kernel:  dimensions of the kernel
-    //      - padding: dimensions of the kernel
-    //      - model:   the model this layer is part of (if any)
-    Conv2D( int32_t inC, int32_t outC, Pair kernel, Model<T>* model = nullptr );
+    Conv2DIm2Col( int32_t inC, int32_t outC, Pair kernel, Pair stride = { 1, 1 }, Pair padding = { 0, 0 },
+                  bool bias = true, PaddingMode pMode = PaddingMode::Zeros, Model<T>* model = nullptr );
 
     // ============ Inference ============
 
@@ -87,8 +79,8 @@ namespace eml::nn
 {
 
 template <typename T>
-Conv2D<T>::Conv2D( const int32_t inC, const int32_t outC, const Pair kernel, const Pair stride, const Pair padding,
-                   const bool bias, const PaddingMode pMode, Model<T>* model )
+Conv2DIm2Col<T>::Conv2DIm2Col( const int32_t inC, const int32_t outC, const Pair kernel, const Pair stride,
+                               const Pair padding, const bool bias, const PaddingMode pMode, Model<T>* model )
     : weights( outC, inC, kernel.first, kernel.second ), biases( outC ), kernel( kernel ), stride( stride ),
       padding( padding ), model( model ), inChannels( inC ), outChannels( outC ), pMode( pMode ), useBias( bias )
 {
@@ -105,23 +97,16 @@ Conv2D<T>::Conv2D( const int32_t inC, const int32_t outC, const Pair kernel, con
     rand( weights, T( -1.0 ), T( 1.0 ) );
 }
 
-template <typename T>
-Conv2D<T>::Conv2D( int32_t inC, int32_t outC, Pair kernel, Model<T>* model )
-    : Conv2D( inC, outC, kernel, { 1, 1 }, { 0, 0 }, true, PaddingMode::Zeros, model )
-{
-}
-
 namespace impl
 {
 
 template <typename T, PaddingMode pMode>
-Tensor<T> Conv2DApplyPadding( const Tensor<T>& input, const Pair padding )
+Tensor<T> Conv2DIm2ColApplyPadding( const Tensor<T>& input, const Pair padding )
 {
     EML_ASSERT( padding.first != padding.second || padding.first != 0, "No padding case is filtered" );
 
     if( pMode == PaddingMode::Reflect )
     {
-
         ReflectionPad2D pad{ padding };
         return pad.forward( input );
     }
@@ -197,7 +182,7 @@ Tensor<T> Conv2DApplyPadding( const Tensor<T>& input, const Pair padding )
 } // namespace impl
 
 template <typename T>
-Tensor<T> Conv2D<T>::forward( const Tensor<T>& restrict input )
+Tensor<T> Conv2DIm2Col<T>::forward( const Tensor<T>& restrict input )
 {
     EML_ASSERT( input.isAllocated() || input.isAllocatedCustom(), "Input Tensor is not allocated!" );
     Tensor<T> out{ getOutShape( input.shape() ) };
@@ -207,7 +192,7 @@ Tensor<T> Conv2D<T>::forward( const Tensor<T>& restrict input )
 }
 
 template <typename T>
-void Conv2D<T>::forwardI( const Tensor<T>& restrict input, Tensor<T>& restrict output )
+void Conv2DIm2Col<T>::forwardI( const Tensor<T>& restrict input, Tensor<T>& restrict output )
 {
     EML_ASSERT( output.shape() == getOutShape( input.shape() ), "Output Tensor has wrong dimensions!" );
     EML_ASSERT( output.isAllocated() || output.isAllocatedCustom(), "Output Tensor is not allocated!" );
@@ -225,6 +210,7 @@ void Conv2D<T>::forwardI( const Tensor<T>& restrict input, Tensor<T>& restrict o
             ZeroPad2D pad{ padding };
             paddedInput = pad.forward( input );
         }
+
         break;
         case PaddingMode::Reflect:
         {
@@ -233,10 +219,10 @@ void Conv2D<T>::forwardI( const Tensor<T>& restrict input, Tensor<T>& restrict o
         }
         break;
         case PaddingMode::Replicate:
-            paddedInput = impl::Conv2DApplyPadding<T, PaddingMode::Replicate>( input, padding );
+            paddedInput = impl::Conv2DIm2ColApplyPadding<T, PaddingMode::Replicate>( input, padding );
             break;
         case PaddingMode::Circular:
-            paddedInput = impl::Conv2DApplyPadding<T, PaddingMode::Circular>( input, padding );
+            paddedInput = impl::Conv2DIm2ColApplyPadding<T, PaddingMode::Circular>( input, padding );
             break;
         }
     }
@@ -248,6 +234,7 @@ void Conv2D<T>::forwardI( const Tensor<T>& restrict input, Tensor<T>& restrict o
             fillDim( output, biases[ i ], 0, i );
         }
     }
+
 
     int32_t weightOffset = 0;
     int32_t outputOffset = 0;
@@ -289,7 +276,7 @@ void Conv2D<T>::forwardI( const Tensor<T>& restrict input, Tensor<T>& restrict o
 }
 
 template <typename T>
-Tuple Conv2D<T>::getOutShape( const Tuple& input ) const
+Tuple Conv2DIm2Col<T>::getOutShape( const Tuple& input ) const
 {
     const int32_t simpleHeight = input.third - kernel.first + ( 2 * padding.first );
     const int32_t outHeight = ( simpleHeight / stride.first ) + 1;
@@ -302,4 +289,4 @@ Tuple Conv2D<T>::getOutShape( const Tuple& input ) const
 
 } // namespace eml::nn
 
-#endif // EML_LAYERS_CONV2D_H
+#endif // EML_LAYERS_Conv2DIm2Col_H

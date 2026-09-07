@@ -23,7 +23,7 @@ void benchMatmulImpl()
 
 void benchMatmulBig()
 {
-    constexpr int size = 1920;
+    constexpr int size = 1000;
     constexpr int count = 1;
 
     Tensor<float> A{ size, size };
@@ -52,7 +52,7 @@ void matmulPrimitive(const Tensor<T>& A, const Tensor<T>& B, Tensor<T>& R)
 
 void benchMatmulBigPrimitive()
 {
-    constexpr int size = 1920;
+    constexpr int size = 1000;
     constexpr int count = 1;
 
     Tensor<float> A{ size, size };
